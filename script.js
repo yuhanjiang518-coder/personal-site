@@ -1,10 +1,12 @@
-/* ============================================================
-   姜雨涵 · 个人主页  |  script.js
-   ============================================================ */
+/* ==========================================================
+   姜雨涵 · 个人主页 v2  |  script.js
+   ========================================================== */
 (function () {
   'use strict';
+  var $  = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  /* ---------- 1. 打字机效果 ---------- */
+  /* ---------- 1. 打字机 ---------- */
   var phrases = [
     '网络工程 · 本科生',
     'C / C++ / Python 开发者',
@@ -12,177 +14,191 @@
     '游戏玩家',
     'AI 探索者'
   ];
-  var typedEl = document.getElementById('typed');
-  var pi = 0, ci = 0, deleting = false;
-
+  var typedEl = $('#typed'), pi = 0, ci = 0, deleting = false;
   function type() {
     if (!typedEl) return;
-    var word = phrases[pi];
-    typedEl.textContent = deleting
-      ? word.slice(0, --ci)
-      : word.slice(0, ++ci);
-
-    var delay = deleting ? 55 : 105;
-
-    if (!deleting && ci === word.length) {
-      deleting = true;
-      delay = 1500;
-    } else if (deleting && ci === 0) {
-      deleting = false;
-      pi = (pi + 1) % phrases.length;
-      delay = 380;
-    }
-    setTimeout(type, delay);
+    var w = phrases[pi];
+    typedEl.textContent = deleting ? w.slice(0, --ci) : w.slice(0, ++ci);
+    var d = deleting ? 55 : 105;
+    if (!deleting && ci === w.length) { deleting = true; d = 1600; }
+    else if (deleting && ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; d = 360; }
+    setTimeout(type, d);
   }
-  if (typedEl) setTimeout(type, 700);
+  if (typedEl) setTimeout(type, 600);
 
   /* ---------- 2. 滚动显现 ---------- */
-  var revealEls = document.querySelectorAll('.reveal');
+  var revealTargets = $$('.section > *, .hero-main, .hero-side, .panel, .card, .hobby, .site');
+  revealTargets.forEach(function (el) { el.classList.add('reveal'); });
+
   if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en, i) {
-        if (en.isIntersecting) {
-          setTimeout(function () { en.target.classList.add('show'); }, i * 70);
-          io.unobserve(en.target);
-        }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e, i) {
+        if (!e.isIntersecting) return;
+        var el = e.target;
+        setTimeout(function () { el.classList.add('show'); }, Math.min(i, 5) * 60);
+        io.unobserve(el);
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
-    revealEls.forEach(function (el) { io.observe(el); });
+    }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+    revealTargets.forEach(function (el) { io.observe(el); });
   } else {
-    revealEls.forEach(function (el) { el.classList.add('show'); });
+    revealTargets.forEach(function (el) { el.classList.add('show'); });
   }
 
-  /* ---------- 3. 技能条填充 ---------- */
-  var bars = document.querySelectorAll('.bar i');
+  /* ---------- 3. 技能条 ---------- */
+  var bars = $$('.bar i');
   if ('IntersectionObserver' in window) {
-    var bo = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) {
-          setTimeout(function () { en.target.classList.add('fill'); }, 180);
-          bo.unobserve(en.target);
-        }
+    var bo = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        setTimeout(function () { e.target.classList.add('fill'); }, 160);
+        bo.unobserve(e.target);
       });
-    }, { threshold: 0.4 });
+    }, { threshold: .35 });
     bars.forEach(function (b) { bo.observe(b); });
   } else {
     bars.forEach(function (b) { b.classList.add('fill'); });
   }
 
-  /* ---------- 4. 数字滚动 ---------- */
-  var nums = document.querySelectorAll('.stat-num');
+  /* ---------- 4. 数字增长 ---------- */
+  var nums = $$('[data-count]');
   if ('IntersectionObserver' in window) {
-    var no = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var el = en.target;
-        var target = parseInt(el.getAttribute('data-count'), 10) || 0;
-        var cur = 0, step = Math.max(1, Math.ceil(target / 18));
-        var t = setInterval(function () {
-          cur += step;
-          if (cur >= target) { cur = target; clearInterval(t); }
-          el.textContent = cur;
+    var no = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var el = e.target, t = parseInt(el.getAttribute('data-count'), 10) || 0, c = 0;
+        var step = Math.max(1, Math.ceil(t / 16));
+        var iv = setInterval(function () {
+          c += step;
+          if (c >= t) { c = t; clearInterval(iv); }
+          el.textContent = c;
         }, 55);
         no.unobserve(el);
       });
-    }, { threshold: 0.5 });
+    }, { threshold: .5 });
     nums.forEach(function (n) { no.observe(n); });
   } else {
     nums.forEach(function (n) { n.textContent = n.getAttribute('data-count'); });
   }
 
-  /* ---------- 5. 导航滚动态 ---------- */
-  var nav = document.querySelector('.nav');
+  /* ---------- 5. 滚动进度条 ---------- */
+  var prog = $('#progress');
   function onScroll() {
-    if (!nav) return;
-    nav.classList.toggle('scrolled', window.scrollY > 24);
+    if (!prog) return;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(window.scrollY / h, 1) : 0) + ')';
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
   onScroll();
 
-  /* ---------- 6. 复制邮箱 ---------- */
-  var copyBtn = document.getElementById('copyBtn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function () {
-      var mail = copyBtn.getAttribute('data-mail');
-      var done = function () { toast('邮箱已复制：' + mail); };
+  /* ---------- 6. 导航高亮（scroll spy） ---------- */
+  var links = $$('.rail-link');
+  var sections = links.map(function (a) { return $(a.getAttribute('href')); }).filter(Boolean);
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(mail).then(done, function () { legacy(mail, done); });
-      } else {
-        legacy(mail, done);
-      }
+  function spy() {
+    var pos = window.scrollY + window.innerHeight * 0.28;
+    var idx = 0;
+    sections.forEach(function (s, i) { if (s.offsetTop <= pos) idx = i; });
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 60) {
+      idx = sections.length - 1;
+    }
+    links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+  }
+  window.addEventListener('scroll', spy, { passive: true });
+  window.addEventListener('resize', spy);
+  spy();
+
+  /* ---------- 7. 平滑滚动（含侧栏偏移） ---------- */
+  $$('a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var id = a.getAttribute('href');
+      if (!id || id.length < 2) return;
+      var t = $(id);
+      if (!t) return;
+      e.preventDefault();
+      window.scrollTo({ top: t.offsetTop - 22, behavior: 'smooth' });
+      closeRail();
+    });
+  });
+
+  /* ---------- 8. 移动端抽屉 ---------- */
+  var rail = $('#rail'), toggle = $('#railToggle'), backdrop = null;
+  if (rail) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'rail-backdrop';
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', closeRail);
+  }
+  function closeRail() {
+    if (rail) rail.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('show');
+  }
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      rail.classList.toggle('open');
+      backdrop.classList.toggle('show', rail.classList.contains('open'));
     });
   }
-  function legacy(text, cb) {
+
+  /* ---------- 9. 复制邮箱 ---------- */
+  function legacyCopy(text, ok) {
     var ta = document.createElement('textarea');
     ta.value = text;
     ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); cb(); }
-    catch (e) { toast('复制失败，请手动复制'); }
+    try { document.execCommand('copy'); ok(); } catch (err) { toast('复制失败，请手动复制'); }
     document.body.removeChild(ta);
   }
+  $$('[data-mail]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mail = btn.getAttribute('data-mail');
+      var done = function () { toast('邮箱已复制：' + mail); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(mail).then(done, function () { legacyCopy(mail, done); });
+      } else { legacyCopy(mail, done); }
+    });
+  });
 
-  /* ---------- 7. Toast ---------- */
-  var toastEl = null, toastTimer = null;
+  /* ---------- 10. Toast ---------- */
+  var toastEl = $('#toast'), timer = null;
   function toast(msg) {
-    if (!toastEl) {
-      toastEl = document.createElement('div');
-      toastEl.className = 'toast';
-      document.body.appendChild(toastEl);
-    }
+    if (!toastEl) return;
     toastEl.textContent = msg;
     requestAnimationFrame(function () { toastEl.classList.add('show'); });
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+    clearTimeout(timer);
+    timer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
   }
 
-  /* ---------- 8. 邮件按钮 ---------- */
-  var mailBtn = document.getElementById('mailBtn');
+  /* ---------- 11. 邮件按钮 ---------- */
+  var mailBtn = $('#mailBtn');
   if (mailBtn) {
-    var addr = '3356559040@qq.com';
-    mailBtn.setAttribute('href', 'mailto:' + addr + '?subject=' +
-      encodeURIComponent('你好，姜雨涵！'));
+    mailBtn.setAttribute('href',
+      'mailto:3356559040@qq.com?subject=' + encodeURIComponent('你好，姜雨涵！'));
   }
 
-  /* ---------- 9. 主题切换（记住选择） ---------- */
-  var root = document.documentElement;
-  var toggle = document.getElementById('themeToggle');
-  var icon = toggle ? toggle.querySelector('.theme-icon') : null;
-
+  /* ---------- 12. 主题切换 ---------- */
+  var root = document.documentElement, tt = $('#themeToggle');
   var saved = null;
   try { saved = localStorage.getItem('jyh-theme'); } catch (e) {}
   var prefersLight = window.matchMedia &&
     window.matchMedia('(prefers-color-scheme: light)').matches;
   setTheme(saved || (prefersLight ? 'light' : 'dark'));
 
-  if (toggle) {
-    toggle.addEventListener('click', function () {
+  if (tt) {
+    tt.addEventListener('click', function () {
       var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
       setTheme(next);
       try { localStorage.setItem('jyh-theme', next); } catch (e) {}
+      toast(next === 'light' ? '已切换到浅色' : '已切换到深色');
     });
   }
   function setTheme(t) {
     root.setAttribute('data-theme', t);
-    if (icon) icon.textContent = t === 'light' ? '☀️' : '🌙';
+    if (tt) tt.textContent = t === 'light' ? '☀️' : '🌙';
   }
 
-  /* ---------- 10. 页脚年份 ---------- */
-  var y = document.getElementById('year');
+  /* ---------- 13. 页脚年份 ---------- */
+  var y = $('#year');
   if (y) y.textContent = new Date().getFullYear();
-
-  /* ---------- 11. 导航平滑滚动偏移 ---------- */
-  document.querySelectorAll('a[href^="#"]').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      var id = a.getAttribute('href');
-      if (id === '#' || id.length < 2) return;
-      var target = document.querySelector(id);
-      if (!target) return;
-      e.preventDefault();
-      var top = target.getBoundingClientRect().top + window.scrollY - 62;
-      window.scrollTo({ top: top, behavior: 'smooth' });
-    });
-  });
 })();

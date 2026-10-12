@@ -158,6 +158,27 @@
     });
   })();
 
+  /* ---------- 旧锚点兼容：老链接自动跳到新页面 ---------- */
+  (function legacyRedirect() {
+    var MAP = {
+      skills:   'study.html#skills',
+      roadmap:  'study.html#roadmap',
+      courses:  'study.html#courses',
+      major:    'study.html#major',
+      projects: 'study.html#projects',
+      life:     'life.html#life',
+      sites:    'life.html#sites',
+      anime:    'life.html#anime',
+      games:    'life.html#games'
+    };
+    var hash = location.hash ? location.hash.slice(1) : '';
+    if (!hash || !MAP[hash]) return;
+    var here = location.pathname.split('/').pop() || 'index.html';
+    // 只有在首页时才重定向；已经在目标页就什么都不做
+    if (here !== 'index.html' && here !== '') return;
+    location.replace(MAP[hash]);
+  })();
+
   /* ---------- 1. 打字机 ---------- */
   var phrases = [
     '网络工程 · 本科生',
@@ -243,35 +264,81 @@
   window.addEventListener('resize', onScroll);
   onScroll();
 
-  /* ---------- 6. 导航高亮（scroll spy） ---------- */
+  /* ---------- 6. 导航高亮（跨页 + scroll spy） ---------- */
   var links = $$('.rail-link');
-  var sections = links.map(function (a) { return $(a.getAttribute('href')); }).filter(Boolean);
+
+  // 6a. 当前页高亮（由 build 时写死的 .active 保证），这里补一条保险
+  var here = location.pathname.split('/').pop() || 'index.html';
+  if (here === '') here = 'index.html';
+
+  // 6b. 同页内的子锚点高亮（仅对本页存在的锚点做 spy）
+  var samePage = links.filter(function (a) {
+    var href = a.getAttribute('href') || '';
+    if (href.indexOf('#') === -1) return here === href;      // 纯文件名链接
+    var filePart = href.split('#')[0] || 'index.html';
+    return filePart === here;
+  });
+
+  var pairs = samePage.map(function (a) {
+    var id = (a.getAttribute('href') || '').split('#')[1];
+    return { a: a, el: id ? document.getElementById(id) : null };
+  }).filter(function (p) { return p.el; });
 
   function spy() {
-    var pos = window.scrollY + window.innerHeight * 0.28;
-    var idx = 0;
-    sections.forEach(function (s, i) { if (s.offsetTop <= pos) idx = i; });
+    if (!pairs.length) return;
+    var pos = window.scrollY + window.innerHeight * 0.3;
+    var best = null;
+    pairs.forEach(function (p) {
+      if (p.el.offsetTop <= pos) best = p;
+    });
+    // 页面底部时选最后一个
     if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 60) {
-      idx = sections.length - 1;
+      best = pairs[pairs.length - 1];
     }
-    links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+    pairs.forEach(function (p) { p.a.classList.toggle('active', p === best); });
+    // 没有匹配到任何 section 时，回退到本页主链接
+    if (!best) {
+      links.forEach(function (a) {
+        var href = a.getAttribute('href') || '';
+        if (href === here || href === here + '#') a.classList.add('active');
+      });
+    }
   }
   window.addEventListener('scroll', spy, { passive: true });
   window.addEventListener('resize', spy);
   spy();
 
-  /* ---------- 7. 平滑滚动（含侧栏偏移） ---------- */
-  $$('a[href^="#"]').forEach(function (a) {
+  /* ---------- 7. 平滑滚动（仅同页锚点） ---------- */
+  $$('a[href^="#"], a[href*=".html#"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
-      var id = a.getAttribute('href');
-      if (!id || id.length < 2) return;
-      var t = $(id);
+      var href = a.getAttribute('href') || '';
+      var parts = href.split('#');
+      var filePart = parts[0];
+      var id = parts[1];
+      if (!id) return;
+
+      var sameFile = !filePart || filePart === here;
+      if (!sameFile) return;              // 跨页：让浏览器正常跳转
+
+      var t = document.getElementById(id);
       if (!t) return;
       e.preventDefault();
       window.scrollTo({ top: t.offsetTop - 22, behavior: 'smooth' });
+      if (history.replaceState) history.replaceState(null, '', '#' + id);
       closeRail();
     });
   });
+
+  /* ---------- 7b. 带 hash 进来时滚动到目标 ---------- */
+  (function jumpToHash() {
+    var id = location.hash ? location.hash.slice(1) : '';
+    if (!id) return;
+    var t = document.getElementById(id);
+    if (!t) return;
+    setTimeout(function () {
+      window.scrollTo({ top: t.offsetTop - 22, behavior: 'auto' });
+    }, 60);
+  })();
 
   /* ---------- 8. 移动端抽屉 ---------- */
   var rail = $('#rail'), toggle = $('#railToggle'), backdrop = null;

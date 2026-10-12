@@ -93,13 +93,27 @@
 
 ```
 personal-site/
-├── index.html    # 页面结构
-├── style.css     # 样式、主题变量与动画
-├── script.js     # 全部交互逻辑
+├── index.html    # 首页（首屏 + 关于我 + 联系我）
+├── study.html    # 学习 / 工作（技能 + 学习路线 + 课程矩阵 + 我的专业 + 项目）
+├── life.html     # 兴趣 / 日常（动漫口味 + 游戏口味 + 常去的地方）
+├── style.css     # 样式、主题变量与动画（三页共用）
+├── script.js     # 全部交互逻辑（三页共用）
 ├── assets/       # 背景插画（WebP，6 个尺寸/风格变体）
 ├── .nojekyll     # 告诉 GitHub Pages 不要跑 Jekyll
 └── README.md
 ```
+
+## 📄 三个页面
+
+| 页面 | URL | 内容 |
+|---|---|---|
+| 首页 | `/` | 首屏 Hero、关于我、联系我 |
+| 学习 / 工作 | `/study.html` | 技能与近况、学习路线、课程技能矩阵、我的专业、项目与收藏 |
+| 兴趣 / 日常 | `/life.html` | 动漫口味、游戏口味（音游/类银河恶魔城/Galgame/沙盒Roguelike）、常去的地方 |
+
+侧边栏导航按「首页 / 学习·工作 / 兴趣·日常」分组，子项直接跳到对应页面的锚点。
+
+**旧锚点兼容**：`index.html#skills`、`#roadmap`、`#life` 等老链接会自动重定向到新页面（`script.js` 里的 `legacyRedirect`）。
 
 ## 🚀 本地预览
 

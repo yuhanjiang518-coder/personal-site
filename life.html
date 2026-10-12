@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="向き的兴趣日常：动漫口味、游戏口味（音游/类银河恶魔城/Galgame/沙盒Roguelike）与常去的地方。">
+<title>兴趣 / 日常 · 向き</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23121118'/%3E%3Cpath d='M16 20h32v26H16zM24 28h16M24 36h16' fill='none' stroke='%23ff89b5' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="canonical" href="https://yuhanjiang518-coder.github.io/personal-site/life.html">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="life">
+
+<!-- ============ 加载动画 ============ -->
+<div class="loader" id="loader" role="status" aria-live="polite" aria-label="页面加载中">
+  <div class="loader-bg" aria-hidden="true"></div>
+  <div class="loader-inner">
+    <div class="loader-brand">
+      <span class="lb-mark">向</span>
+      <div class="lb-text">
+        <span class="lb-name">向き</span>
+        <span class="lb-sub">写代码，也写点生活</span>
+      </div>
+    </div>
+    <div class="loader-line" aria-hidden="true"><i id="loaderBar"></i></div>
+    <div class="loader-status">
+      <span class="loader-prompt">&gt;</span>
+      <span class="loader-msg" id="loaderMsg">正在加载…</span>
+      <span class="loader-caret" aria-hidden="true"></span>
+    </div>
+    <div class="loader-pct"><span id="loaderPct">0</span>%</div>
+  </div>
+</div>
+
+<div class="bg" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+<div class="bg-glow glow-1" aria-hidden="true"></div>
+<div class="bg-glow glow-2" aria-hidden="true"></div>
+<div class="scroll-progress" id="progress"></div>
+
+<a href="#main" class="skip">跳到主要内容</a>
+
+<aside class="rail" id="rail">
+  <div class="rail-art" aria-hidden="true"></div>
+  <div class="rail-head">
+    <a class="avatar-ring" href="index.html" aria-label="回到首页"><span class="avatar">雨</span></a>
+    <h1 class="rail-name">向き</h1>
+    <p class="rail-tag">写代码，也写点生活</p>
+    <p class="rail-sub">沈阳理工大学 · 网络工程</p>
+
+    <div class="socials">
+      <a class="social" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener" title="GitHub · yuhanjiang518-coder" aria-label="访问我的 GitHub">
+        <svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a class="social" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener" title="哔哩哔哩 · 向きー" aria-label="访问我的哔哩哔哩空间">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg>
+        <span>Bilibili</span>
+      </a>
+    </div>
+  </div>
+
+  <nav class="rail-nav" id="railNav">
+    <p class="rail-label">导航</p>
+    <a href="index.html" class="rail-link"><span class="ri">◇</span>首页</a>
+    <a href="index.html#about" class="rail-link"><span class="ri">◇</span>关于我</a>
+    <a href="index.html#contact" class="rail-link"><span class="ri">◇</span>联系我</a>
+    <p class="rail-label">学习 / 工作</p>
+    <a href="study.html" class="rail-link"><span class="ri">◇</span>技能与近况</a>
+    <a href="study.html#roadmap" class="rail-link sub"><span class="ri">◇</span>学习路线</a>
+    <a href="study.html#courses" class="rail-link sub"><span class="ri">◇</span>课程矩阵</a>
+    <a href="study.html#major" class="rail-link sub"><span class="ri">◇</span>我的专业</a>
+    <a href="study.html#projects" class="rail-link sub"><span class="ri">◇</span>项目与收藏</a>
+    <p class="rail-label">兴趣 / 日常</p>
+    <a href="life.html" class="rail-link active"><span class="ri">◆</span>日常与兴趣</a>
+    <a href="life.html#anime" class="rail-link sub"><span class="ri">◇</span>动漫口味</a>
+    <a href="life.html#games" class="rail-link sub"><span class="ri">◇</span>游戏口味</a>
+    <a href="life.html#sites" class="rail-link sub"><span class="ri">◇</span>常去的地方</a>
+  </nav>
+
+  <div class="rail-bottom">
+    <p class="rail-label">状态</p>
+    <div class="rail-status"><span class="dot"></span> 在线 · 欢迎来聊</div>
+    <div class="rail-tools">
+      <button class="icon-btn" id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
+      <button class="icon-btn" id="copyBtn" data-mail="3356559040@qq.com" title="复制邮箱" aria-label="复制邮箱">✉️</button>
+      <button class="icon-btn" id="wallBtn" title="更换壁纸" aria-label="更换壁纸">🖼️</button>
+    </div>
+  </div>
+</aside>
+
+<button class="rail-toggle" id="railToggle" aria-label="菜单">☰</button>
+
+<main class="content" id="main">
+
+  <header class="page-head">
+    <p class="ph-kicker">Interest / Daily</p>
+    <h2>兴趣 / 日常</h2>
+    <p>看什么动漫、玩什么游戏，还有一些我常去的地方。</p>
+  </header>
+  <section id="life" class="section">
+    <div class="sec-head">
+      <h2>日常与兴趣</h2>
+      <p class="sec-sub">这个小世界</p>
+    </div>
+    <div class="hobbies">
+      <article class="hobby hobby-wide">
+        <span class="hobby-ico">🎬</span>
+        <h3>看动漫</h3>
+        <p>喜欢沉浸在故事与画面里，从热血番到治愈番都看，也常常被一句台词戳中。下面是我偏爱的几部。</p>
+      </article>
+      <article class="hobby hobby-wide">
+        <span class="hobby-ico">🎮</span>
+        <h3>玩游戏</h3>
+        <p>偏爱有设计感的单机与独立游戏，也喜欢研究玩法机制。下面是我常玩的几类。</p>
+      </article>
+      <article class="hobby">
+        <span class="hobby-ico">🤖</span>
+        <h3>研究 AI</h3>
+        <p>关注大模型的发展，动手折腾各种 AI 工具，试着把它变成日常的助力。</p>
+      </article>
+      <article class="hobby">
+        <span class="hobby-ico">💻</span>
+        <h3>写代码</h3>
+        <p>用 C / C++ / Python 把想法实现出来，享受「跑通了」那一刻的成就感。</p>
+      </article>
+    </div>
+
+    <h3 class="sub-title" id="anime">动漫口味</h3>
+    <div class="anime">
+
+      <article class="anime-card">
+        <div class="anime-cover anime-jojo" aria-hidden="true">
+          <span class="anime-mark">ゴ</span>
+        </div>
+        <div class="anime-body">
+          <h4>JoJo 的奇妙冒险</h4>
+          <p class="anime-meta">荒木飞吕彦 · 全系列</p>
+          <p class="anime-note">替身设定与战斗智斗的巅峰，越看越上头的长篇。</p>
+        </div>
+      </article>
+
+      <article class="anime-card">
+        <div class="anime-cover anime-elaina" aria-hidden="true">
+          <span class="anime-mark">旅</span>
+        </div>
+        <div class="anime-body">
+          <h4>魔女之旅</h4>
+          <p class="anime-meta">白石定规 · あずーる</p>
+          <p class="anime-note">单元剧式的旅途故事，安静又带点苦涩。本站背景就出自这里。</p>
+        </div>
+      </article>
+
+      <article class="anime-card">
+        <div class="anime-cover anime-bokuyaba" aria-hidden="true">
+          <span class="anime-mark">心</span>
+        </div>
+        <div class="anime-body">
+          <h4>我心里危险的东西</h4>
+          <p class="anime-meta">樱井纪雄</p>
+          <p class="anime-note">把中二与青涩刻画得很细的恋爱番，氛围感极好。</p>
+        </div>
+      </article>
+
+      <article class="anime-card">
+        <div class="anime-cover anime-grandblue" aria-hidden="true">
+          <span class="anime-mark">酔</span>
+        </div>
+        <div class="anime-body">
+          <h4>碧蓝之海</h4>
+          <p class="anime-meta">井上坚二 · 吉冈公威</p>
+          <p class="anime-note">潜水社团的爆笑日常，笑点密度极高，放松首选。</p>
+        </div>
+      </article>
+
+    </div>
+
+    <h3 class="sub-title" id="games">游戏口味</h3>
+    <div class="games">
+
+      <article class="game">
+        <div class="game-head">
+          <span class="game-ico">🎵</span>
+          <h4>音游</h4>
+        </div>
+        <p class="game-desc">最沉迷的一类，追求手感和准度，喜欢打高难度谱面。</p>
+        <div class="game-tags">
+          <span>Phigros</span>
+          <span>Rizline</span>
+          <span>Orzmic</span>
+          <span>世界计划</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <div class="game-head">
+          <span class="game-ico">🗺️</span>
+          <h4>类银河恶魔城</h4>
+        </div>
+        <p class="game-desc">喜欢探索地图、解锁能力、反复回头开新路的循环。</p>
+        <div class="game-tags">
+          <span>空洞骑士</span>
+          <span>空洞骑士：丝之歌</span>
+          <span>奥日与黑暗森林</span>
+          <span>奥日与萤火意志</span>
+          <span>苍翼：混沌效应</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <div class="game-head">
+          <span class="game-ico">📖</span>
+          <h4>Galgame</h4>
+        </div>
+        <p class="game-desc">喜欢剧情向视觉小说，会为了一个结局反复走线。</p>
+        <div class="game-tags">
+          <span>Rewrite</span>
+          <span>樱之诗</span>
+          <span>樱之刻</span>
+          <span>夏日口袋</span>
+          <span>CLANNAD</span>
+          <span>命运石之门</span>
+          <span>Ever17</span>
+        </div>
+      </article>
+
+      <article class="game">
+        <div class="game-head">
+          <span class="game-ico">🎲</span>
+          <h4>沙盒 / Roguelike</h4>
+        </div>
+        <p class="game-desc">享受每一局都不一样的感觉，以及自由搭建的乐趣。</p>
+        <div class="game-tags">
+          <span>泰拉瑞亚</span>
+          <span>死亡细胞</span>
+          <span>杀戮尖塔</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- 常去的地方 -->
+  <section id="sites" class="section">
+    <div class="sec-head">
+      <h2>常去的地方</h2>
+      <p class="sec-sub">一些常用工具，和互联网上的好地方</p>
+    </div>
+    <div class="sites">
+      <a class="site site-me" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">
+        <span class="site-ico">🐙</span>
+        <div><b>我的 GitHub <em class="me-tag">本人</em></b><small>yuhanjiang518-coder</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+      <a class="site site-me" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">
+        <span class="site-ico">📺</span>
+        <div><b>我的 B 站 <em class="me-tag">本人</em></b><small>向きー · UID 627368437</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+      <a class="site" href="https://www.luogu.com.cn" target="_blank" rel="noopener">
+        <span class="site-ico">🧩</span>
+        <div><b>洛谷 Luogu</b><small>算法竞赛题目练习与题解</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+      <a class="site" href="https://www.sylu.edu.cn" target="_blank" rel="noopener">
+        <span class="site-ico">🏫</span>
+        <div><b>沈阳理工大学</b><small>学校官网</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+      <a class="site" href="https://chat.deepseek.com" target="_blank" rel="noopener">
+        <span class="site-ico">✨</span>
+        <div><b>DeepSeek</b><small>平时用得最多的 AI 助手</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+      <a class="site" href="https://developer.mozilla.org/zh-CN/" target="_blank" rel="noopener">
+        <span class="site-ico">📖</span>
+        <div><b>MDN 文档</b><small>查前端 API 最靠谱的地方</small></div>
+        <span class="site-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 联系 -->
+
+  <footer class="footer">
+    <p>© <span id="year"></span> 向き · 沈阳理工大学 网络工程</p>
+    <p class="footer-sub">Built with ❤️ · Deployed on GitHub Pages · 背景插画版权归原作者所有</p>
+  </footer>
+</main>
+
+<div class="wall-panel" id="wallPanel">
+  <h4>背景壁纸</h4>
+  <div class="wall-opts">
+    <button class="wall-opt" data-wall="dark">暗色柔化</button>
+    <button class="wall-opt" data-wall="landscape">原图横版</button>
+    <button class="wall-opt" data-wall="portrait">原图竖版</button>
+    <button class="wall-opt" data-wall="blur">模糊背景</button>
+    <button class="wall-opt" data-wall="none" style="grid-column:span 2">纯色背景</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -30,6 +30,19 @@
 - 背景光晕（orb）与玻璃拟态（backdrop-filter）
 - 深色 / 浅色双主题，自动跟随系统并记住选择
 
+**学校 / 学习相关**
+
+三个新区块，内容都基于真实信息：
+
+| 区块 | 内容 |
+|---|---|
+| 学习路线 | 5 个阶段时间线（编程基础 → 计算机基础 → 网络工程 → AI → 工程实践），带已掌握/进行中/下一步状态 |
+| 课程技能矩阵 | 24 个知识点分 5 组，三档状态：已掌握 / 在学 / 待学习 |
+| 我的专业 | 辽宁省一流专业建设点、软科排名第 63 位、网络安全特色、奇安信/深信服/绿盟 校企合作 |
+
+> 专业信息来源：[学院官网专业介绍](https://sise.sylu.edu.cn/zyjs/zyjs/wlgc.htm)，页面已标注出处。
+> **没有编造任何竞赛奖项、证书或个人成绩。**
+
 **游戏口味**
 
 按四类展示常玩游戏：
@@ -128,6 +141,8 @@ git push -u origin main
 | 游戏口味 / 常玩游戏 | `<section id="life">` 里的 `.game`（4 类，改 `.game-tags` 里的游戏名） |
 | 动漫口味 / 常看作品 | `<section id="life">` 里的 `.anime-card`（改 `<h4>` 标题与 `.anime-note`） |
 | 动漫封面配色 | `style.css` 里的 `.anime-jojo` / `.anime-elaina` / `.anime-bokuyaba` / `.anime-grandblue` |
+| 学习路线 | `<section id="roadmap">` 里的 `.rm-item`，改 `done`/`doing`/`next` 换状态 |
+| 课程矩阵 | `<section id="courses">` 里的 `.mx`，改 `lv-done`/`lv-doing`/`lv-todo` 换状态 |
 | 常去的网站 | `<section id="sites">` 里的 `.site` 链接 |
 | 邮箱 / 联系方式 | `<section id="contact">` |
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |

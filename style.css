@@ -668,11 +668,144 @@ html[data-theme="light"] .toast{color:#fff}
 }
 .anime-note{font-size:12.5px;color:var(--muted);line-height:1.65}
 
+
+/* ==========================================================
+   学习路线（时间线）
+   ========================================================== */
+.roadmap{position:relative;padding-left:26px}
+.roadmap::before{
+  content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;
+  background:linear-gradient(180deg,var(--accent-3),var(--accent),var(--accent-2));
+  border-radius:2px;opacity:.55;
+}
+.rm-item{position:relative;padding-bottom:20px}
+.rm-item:last-child{padding-bottom:0}
+.rm-marker{position:absolute;left:-26px;top:6px;width:16px;height:16px;
+  display:grid;place-items:center}
+.rm-dot{
+  width:11px;height:11px;border-radius:50%;
+  background:var(--bg-deep);border:2px solid var(--faint);
+  transition:.3s;
+}
+.rm-item.done .rm-dot{background:var(--accent-3);border-color:var(--accent-3);
+  box-shadow:0 0 0 3px rgba(168,201,154,.20)}
+.rm-item.doing .rm-dot{background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22);animation:pulse2 2s infinite}
+.rm-item.next .rm-dot{background:transparent;border-color:var(--accent-2);
+  border-style:dashed}
+@keyframes pulse2{
+  0%,100%{box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22)}
+  50%{box-shadow:0 0 0 7px rgba(var(--accent-rgb),0)}
+}
+.rm-body{
+  border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:16px 18px;transition:.3s;
+  background:var(--panel-2);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.rm-item:hover .rm-body{transform:translateX(5px);border-color:var(--accent)}
+.rm-head{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.rm-head h3{font-size:15px;font-weight:700;color:var(--text)}
+.rm-badge{
+  font-size:10.5px;padding:2px 9px;border-radius:999px;
+  border:1px solid var(--line);background:var(--soft);color:var(--faint);
+}
+.rm-item.done  .rm-badge{background:rgba(168,201,154,.16);color:#b6d9a8;border-color:rgba(168,201,154,.35)}
+.rm-item.doing .rm-badge{background:rgba(var(--accent-rgb),.18);color:var(--accent);border-color:rgba(var(--accent-rgb),.4)}
+.rm-item.next  .rm-badge{background:rgba(232,200,106,.14);color:var(--accent-2);border-color:rgba(232,200,106,.35)}
+.rm-body p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.rm-tags{display:flex;gap:6px;flex-wrap:wrap}
+.rm-tags span{
+  font-size:11px;padding:3px 9px;border-radius:6px;
+  background:var(--soft);border:1px solid var(--line);
+  color:var(--faint);font-family:var(--mono);
+}
+
+/* ==========================================================
+   课程技能矩阵
+   ========================================================== */
+.matrix-legend{
+  display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;
+  font-size:12.5px;color:var(--faint);
+}
+.matrix-legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{width:10px;height:10px;border-radius:3px;display:inline-block}
+.lg-done{background:var(--accent-3)}
+.lg-doing{background:var(--accent)}
+.lg-todo{background:transparent;border:1.5px dashed var(--faint)}
+
+.matrix{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(258px,1fr))}
+.mx-group{
+  border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px 18px;
+  background:var(--panel-2);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  transition:.3s;
+}
+.mx-group:hover{border-color:var(--accent)}
+.mx-title{
+  font-size:12px;font-weight:700;color:var(--faint);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;
+}
+.mx-items{display:flex;gap:7px;flex-wrap:wrap}
+.mx{
+  font-size:12.5px;padding:5px 12px;border-radius:8px;
+  border:1px solid var(--line);transition:.22s;cursor:default;
+}
+.mx:hover{transform:translateY(-2px)}
+.mx.lv-done{
+  background:rgba(168,201,154,.15);color:#b6d9a8;
+  border-color:rgba(168,201,154,.34);
+}
+.mx.lv-doing{
+  background:rgba(var(--accent-rgb),.16);color:var(--accent);
+  border-color:rgba(var(--accent-rgb),.38);
+}
+.mx.lv-todo{
+  background:transparent;color:var(--faint);border-style:dashed;
+}
+
+/* ==========================================================
+   我的专业
+   ========================================================== */
+.major-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+.major-main .panel-title{margin-bottom:14px}
+.major-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px;
+  padding-top:20px;border-top:1px solid var(--line);
+}
+.ms{
+  text-align:center;padding:12px 6px;border-radius:var(--radius-sm);
+  background:var(--soft);border:1px solid var(--line);transition:.25s;
+}
+.ms:hover{border-color:var(--accent);transform:translateY(-3px)}
+.ms b{
+  display:block;font-size:22px;font-weight:800;line-height:1.15;
+  background:linear-gradient(120deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.ms .u{font-size:13px;font-weight:700}
+.ms span{font-size:11px;color:var(--faint);line-height:1.4;display:block;margin-top:3px}
+
+.coop{list-style:none;display:grid;gap:11px;margin:14px 0 0}
+.coop li{display:flex;gap:10px;align-items:flex-start}
+.coop-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent-2);
+  margin-top:7px;flex:none;box-shadow:0 0 0 3px rgba(232,200,106,.16);
+}
+.coop b{font-size:13.5px;color:var(--text);display:block}
+.coop small{font-size:11.5px;color:var(--faint)}
+.major-note{
+  font-size:11.5px;color:var(--faint);margin-top:16px;margin-bottom:0!important;
+  padding-top:12px;border-top:1px solid var(--line);
+}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:1100px){
   :root{--rail:222px}
   .hero{grid-template-columns:1fr;gap:24px;min-height:0}
   .split{grid-template-columns:1fr}
+  .major-grid{grid-template-columns:1fr}
+  .major-stats{grid-template-columns:repeat(4,1fr)}
 }
 @media (max-width:800px){
   :root{--rail:0px}
@@ -691,9 +824,12 @@ html[data-theme="light"] .toast{color:#fff}
   .hero-socials{justify-content:center}
 }
 @media (max-width:520px){
-  .cards,.hobbies,.sites,.games,.anime{grid-template-columns:1fr}
+  .cards,.hobbies,.sites,.games,.anime,.matrix{grid-template-columns:1fr}
   .anime-cover{width:58px;height:78px}
   .anime-mark{font-size:27px}
+  .major-stats{grid-template-columns:repeat(2,1fr)}
+  .roadmap{padding-left:22px}
+  .rm-marker{left:-22px}
   .hero-title{letter-spacing:-1px}
   .contact-actions .btn{flex:1;justify-content:center}
   .mini-grid{grid-template-columns:repeat(3,1fr);gap:7px}

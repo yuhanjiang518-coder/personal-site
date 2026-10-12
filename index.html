@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>姜雨涵 · 个人主页</title>
+<meta name="description" content="姜雨涵的个人主页 — 沈阳理工大学 信息科学与工程学院 网络工程">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<header class="nav">
+  <a href="#home" class="nav-logo">JYH<span>.</span></a>
+  <nav class="nav-links">
+    <a href="#about">关于</a>
+    <a href="#skills">技能</a>
+    <a href="#interests">兴趣</a>
+    <a href="#contact">联系</a>
+  </nav>
+  <button id="themeToggle" class="theme-toggle" aria-label="切换主题">
+    <span class="theme-icon">🌙</span>
+  </button>
+</header>
+
+<main>
+
+  <section id="home" class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="hero-greeting anim-up">你好，我是</p>
+        <h1 class="hero-name anim-up d1">姜雨涵</h1>
+        <p class="hero-sub anim-up d2">
+          <span id="typed"></span><span class="caret">|</span>
+        </p>
+        <p class="hero-desc anim-up d3">
+          沈阳理工大学 · 信息科学与工程学院 · 网络工程<br>
+          喜欢用代码把想法变成现实，也喜欢在动漫与游戏里寻找灵感。
+        </p>
+        <div class="hero-actions anim-up d4">
+          <a href="#about" class="btn btn-primary">了解更多</a>
+          <a href="#contact" class="btn btn-ghost">联系我</a>
+        </div>
+        <div class="hero-tags anim-up d5">
+          <span class="tag">C / C++</span>
+          <span class="tag">Python</span>
+          <span class="tag">网络工程</span>
+          <span class="tag">AI 探索</span>
+        </div>
+      </div>
+
+      <div class="hero-card anim-up d3">
+        <div class="avatar-ring">
+          <div class="avatar">雨</div>
+        </div>
+        <h3 class="card-name">姜雨涵</h3>
+        <p class="card-role">网络工程 · 本科生</p>
+        <ul class="card-meta">
+          <li><span class="ico">🏫</span> 沈阳理工大学</li>
+          <li><span class="ico">💻</span> 信息科学与工程学院</li>
+          <li><span class="ico">🌐</span> 网络工程</li>
+          <li><span class="ico">📍</span> 辽宁 · 沈阳</li>
+        </ul>
+        <div class="card-status">
+          <span class="dot"></span> 正在学习 &amp; 探索中
+        </div>
+      </div>
+    </div>
+    <a href="#about" class="scroll-hint" aria-label="向下滚动">
+      <span></span>
+    </a>
+  </section>
+
+  <section id="about" class="section">
+    <h2 class="section-title reveal"><span class="num">01</span> 关于我</h2>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>
+          我是<strong>姜雨涵</strong>，就读于<strong>沈阳理工大学 信息科学与工程学院</strong>，
+          专业是<strong>网络工程</strong>。
+        </p>
+        <p>
+          平时喜欢写代码，能用 <strong>C / C++</strong> 和 <strong>Python</strong>
+          编写程序，从算法题到小工具都愿意动手试一试。
+          对网络协议、系统底层以及人工智能方向都保持着很强的好奇心。
+        </p>
+        <p>
+          学习之外，我是一个标准的「二次元 + 游戏玩家」：看动漫、打游戏是我的主要放松方式，
+          也常常因为喜欢某个游戏或某段剧情，产生「自己动手做点什么」的冲动。
+          最近在做的事情是<strong>研究 AI</strong>，尝试把 AI 用到日常学习和开发里。
+        </p>
+        <p class="quote">「把喜欢的事，做成擅长的事。」</p>
+      </div>
+      <div class="about-stats reveal">
+        <div class="stat">
+          <div class="stat-num" data-count="2">0</div>
+          <div class="stat-label">编程语言<br><small>C / C++ · Python</small></div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" data-count="3">0</div>
+          <div class="stat-label">核心兴趣<br><small>动漫 · 游戏 · AI</small></div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" data-count="1">0</div>
+          <div class="stat-label">正在做的事<br><small>研究 AI</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills" class="section">
+    <h2 class="section-title reveal"><span class="num">02</span> 技能</h2>
+    <div class="skills-grid">
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-c">C</div>
+          <div>
+            <h3>C 语言</h3>
+            <p class="skill-note">基础语法 · 指针 · 结构体</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:75%"></i></div>
+      </article>
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-cpp">C++</div>
+          <div>
+            <h3>C++</h3>
+            <p class="skill-note">面向对象 · STL · 算法实现</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:70%"></i></div>
+      </article>
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-py">Py</div>
+          <div>
+            <h3>Python</h3>
+            <p class="skill-note">脚本 · 数据处理 · AI 应用</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:80%"></i></div>
+      </article>
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-net">🌐</div>
+          <div>
+            <h3>网络工程</h3>
+            <p class="skill-note">网络原理 · 协议 · 组网</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:65%"></i></div>
+      </article>
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-ai">AI</div>
+          <div>
+            <h3>AI 研究</h3>
+            <p class="skill-note">大模型 · 提示工程 · 工具链</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:60%"></i></div>
+      </article>
+
+      <article class="skill-card reveal">
+        <div class="skill-top">
+          <div class="skill-icon lang-web">&lt;/&gt;</div>
+          <div>
+            <h3>Web 前端</h3>
+            <p class="skill-note">HTML · CSS · JavaScript</p>
+          </div>
+        </div>
+        <div class="bar"><i style="--w:55%"></i></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="interests" class="section">
+    <h2 class="section-title reveal"><span class="num">03</span> 兴趣爱好</h2>
+    <div class="hobby-grid">
+
+      <article class="hobby-card reveal">
+        <div class="hobby-emoji">🎬</div>
+        <h3>看动漫</h3>
+        <p>喜欢沉浸在故事与画面里，从热血番到治愈番都看，也常常被一句台词戳中。</p>
+      </article>
+
+      <article class="hobby-card reveal">
+        <div class="hobby-emoji">🎮</div>
+        <h3>玩游戏</h3>
+        <p>音游、单机、独立游戏都有涉猎。喜欢研究玩法机制，也喜欢和朋友一起开黑。</p>
+      </article>
+
+      <article class="hobby-card reveal">
+        <div class="hobby-emoji">🤖</div>
+        <h3>研究 AI</h3>
+        <p>关注大模型的发展，动手折腾各种 AI 工具，试着把 AI 变成学习和开发的助力。</p>
+      </article>
+
+      <article class="hobby-card reveal">
+        <div class="hobby-emoji">💻</div>
+        <h3>写代码</h3>
+        <p>用 C / C++ / Python 把想法实现出来，享受「跑通了」那一刻的成就感。</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <h2 class="section-title reveal"><span class="num">04</span> 联系我</h2>
+    <div class="contact-box reveal">
+      <p class="contact-lead">如果你也对编程、动漫、游戏或者 AI 感兴趣，欢迎随时找我聊聊 👋</p>
+      <div class="contact-actions">
+        <a class="btn btn-primary" id="mailBtn" href="#">✉️ 发送邮件</a>
+        <button class="btn btn-ghost" id="copyBtn" data-mail="3356559040@qq.com">📋 复制邮箱</button>
+      </div>
+      <ul class="contact-list">
+        <li><span class="ico">📮</span> <span class="mono">3356559040@qq.com</span> <small>（QQ 邮箱）</small></li>
+        <li><span class="ico">🏫</span> 沈阳理工大学 · 信息科学与工程学院 · 网络工程</li>
+        <li><span class="ico">🌏</span> 辽宁 · 沈阳</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>© <span id="year"></span> 姜雨涵 · 沈阳理工大学 网络工程</p>
+  <p class="footer-sub">Built with ❤️ and deployed on GitHub Pages</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

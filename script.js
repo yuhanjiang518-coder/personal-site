@@ -198,6 +198,53 @@
     if (tt) tt.textContent = t === 'light' ? '☀️' : '🌙';
   }
 
+
+  /* ---------- 14. 壁纸切换 ---------- */
+  var WALLS = ['landscape', 'portrait', 'blur', 'dark', 'none'];
+  var DEFAULT_WALL = 'dark';
+  var wallPanel = $('#wallPanel');
+  var wallBtn = $('#wallBtn');
+  var wallSaved = null;
+  try { wallSaved = localStorage.getItem('jyh-wall'); } catch (e) {}
+
+  function setWall(w, save) {
+    if (WALLS.indexOf(w) === -1) w = DEFAULT_WALL;
+    document.body.setAttribute('data-wall', w);
+    $$('.wall-opt').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-wall') === w);
+    });
+    if (wallBtn) wallBtn.classList.toggle('on', w !== DEFAULT_WALL);
+    if (save !== false) {
+      try { localStorage.setItem('jyh-wall', w); } catch (e) {}
+    }
+  }
+  setWall(wallSaved || DEFAULT_WALL, false);
+
+  if (wallBtn && wallPanel) {
+    wallBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      wallPanel.classList.toggle('show');
+    });
+    document.addEventListener('click', function (e) {
+      if (!wallPanel.contains(e.target) && e.target !== wallBtn) {
+        wallPanel.classList.remove('show');
+      }
+    });
+  }
+  $$('.wall-opt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      setWall(b.getAttribute('data-wall'));
+      toast('背景已切换');
+    });
+  });
+
+  /* ---------- 15. 键盘快捷键 ---------- */
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 't' || e.key === 'T') { tt && tt.click(); }
+    if (e.key === 'w' || e.key === 'W') { wallPanel && wallPanel.classList.toggle('show'); }
+  });
+
   /* ---------- 13. 页脚年份 ---------- */
   var y = $('#year');
   if (y) y.textContent = new Date().getFullYear();

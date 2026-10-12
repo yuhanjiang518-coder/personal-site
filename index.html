@@ -11,14 +11,17 @@
 </head>
 <body>
 
+<div class="bg" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+<div class="bg-glow glow-1" aria-hidden="true"></div>
+<div class="bg-glow glow-2" aria-hidden="true"></div>
 <div class="scroll-progress" id="progress"></div>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
 
 <a href="#home" class="skip">跳到主要内容</a>
 
 <!-- ============ 侧边栏 ============ -->
 <aside class="rail" id="rail">
+  <div class="rail-art" aria-hidden="true"></div>
   <div class="rail-head">
     <div class="avatar-ring"><div class="avatar">雨</div></div>
     <h1 class="rail-name">姜雨涵</h1>
@@ -43,7 +46,7 @@
     <div class="rail-tools">
       <button class="icon-btn" id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
       <button class="icon-btn" id="copyBtn" data-mail="3356559040@qq.com" title="复制邮箱" aria-label="复制邮箱">✉️</button>
-      <span class="rail-note">v2.0</span>
+      <button class="icon-btn" id="wallBtn" title="更换壁纸" aria-label="更换壁纸">🖼️</button>
     </div>
   </div>
 </aside>
@@ -294,9 +297,20 @@
 
   <footer class="footer">
     <p>© <span id="year"></span> 姜雨涵 · 沈阳理工大学 网络工程</p>
-    <p class="footer-sub">Built with ❤️ · Deployed on GitHub Pages</p>
+    <p class="footer-sub">Built with ❤️ · Deployed on GitHub Pages · 背景插画版权归原作者所有</p>
   </footer>
 </main>
+
+<div class="wall-panel" id="wallPanel">
+  <h4>背景壁纸</h4>
+  <div class="wall-opts">
+    <button class="wall-opt" data-wall="dark">暗色柔化</button>
+    <button class="wall-opt" data-wall="landscape">原图横版</button>
+    <button class="wall-opt" data-wall="portrait">原图竖版</button>
+    <button class="wall-opt" data-wall="blur">模糊背景</button>
+    <button class="wall-opt" data-wall="none" style="grid-column:span 2">纯色背景</button>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 <script src="script.js"></script>

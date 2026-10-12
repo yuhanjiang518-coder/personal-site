@@ -6,6 +6,158 @@
   var $  = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
+
+  /* ---------- 0. 加载动画 ---------- */
+  (function initLoader() {
+    var loader = $('#loader');
+    if (!loader) return;
+
+    var bar   = $('#loaderBar');
+    var msgEl = $('#loaderMsg');
+    var pctEl = $('#loaderPct');
+
+    var reduce = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var seen = false;
+    try { seen = sessionStorage.getItem('jyh-booted') === '1'; } catch (e) {}
+
+    function finish() {
+      loader.classList.add('done');
+      document.body.classList.add('loaded');
+      try { sessionStorage.setItem('jyh-booted', '1'); } catch (e) {}
+      setTimeout(function () {
+        if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+      }, 700);
+      // 让首屏动画从头播放
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    // 无障碍 / 重复访问 / 无 JS 动画能力 → 直接跳过
+    if (reduce || seen) { finish(); return; }
+
+    // 锁定滚动，避免加载时背景滑动
+    document.documentElement.style.overflow = 'hidden';
+
+    var MESSAGES = [
+      [0,  '初始化环境…'],
+      [18, '加载背景插画…'],
+      [42, '解析样式表…'],
+      [62, '启动交互脚本…'],
+      [80, '渲染页面结构…'],
+      [93, '准备就绪']
+    ];
+
+    var progress = 0;
+    var target   = 0;
+    var done     = false;
+
+    function label(p) {
+      var out = MESSAGES[0][1];
+      for (var i = 0; i < MESSAGES.length; i++) {
+        if (p >= MESSAGES[i][0]) out = MESSAGES[i][1];
+      }
+      return out;
+    }
+
+    function paint(p) {
+      var v = Math.max(0, Math.min(100, Math.round(p)));
+      if (bar)   bar.style.width = v + '%';
+      if (pctEl) pctEl.textContent = v;
+      if (msgEl) {
+        var t = label(v);
+        if (msgEl.textContent !== t) msgEl.textContent = t;
+      }
+    }
+
+    // 真实进度：统计已完成的加载项
+    var assets = [];
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) assets.push(imgs[i]);
+
+    // 背景图（CSS 里的）+ 主资源
+    ['assets/bg-dark.webp', 'assets/bg-rail.webp'].forEach(function (src) {
+      var im = new Image();
+      im.src = src;
+      assets.push(im);
+    });
+
+    var total = assets.length || 1;
+    var loadedCount = 0;
+
+    function onAsset() {
+      loadedCount++;
+      target = Math.min(88, (loadedCount / total) * 88);
+    }
+    assets.forEach(function (im) {
+      if (im.complete) { onAsset(); return; }
+      im.addEventListener('load',  onAsset, { once: true });
+      im.addEventListener('error', onAsset, { once: true });
+    });
+
+    // 页面本身 ready 后推进到 95
+    if (document.readyState === 'complete') {
+      target = Math.max(target, 95);
+    } else {
+      window.addEventListener('load', function () {
+        target = Math.max(target, 95);
+      }, { once: true });
+    }
+
+    var t0 = Date.now();
+    var MIN_MS = 900;    // 最短展示时间，避免闪一下就没了
+    var MAX_MS = 2800;   // 硬上限，卡住也一定能进
+    var EASE   = 0.22;
+
+    var timer = setInterval(function () {
+      var elapsed = Date.now() - t0;
+
+      // 缓和跟随目标
+      var ceiling = elapsed >= MIN_MS ? 100 : 94;
+      var goal = Math.min(target, ceiling);
+
+      // 时间兜底：真卡住时才强行推进
+      if (elapsed > MAX_MS * 0.55) {
+        goal = Math.max(goal, Math.min(100, 55 + (elapsed / MAX_MS) * 60));
+      }
+
+      progress += (goal - progress) * EASE;
+
+      // 临近 MAX_MS 时线性补足，避免指数收敛拖尾
+      if (elapsed >= MAX_MS * 0.7) {
+        var forced = 100 * Math.min(1, (elapsed - MAX_MS * 0.7) / (MAX_MS * 0.3));
+        if (forced > progress) progress += (forced - progress) * 0.4;
+      }
+
+      if (goal >= 100 && progress > 99.4) progress = 100;
+      paint(progress);
+
+      if (!done && elapsed >= MIN_MS && progress >= 99.9) {
+        done = true;
+        clearInterval(timer);
+        paint(100);
+        document.documentElement.style.overflow = '';
+        setTimeout(finish, 300);
+      }
+      if (!done && elapsed >= MAX_MS) {
+        done = true;
+        clearInterval(timer);
+        paint(100);
+        document.documentElement.style.overflow = '';
+        setTimeout(finish, 200);
+      }
+    }, 40);
+
+    // 万一用户切走了页面，回来立即收尾
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden || done) return;
+      var el = Date.now() - t0;
+      if (el > MIN_MS) {
+        target = 100;
+      }
+    });
+  })();
+
   /* ---------- 1. 打字机 ---------- */
   var phrases = [
     '网络工程 · 本科生',

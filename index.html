@@ -11,6 +11,34 @@
 </head>
 <body>
 
+
+<!-- ============ 加载动画 ============ -->
+<div class="loader" id="loader" role="status" aria-live="polite" aria-label="页面加载中">
+  <div class="loader-bg" aria-hidden="true"></div>
+
+  <div class="loader-inner">
+    <div class="loader-brand">
+      <span class="lb-mark">向</span>
+      <div class="lb-text">
+        <span class="lb-name">向き</span>
+        <span class="lb-sub">写代码，也写点生活</span>
+      </div>
+    </div>
+
+    <div class="loader-line" aria-hidden="true">
+      <i id="loaderBar"></i>
+    </div>
+
+    <div class="loader-status">
+      <span class="loader-prompt">&gt;</span>
+      <span class="loader-msg" id="loaderMsg">正在加载…</span>
+      <span class="loader-caret" aria-hidden="true"></span>
+    </div>
+
+    <div class="loader-pct"><span id="loaderPct">0</span>%</div>
+  </div>
+</div>
+
 <div class="bg" aria-hidden="true"></div>
 <div class="bg-veil" aria-hidden="true"></div>
 <div class="bg-glow glow-1" aria-hidden="true"></div>

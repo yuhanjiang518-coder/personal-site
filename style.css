@@ -1,5 +1,5 @@
 /* ==========================================================
-   姜雨涵 · 个人主页 v3  |  style.css
+   向き · 个人主页 v3  |  style.css
    背景：《魔女の旅々》风格的森林与旅途
    配色取自插画本身：橄榄绿 / 暖金 / 蝶粉
    ========================================================== */
@@ -562,6 +562,62 @@ html[data-theme="light"] .toast{color:#fff}
 .link:hover{border-bottom-color:var(--accent);color:var(--accent)}
 .link::after{content:" ↗";font-size:11px;opacity:.7}
 
+
+/* ---------- 游戏口味 ---------- */
+.sub-title{
+  font-size:15px;font-weight:700;color:var(--text);
+  margin:34px 0 15px;display:flex;align-items:center;gap:10px;
+}
+.sub-title::before{
+  content:"";width:3px;height:16px;border-radius:2px;flex:none;
+  background:linear-gradient(180deg,var(--accent),var(--accent-2));
+}
+
+.games{
+  display:grid;gap:15px;
+  grid-template-columns:repeat(auto-fit,minmax(255px,1fr));
+}
+.game{
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;transition:.3s;position:relative;overflow:hidden;
+  background:var(--panel-2);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:var(--shadow);
+}
+.game::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  opacity:0;transition:opacity .3s;
+}
+.game:hover{transform:translateY(-5px);border-color:var(--accent)}
+.game:hover::before{opacity:1}
+
+.game-head{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.game-ico{
+  font-size:22px;flex:none;width:40px;height:40px;border-radius:11px;
+  display:grid;place-items:center;
+  background:var(--soft-2);border:1px solid var(--line);
+  transition:transform .3s;
+}
+.game:hover .game-ico{transform:scale(1.1) rotate(-6deg)}
+.game-head h4{font-size:15.5px;font-weight:700;color:var(--text)}
+.game-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:13px}
+
+.game-tags{display:flex;gap:6px;flex-wrap:wrap}
+.game-tags span{
+  font-size:11.5px;padding:4px 10px;border-radius:7px;
+  background:var(--soft);border:1px solid var(--line);
+  color:var(--muted);transition:.22s;
+}
+.game-tags span:hover{
+  color:var(--accent);border-color:var(--accent);
+  background:rgba(var(--accent-rgb),.12);transform:translateY(-2px);
+}
+
+/* 「玩游戏」总卡横跨整行 */
+.hobby-wide{grid-column:1/-1}
+.hobby-wide p{max-width:640px}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:1100px){
   :root{--rail:222px}
@@ -585,7 +641,7 @@ html[data-theme="light"] .toast{color:#fff}
   .hero-socials{justify-content:center}
 }
 @media (max-width:520px){
-  .cards,.hobbies,.sites{grid-template-columns:1fr}
+  .cards,.hobbies,.sites,.games{grid-template-columns:1fr}
   .hero-title{letter-spacing:-1px}
   .contact-actions .btn{flex:1;justify-content:center}
   .mini-grid{grid-template-columns:repeat(3,1fr);gap:7px}

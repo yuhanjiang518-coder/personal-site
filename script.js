@@ -1,5 +1,5 @@
 /* ==========================================================
-   姜雨涵 · 个人主页 v2  |  script.js
+   向き · 个人主页 v2  |  script.js
    ========================================================== */
 (function () {
   'use strict';
@@ -174,7 +174,7 @@
   var mailBtn = $('#mailBtn');
   if (mailBtn) {
     mailBtn.setAttribute('href',
-      'mailto:3356559040@qq.com?subject=' + encodeURIComponent('你好，姜雨涵！'));
+      'mailto:3356559040@qq.com?subject=' + encodeURIComponent('你好，向き！'));
   }
 
   /* ---------- 12. 主题切换 ---------- */

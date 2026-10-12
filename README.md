@@ -1,4 +1,4 @@
-# 姜雨涵 · 个人主页
+# 向き · 个人主页
 
 > 写代码，也写点生活
 
@@ -29,6 +29,17 @@
 - 深色氤氲主题，粉色渐变点缀色
 - 背景光晕（orb）与玻璃拟态（backdrop-filter）
 - 深色 / 浅色双主题，自动跟随系统并记住选择
+
+**游戏口味**
+
+按四类展示常玩游戏：
+
+| 分类 | 游戏 |
+|---|---|
+| 音游 | Phigros、Rizline、Orzmic、世界计划 |
+| 类银河恶魔城 | 空洞骑士、空洞骑士：丝之歌、奥日、苍翼：混沌效应 |
+| Galgame | 刻之樱、诗歌之樱、口袋夏日 |
+| 沙盒 / Roguelike | 泰拉瑞亚、死亡细胞、杀戮尖塔 |
 
 **账号链接**
 - 侧边栏头像下方：GitHub / Bilibili 两个图标按钮
@@ -103,6 +114,7 @@ git push -u origin main
 | 最近在做 | `<section id="skills">` 里的 `.doing` 列表 |
 | 项目卡片 | `<section id="projects">` 里的 `.card` |
 | 兴趣爱好 | `<section id="life">` 里的 `.hobby` |
+| 游戏口味 / 常玩游戏 | `<section id="life">` 里的 `.game`（4 类，改 `.game-tags` 里的游戏名） |
 | 常去的网站 | `<section id="sites">` 里的 `.site` 链接 |
 | 邮箱 / 联系方式 | `<section id="contact">` |
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |
@@ -132,4 +144,4 @@ git push -u origin main
 
 ---
 
-© 姜雨涵 · 沈阳理工大学 网络工程
+© 向き · 沈阳理工大学 网络工程

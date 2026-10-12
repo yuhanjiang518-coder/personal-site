@@ -158,27 +158,6 @@
     });
   })();
 
-  /* ---------- 旧锚点兼容：老链接自动跳到新页面 ---------- */
-  (function legacyRedirect() {
-    var MAP = {
-      skills:   'study.html#skills',
-      roadmap:  'study.html#roadmap',
-      courses:  'study.html#courses',
-      major:    'study.html#major',
-      projects: 'study.html#projects',
-      life:     'life.html#life',
-      sites:    'life.html#sites',
-      anime:    'life.html#anime',
-      games:    'life.html#games'
-    };
-    var hash = location.hash ? location.hash.slice(1) : '';
-    if (!hash || !MAP[hash]) return;
-    var here = location.pathname.split('/').pop() || 'index.html';
-    // 只有在首页时才重定向；已经在目标页就什么都不做
-    if (here !== 'index.html' && here !== '') return;
-    location.replace(MAP[hash]);
-  })();
-
   /* ---------- 1. 打字机 ---------- */
   var phrases = [
     '网络工程 · 本科生',
@@ -199,12 +178,14 @@
   }
   if (typedEl) setTimeout(type, 600);
 
-  /* ---------- 2. 滚动显现 ---------- */
-  var revealTargets = $$('.section > *, .hero-main, .hero-side, .panel, .card, .hobby, .site');
+  /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ---------- */
+  var revealSel = '.section > *, .hero-main, .hero-side, .panel, .card, .hobby, .site, .game, .anime-card, .rm-item, .mx-group, .page-head';
+  var revealTargets = $$(revealSel);
   revealTargets.forEach(function (el) { el.classList.add('reveal'); });
 
+  var io = null;
   if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (es) {
+    io = new IntersectionObserver(function (es) {
       es.forEach(function (e, i) {
         if (!e.isIntersecting) return;
         var el = e.target;
@@ -212,9 +193,20 @@
         io.unobserve(el);
       });
     }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
-    revealTargets.forEach(function (el) { io.observe(el); });
-  } else {
-    revealTargets.forEach(function (el) { el.classList.add('show'); });
+  }
+
+  // 切换视图时调用：把该视图内还没显现的元素重新纳入观察
+  function armReveal(scope) {
+    var nodes = scope ? scope.querySelectorAll(revealSel) : [];
+    if (!nodes.length && scope) nodes = scope.querySelectorAll('.reveal');
+    if (!io) {
+      Array.prototype.forEach.call(nodes, function (el) { el.classList.add('show'); });
+      return;
+    }
+    Array.prototype.forEach.call(nodes, function (el) {
+      if (el.classList.contains('show')) return;
+      io.observe(el);
+    });
   }
 
   /* ---------- 3. 技能条 ---------- */
@@ -264,81 +256,148 @@
   window.addEventListener('resize', onScroll);
   onScroll();
 
-  /* ---------- 6. 导航高亮（跨页 + scroll spy） ---------- */
-  var links = $$('.rail-link');
+  /* ---------- 6. 视图切换（不刷新、不改 URL） ---------- */
+  var views    = $$('.view');
+  var links    = $$('.rail-link');
 
-  // 6a. 当前页高亮（由 build 时写死的 .active 保证），这里补一条保险
-  var here = location.pathname.split('/').pop() || 'index.html';
-  if (here === '') here = 'index.html';
-
-  // 6b. 同页内的子锚点高亮（仅对本页存在的锚点做 spy）
-  var samePage = links.filter(function (a) {
-    var href = a.getAttribute('href') || '';
-    if (href.indexOf('#') === -1) return here === href;      // 纯文件名链接
-    var filePart = href.split('#')[0] || 'index.html';
-    return filePart === here;
-  });
-
-  var pairs = samePage.map(function (a) {
-    var id = (a.getAttribute('href') || '').split('#')[1];
-    return { a: a, el: id ? document.getElementById(id) : null };
-  }).filter(function (p) { return p.el; });
-
-  function spy() {
-    if (!pairs.length) return;
-    var pos = window.scrollY + window.innerHeight * 0.3;
-    var best = null;
-    pairs.forEach(function (p) {
-      if (p.el.offsetTop <= pos) best = p;
-    });
-    // 页面底部时选最后一个
-    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 60) {
-      best = pairs[pairs.length - 1];
+  function currentView() {
+    for (var i = 0; i < views.length; i++) {
+      if (!views[i].hidden) return views[i];
     }
-    pairs.forEach(function (p) { p.a.classList.toggle('active', p === best); });
-    // 没有匹配到任何 section 时，回退到本页主链接
-    if (!best) {
-      links.forEach(function (a) {
-        var href = a.getAttribute('href') || '';
-        if (href === here || href === here + '#') a.classList.add('active');
+    return views[0];
+  }
+
+  // 找出每个 section 属于哪个视图
+  function viewOf(el) {
+    var n = el;
+    while (n && n !== document.body) {
+      if (n.classList && n.classList.contains('view')) return n;
+      n = n.parentNode;
+    }
+    return null;
+  }
+
+  // 切到指定视图；立即滚到目标锚点或顶部
+  function showView(name, anchorId, instant) {
+    var target = null;
+    Array.prototype.forEach.call(views, function (v) {
+      if (v.getAttribute('data-view') === name) target = v;
+    });
+    if (!target) target = views[0];
+
+    var changed = target.hidden;
+    Array.prototype.forEach.call(views, function (v) { v.hidden = (v !== target); });
+
+    if (changed) {
+      // 重新触发该视图内的入场动画
+      Array.prototype.forEach.call(target.querySelectorAll('.reveal'), function (el) {
+        el.classList.remove('show');
+      });
+      requestAnimationFrame(function () {
+        refillBars(target);
+        armReveal(target);
       });
     }
+
+    // 定位
+    var el = anchorId ? document.getElementById(anchorId) : null;
+    if (el && viewOf(el) === target) {
+      var top = el.offsetTop - 22;
+      window.scrollTo({ top: top, behavior: instant ? 'auto' : 'smooth' });
+    } else if (changed) {
+      window.scrollTo({ top: 0, behavior: instant ? 'auto' : 'smooth' });
+    }
+    updateActive(name, anchorId);
+    onScroll();
   }
-  window.addEventListener('scroll', spy, { passive: true });
-  window.addEventListener('resize', spy);
-  spy();
 
-  /* ---------- 7. 平滑滚动（仅同页锚点） ---------- */
-  $$('a[href^="#"], a[href*=".html#"]').forEach(function (a) {
+  function updateActive(viewName, anchorId) {
+    links.forEach(function (a) {
+      var linkView = a.getAttribute('data-view');
+      var linkAnchor = a.getAttribute('data-anchor');
+      var on = false;
+      if (anchorId && linkAnchor === anchorId) on = true;
+      else if (!anchorId && linkView === viewName) on = true;
+      a.classList.toggle('active', on);
+    });
+  }
+
+  // 点击导航
+  links.forEach(function (a) {
     a.addEventListener('click', function (e) {
-      var href = a.getAttribute('href') || '';
-      var parts = href.split('#');
-      var filePart = parts[0];
-      var id = parts[1];
-      if (!id) return;
-
-      var sameFile = !filePart || filePart === here;
-      if (!sameFile) return;              // 跨页：让浏览器正常跳转
-
-      var t = document.getElementById(id);
-      if (!t) return;
       e.preventDefault();
-      window.scrollTo({ top: t.offsetTop - 22, behavior: 'smooth' });
-      if (history.replaceState) history.replaceState(null, '', '#' + id);
+      var anchor = a.getAttribute('data-anchor');
+      var el = anchor ? document.getElementById(anchor) : null;
+      var v = el ? viewOf(el) : null;
+      var name = v ? v.getAttribute('data-view') : (a.getAttribute('data-view') || 'home');
+      showView(name, anchor, false);
       closeRail();
     });
   });
 
-  /* ---------- 7b. 带 hash 进来时滚动到目标 ---------- */
-  (function jumpToHash() {
-    var id = location.hash ? location.hash.slice(1) : '';
-    if (!id) return;
-    var t = document.getElementById(id);
-    if (!t) return;
-    setTimeout(function () {
-      window.scrollTo({ top: t.offsetTop - 22, behavior: 'auto' });
-    }, 60);
+  // 页内其他 # 链接（hero 按钮、卡片里的锚点）
+  $$('a[href^="#"]').forEach(function (a) {
+    if (a.classList.contains('rail-link')) return;
+    a.addEventListener('click', function (e) {
+      var id = (a.getAttribute('href') || '').slice(1);
+      if (!id) return;
+      var el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      var v = viewOf(el);
+      var name = v ? v.getAttribute('data-view') : 'home';
+      showView(name, id, false);
+    });
+  });
+
+  /* ---------- 6b. 首个视图：若带 hash 则定位 ---------- */
+  (function initView() {
+    var hash = location.hash ? location.hash.slice(1) : '';
+    var el = hash ? document.getElementById(hash) : null;
+    if (el) {
+      var v = viewOf(el);
+      showView(v ? v.getAttribute('data-view') : 'home', hash, true);
+    } else {
+      showView('home', null, true);
+    }
+    // 当前可见视图立即纳入观察，其余视图等切换时再说
+    armReveal(currentView());
   })();
+
+  /* ---------- 6c. 滚动时的高亮（视图内 spy） ---------- */
+  function spy() {
+    var v = currentView();
+    if (!v) return;
+    var vName = v.getAttribute('data-view');
+    // 当前视图内的锚点链接
+    var inner = links.filter(function (a) {
+      var el = document.getElementById(a.getAttribute('data-anchor') || '');
+      return el && viewOf(el) === v;
+    });
+    if (!inner.length) { updateActive(vName, null); return; }
+
+    var pos = window.scrollY + window.innerHeight * 0.3;
+    var best = inner[0];
+    inner.forEach(function (a) {
+      var el = document.getElementById(a.getAttribute('data-anchor'));
+      if (el && el.offsetTop <= pos) best = a;
+    });
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 60) {
+      best = inner[inner.length - 1];
+    }
+    // 只高亮最靠下的匹配项，但主链接（data-view）保持分组感
+    Array.prototype.forEach.call(links, function (a) { a.classList.remove('active'); });
+    best.classList.add('active');
+  }
+  window.addEventListener('scroll', spy, { passive: true });
+  window.addEventListener('resize', spy);
+
+  function refillBars(scope) {
+    (scope || document).querySelectorAll('.bar i').forEach(function (b) {
+      b.classList.remove('fill');
+      setTimeout(function () { b.classList.add('fill'); }, 160);
+    });
+  }
 
   /* ---------- 8. 移动端抽屉 ---------- */
   var rail = $('#rail'), toggle = $('#railToggle'), backdrop = null;

@@ -93,27 +93,33 @@
 
 ```
 personal-site/
-├── index.html    # 首页（首屏 + 关于我 + 联系我）
-├── study.html    # 学习 / 工作（技能 + 学习路线 + 课程矩阵 + 我的专业 + 项目）
-├── life.html     # 兴趣 / 日常（动漫口味 + 游戏口味 + 常去的地方）
-├── style.css     # 样式、主题变量与动画（三页共用）
-├── script.js     # 全部交互逻辑（三页共用）
+├── index.html    # 单文件，内含三个界面
+├── style.css     # 样式、主题变量与动画
+├── script.js     # 全部交互逻辑
 ├── assets/       # 背景插画（WebP，6 个尺寸/风格变体）
 ├── .nojekyll     # 告诉 GitHub Pages 不要跑 Jekyll
 └── README.md
 ```
 
-## 📄 三个页面
+## 📄 三个界面（同一个网址）
 
-| 页面 | URL | 内容 |
+整站是**一个 HTML 文件**，通过 `.view` 容器切换显示，**地址栏始终不变**。
+
+| 界面 | `data-view` | 内容 |
 |---|---|---|
-| 首页 | `/` | 首屏 Hero、关于我、联系我 |
-| 学习 / 工作 | `/study.html` | 技能与近况、学习路线、课程技能矩阵、我的专业、项目与收藏 |
-| 兴趣 / 日常 | `/life.html` | 动漫口味、游戏口味（音游/类银河恶魔城/Galgame/沙盒Roguelike）、常去的地方 |
+| 首页 | `home` | 首屏 Hero、关于我、联系我 |
+| 学习 / 工作 | `study` | 技能与近况、学习路线、课程技能矩阵、我的专业、项目与收藏 |
+| 兴趣 / 日常 | `life` | 动漫口味、游戏口味（音游/类银河恶魔城/Galgame/沙盒Roguelike）、常去的地方 |
 
-侧边栏导航按「首页 / 学习·工作 / 兴趣·日常」分组，子项直接跳到对应页面的锚点。
+**工作方式**
 
-**旧锚点兼容**：`index.html#skills`、`#roadmap`、`#life` 等老链接会自动重定向到新页面（`script.js` 里的 `legacyRedirect`）。
+- 侧栏链接带 `data-view` + `data-anchor`，点击时 `preventDefault()`，只切换 `.view[hidden]`，不跳页
+- 切换后自动滚到目标区块（`el.offsetTop - 22`，避开顶部进度条）
+- 切换时重放该界面的入场动画、重新触发技能条增长
+- 隐藏界面里的元素**不参与** `IntersectionObserver` 观察，切换时才纳入，避免"切过去发现是空白"
+- 支持带 hash 打开（如 `#games`）直接定位到对应界面
+
+> 早期版本曾经拆成 `study.html` / `life.html` 三个物理文件，后按需求合并回单文件。
 
 ## 🚀 本地预览
 

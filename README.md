@@ -6,7 +6,7 @@
 
 ## 🌐 在线访问
 
-https://<你的用户名>.github.io/personal-site/
+https://yuhanjiang518-coder.github.io/personal-site/
 
 ## ✨ 特性
 
@@ -43,7 +43,7 @@ python3 -m http.server 8000
 2. 推送代码：
 
 ```bash
-git remote add origin https://github.com/<你的用户名>/personal-site.git
+git remote add origin https://github.com/yuhanjiang518-coder/personal-site.git
 git branch -M main
 git push -u origin main
 ```
@@ -51,7 +51,7 @@ git push -u origin main
 3. 打开仓库 **Settings → Pages**
 4. **Source** 选择 `Deploy from a branch`
 5. **Branch** 选择 `main` + `/ (root)`，点击 **Save**
-6. 等待 1–2 分钟，访问 `https://<你的用户名>.github.io/personal-site/`
+6. 等待 1–2 分钟，访问 `https://yuhanjiang518-coder.github.io/personal-site/`
 
 ## ✏️ 如何修改内容
 

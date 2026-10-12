@@ -30,6 +30,15 @@
 - 背景光晕（orb）与玻璃拟态（backdrop-filter）
 - 深色 / 浅色双主题，自动跟随系统并记住选择
 
+**账号链接**
+- 侧边栏头像下方：GitHub / Bilibili 两个图标按钮
+- 首屏底部：社交行（「在这些地方找到我」）
+- 「常去的地方」：两张带「本人」标记的账号卡片，排在第一位
+- 「联系我」：文字链接形式
+
+- GitHub — https://github.com/yuhanjiang518-coder
+- Bilibili — https://space.bilibili.com/627368437 （向きー）
+
 **交互**
 - 打字机动态标题
 - 滚动显现动画、技能进度条、数字增长动画
@@ -99,6 +108,7 @@ git push -u origin main
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |
 | 配色主题 | `style.css` 顶部的 `:root` 变量（改 `--accent` 换点缀色） |
 | 背景图 | 替换 `assets/` 里的 webp 文件（保持同名最省事） |
+| GitHub / B站 链接 | 全局搜索 `yuhanjiang518-coder` 或 `627368437` 批量替换 |
 
 改完 `git push`，GitHub Pages 会在 1 分钟内自动重新部署。
 

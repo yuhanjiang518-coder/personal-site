@@ -503,6 +503,65 @@ html[data-theme="light"] .toast{color:#fff}
   transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
 .reveal.show{opacity:1;transform:translateY(0)}
 
+
+/* ---------- 社交账号按钮（侧边栏） ---------- */
+.socials{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;
+}
+.social{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 8px;border-radius:11px;
+  border:1px solid var(--line);background:var(--soft);
+  color:var(--muted);text-decoration:none;
+  font-size:12.5px;font-weight:600;transition:.25s;
+}
+.social svg{flex:none;transition:transform .25s}
+.social:hover{
+  color:var(--text);border-color:var(--accent);
+  background:rgba(var(--accent-rgb),.14);transform:translateY(-2px);
+}
+.social:hover svg{transform:scale(1.12)}
+/* GitHub 与 B 站各自品牌的悬浮色 */
+.social[href*="github.com"]:hover{border-color:#8ea6ff;background:rgba(142,166,255,.14)}
+.social[href*="bilibili.com"]:hover{border-color:#ff8fb1;background:rgba(255,143,177,.14);color:#ffb3c9}
+
+/* ---------- 社交行（首屏） ---------- */
+.hero-socials{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  margin-top:24px;padding-top:20px;border-top:1px solid var(--line);
+}
+.hs-label{font-size:12px;color:var(--faint);letter-spacing:.06em}
+.hs{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--soft);
+  color:var(--muted);text-decoration:none;
+  font-size:12.5px;font-weight:600;transition:.25s;
+}
+.hs:hover{color:var(--text);border-color:var(--accent);transform:translateY(-2px)}
+.hs[href*="github.com"]:hover{border-color:#8ea6ff;background:rgba(142,166,255,.16)}
+.hs[href*="bilibili.com"]:hover{border-color:#ff8fb1;background:rgba(255,143,177,.16);color:#ffb3c9}
+
+/* ---------- 「本人」标记 ---------- */
+.me-tag{
+  font-style:normal;font-size:10px;font-weight:700;
+  padding:1px 7px;border-radius:999px;margin-left:6px;
+  background:rgba(var(--accent-rgb),.22);color:var(--accent);
+  border:1px solid rgba(var(--accent-rgb),.4);
+  vertical-align:middle;
+}
+.site-me{border-color:rgba(var(--accent-rgb),.28)}
+.site-me:hover{border-color:var(--accent);background:rgba(var(--accent-rgb),.1)}
+
+/* ---------- 正文里的链接 ---------- */
+.link{
+  color:var(--accent);text-decoration:none;
+  border-bottom:1px solid rgba(var(--accent-rgb),.4);
+  transition:.2s;font-family:var(--mono);font-size:13px;
+}
+.link:hover{border-bottom-color:var(--accent);color:var(--accent)}
+.link::after{content:" ↗";font-size:11px;opacity:.7}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:1100px){
   :root{--rail:222px}
@@ -523,6 +582,7 @@ html[data-theme="light"] .toast{color:#fff}
   .content{margin-left:0;padding:70px clamp(16px,5vw,26px) 24px}
   .hero-main{padding:24px 20px}
   .wall-panel{right:12px;bottom:12px;width:calc(100% - 24px);max-width:300px}
+  .hero-socials{justify-content:center}
 }
 @media (max-width:520px){
   .cards,.hobbies,.sites{grid-template-columns:1fr}
@@ -531,6 +591,9 @@ html[data-theme="light"] .toast{color:#fff}
   .mini-grid{grid-template-columns:repeat(3,1fr);gap:7px}
   .mini{padding:11px 5px}
   .mini b{font-size:19px}
+  .social span{display:none}
+  .social{padding:9px 6px}
+  .socials{grid-template-columns:repeat(2,1fr)}
 }
 
 @media (prefers-reduced-motion:reduce){

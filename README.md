@@ -38,8 +38,19 @@
 |---|---|
 | 音游 | Phigros、Rizline、Orzmic、世界计划 |
 | 类银河恶魔城 | 空洞骑士、空洞骑士：丝之歌、奥日、苍翼：混沌效应 |
-| Galgame | 刻之樱、诗歌之樱、口袋夏日 |
+| Galgame | 罚抄、刻之樱、诗歌之樱、口袋夏日 |
 | 沙盒 / Roguelike | 泰拉瑞亚、死亡细胞、杀戮尖塔 |
+
+**动漫口味**
+
+| 作品 | 作者 |
+|---|---|
+| JoJo 的奇妙冒险 | 荒木飞吕彦 |
+| 魔女之旅 | 白石定规 · あずーる |
+| 我心里危险的东西 | 樱井纪雄 |
+| 碧蓝之海 | 井上坚二 · 吉冈公威 |
+
+封面用 CSS 渐变 + 汉字代替海报，**避免使用版权图片**。
 
 **账号链接**
 - 侧边栏头像下方：GitHub / Bilibili 两个图标按钮
@@ -115,6 +126,8 @@ git push -u origin main
 | 项目卡片 | `<section id="projects">` 里的 `.card` |
 | 兴趣爱好 | `<section id="life">` 里的 `.hobby` |
 | 游戏口味 / 常玩游戏 | `<section id="life">` 里的 `.game`（4 类，改 `.game-tags` 里的游戏名） |
+| 动漫口味 / 常看作品 | `<section id="life">` 里的 `.anime-card`（改 `<h4>` 标题与 `.anime-note`） |
+| 动漫封面配色 | `style.css` 里的 `.anime-jojo` / `.anime-elaina` / `.anime-bokuyaba` / `.anime-grandblue` |
 | 常去的网站 | `<section id="sites">` 里的 `.site` 链接 |
 | 邮箱 / 联系方式 | `<section id="contact">` |
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |

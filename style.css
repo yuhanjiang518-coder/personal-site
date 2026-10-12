@@ -618,6 +618,56 @@ html[data-theme="light"] .toast{color:#fff}
 .hobby-wide{grid-column:1/-1}
 .hobby-wide p{max-width:640px}
 
+
+/* ---------- 动漫口味 ---------- */
+.anime{
+  display:grid;gap:15px;
+  grid-template-columns:repeat(auto-fit,minmax(272px,1fr));
+}
+.anime-card{
+  display:flex;gap:14px;align-items:flex-start;
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px;transition:.3s;
+  background:var(--panel-2);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:var(--shadow);
+}
+.anime-card:hover{transform:translateY(-5px);border-color:var(--accent)}
+
+/* 封面：用渐变 + 一个大字代替海报，避免版权图 */
+.anime-cover{
+  width:66px;height:88px;flex:none;border-radius:11px;
+  display:grid;place-items:center;position:relative;overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 8px 20px -10px rgba(0,0,0,.7);
+}
+.anime-cover::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(255,255,255,.22),transparent 55%);
+  pointer-events:none;
+}
+.anime-mark{
+  font-family:var(--serif);font-size:31px;font-weight:700;
+  color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);
+  position:relative;z-index:1;line-height:1;
+}
+.anime-jojo     {background:linear-gradient(150deg,#2b1b4d,#7a3fa0 55%,#c0603f)}
+.anime-elaina   {background:linear-gradient(150deg,#4a6b3a,#8fa657 55%,#d9c46a)}
+.anime-bokuyaba {background:linear-gradient(150deg,#3b2145,#8d4a72 55%,#d98aa8)}
+.anime-grandblue{background:linear-gradient(150deg,#0d3550,#1d7fa8 55%,#5fc8d8)}
+
+.anime-body{flex:1;min-width:0}
+.anime-body h4{
+  font-size:15px;font-weight:700;color:var(--text);
+  margin-bottom:3px;line-height:1.4;
+}
+.anime-meta{
+  font-size:11.5px;color:var(--accent);
+  margin-bottom:7px;font-family:var(--mono);
+  letter-spacing:.01em;
+}
+.anime-note{font-size:12.5px;color:var(--muted);line-height:1.65}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:1100px){
   :root{--rail:222px}
@@ -641,7 +691,9 @@ html[data-theme="light"] .toast{color:#fff}
   .hero-socials{justify-content:center}
 }
 @media (max-width:520px){
-  .cards,.hobbies,.sites,.games{grid-template-columns:1fr}
+  .cards,.hobbies,.sites,.games,.anime{grid-template-columns:1fr}
+  .anime-cover{width:58px;height:78px}
+  .anime-mark{font-size:27px}
   .hero-title{letter-spacing:-1px}
   .contact-actions .btn{flex:1;justify-content:center}
   .mini-grid{grid-template-columns:repeat(3,1fr);gap:7px}

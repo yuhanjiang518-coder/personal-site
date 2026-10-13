@@ -12,24 +12,32 @@
 </head>
 <body>
 
-<!-- ============ 加载动画 ============ -->
+<!-- ============ 开屏动画 + 转场幕布 ============ -->
 <div class="loader" id="loader" role="status" aria-live="polite" aria-label="页面加载中">
+  <div class="curtain" id="curtain" aria-hidden="true"></div>
   <div class="loader-bg" aria-hidden="true"></div>
-  <div class="loader-inner">
-    <div class="loader-brand">
-      <span class="lb-mark">向</span>
-      <div class="lb-text">
-        <span class="lb-name">向き</span>
-        <span class="lb-sub">写代码，也写点生活</span>
-      </div>
+  <div class="loader-grain" aria-hidden="true"></div>
+
+  <div class="loader-core">
+    <div class="loader-emblem">
+      <svg viewBox="0 0 50 50" aria-hidden="true">
+        <circle class="le-track" cx="25" cy="25" r="20.5"></circle>
+        <circle class="le-arc"   cx="25" cy="25" r="20.5"></circle>
+      </svg>
+      <span class="le-mark">向</span>
     </div>
-    <div class="loader-line" aria-hidden="true"><i id="loaderBar"></i></div>
-    <div class="loader-status">
-      <span class="loader-prompt">&gt;</span>
-      <span class="loader-msg" id="loaderMsg">正在加载…</span>
-      <span class="loader-caret" aria-hidden="true"></span>
+
+    <div class="loader-word" aria-hidden="true">
+      <span class="lw-item">向</span><span class="lw-item">き</span>
     </div>
-    <div class="loader-pct"><span id="loaderPct">0</span>%</div>
+    <p class="loader-sub">写代码，也写点生活</p>
+    <p class="loader-en" aria-hidden="true">MUKI &nbsp;·&nbsp; PERSONAL SITE</p>
+
+    <div class="loader-meter" aria-hidden="true"><i id="loaderBar"></i></div>
+    <p class="loader-state">
+      <span id="loaderMsg">初始化环境…</span>
+      <span class="loader-num"><span id="loaderPct">0</span>%</span>
+    </p>
   </div>
 </div>
 

@@ -2038,3 +2038,12 @@ html[data-theme="light"] .elaina-feature::after{
 }
 /* 让三张卡 + 一张图共四列 */
 .now-grid{grid-template-columns:repeat(auto-fit,minmax(226px,1fr))}
+
+/* 构建标记：用于确认浏览器是否拿到最新文件 */
+.build-tag{
+  display:inline-block;margin-top:12px;
+  padding:5px 12px;border-radius:999px;
+  font-size:11.5px;letter-spacing:.02em;
+  color:var(--accent);
+  background:rgba(var(--accent-rgb),.12);
+}

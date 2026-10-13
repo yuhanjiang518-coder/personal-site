@@ -252,7 +252,7 @@
   <footer class="footer">
     <p>© <span id="year"></span> 向き · 沈阳理工大学 网络工程</p>
     <p class="footer-sub">Built with care · Deployed on GitHub Pages</p>
-    <p class="footer-credit">背景插画与角色版权归《魔女之旅》原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示；动漫区 Cosplay 照片来自 <a href="https://commons.wikimedia.org/wiki/File:Cosplay_of_Elaina_(2021_Nanjing_CE).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>（摄影 Leiem，CC BY-SA 4.0）。</p>
+    <p class="footer-credit">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
   </footer>
   </div>
 
@@ -584,10 +584,29 @@
 
     <h3 class="sub-title" id="anime">动漫口味</h3>
 
+    <!-- One live thing：旅人手记抽签（来自《魔女之旅》的旅途主题） -->
+    <section class="travel-draw" id="travelDraw" aria-labelledby="travelDrawTitle">
+      <div class="td-left">
+        <h4 id="travelDrawTitle">旅人手记</h4>
+        <p class="td-desc">伊蕾娜的旅途是一站一站记下来的。抽一张，看看今天落在哪一句上。</p>
+        <button class="btn btn-primary td-btn" id="tdBtn" type="button">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:7px"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>
+          抽一张
+        </button>
+      </div>
+      <figure class="td-card" id="tdCard" aria-live="polite">
+        <img src="assets/muki-art-cake.webp" alt="" width="512" height="512" loading="lazy" decoding="async" id="tdArt">
+        <blockquote>
+          <p id="tdText">按下「抽一张」，开始一段小小的旅途。</p>
+          <cite id="tdFrom">— 旅人手记</cite>
+        </blockquote>
+      </figure>
+    </section>
+
     <!-- 伊蕾娜专题：本站视觉的出处 -->
     <figure class="elaina-feature">
-      <img src="assets/elaina-wide.webp"
-           alt="伊蕾娜的 Cosplay：紫色魔女帽、银白长发、手持魔杖，站在漫展现场"
+      <img src="assets/muki-feature.webp"
+           alt="《魔女之旅》主角伊蕾娜的三张Q版插画：吃松饼、舔冰淇淋、拿蛋糕"
            width="1280" height="720" loading="lazy" decoding="async">
       <figcaption>
         <b>《魔女之旅》</b>
@@ -599,7 +618,7 @@
 
       <article class="anime-card">
         <div class="anime-cover">
-          <img src="assets/cover-witch.webp" alt="魔女帽与披风的特写" width="420" height="560" loading="lazy" decoding="async">
+          <img src="assets/cover-travel.webp" alt="伊蕾娜端着蛋糕的Q版插画" width="420" height="560" loading="lazy" decoding="async">
         </div>
         <div class="anime-body">
           <h4>JoJo 的奇妙冒险</h4>
@@ -610,7 +629,7 @@
 
       <article class="anime-card anime-feature">
         <div class="anime-cover anime-elaina">
-          <img src="assets/cover-elaina.webp" alt="伊蕾娜的 Cosplay：紫色魔女帽、银发、手持魔杖" width="420" height="560" loading="lazy" decoding="async">
+          <img src="assets/cover-elaina.webp" alt="伊蕾娜吃松饼的Q版插画" width="420" height="560" loading="lazy" decoding="async">
         </div>
         <div class="anime-body">
           <h4>魔女之旅</h4>
@@ -748,7 +767,7 @@
   <footer class="footer">
     <p>© <span id="year"></span> 向き · 沈阳理工大学 网络工程</p>
     <p class="footer-sub">Built with care · Deployed on GitHub Pages</p>
-    <p class="footer-credit">背景插画与角色版权归《魔女之旅》原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示；动漫区 Cosplay 照片来自 <a href="https://commons.wikimedia.org/wiki/File:Cosplay_of_Elaina_(2021_Nanjing_CE).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>（摄影 Leiem，CC BY-SA 4.0）。</p>
+    <p class="footer-credit">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
   </footer>
 </main>
 

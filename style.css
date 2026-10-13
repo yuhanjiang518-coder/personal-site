@@ -1109,7 +1109,7 @@ html[data-theme="light"] .toast{color:#fff}
 .social svg{flex:none;transition:transform .25s}
 .social:hover{
   color:var(--text);border-color:var(--accent);
-  background:rgba(var(--accent-rgb),.14);transform:translateY(-2px);
+  background:rgba(var(--accent-rgb),.14);
 }
 
 /* GitHub 与 B 站各自品牌的悬浮色 */
@@ -1180,7 +1180,7 @@ html[data-theme="light"] .toast{color:#fff}
   background:linear-gradient(90deg,var(--accent),var(--accent-2));
   opacity:0;transition:opacity .3s;
 }
-.game:hover{transform:translateY(-5px);border-color:var(--accent)}
+.game:hover{border-color:var(--accent)}
 .game:hover::before{opacity:1}
 
 .game-head{display:flex;align-items:center;gap:11px;margin-bottom:9px}
@@ -1205,7 +1205,7 @@ html[data-theme="light"] .toast{color:#fff}
 }
 .game-tags span:hover{
   color:var(--accent);border-color:var(--accent);
-  background:rgba(var(--accent-rgb),.12);transform:translateY(-2px);
+  background:rgba(var(--accent-rgb),.12);
 }
 
 /* 「玩游戏」总卡横跨整行 */
@@ -1226,7 +1226,7 @@ html[data-theme="light"] .toast{color:#fff}
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   box-shadow:var(--shadow);
 }
-.anime-card:hover{transform:translateY(-5px);border-color:var(--accent)}
+.anime-card:hover{border-color:var(--accent)}
 
 /* 封面：用渐变 + 一个大字代替海报，避免版权图 */
 .anime-cover{
@@ -1343,7 +1343,7 @@ html[data-theme="light"] .toast{color:#fff}
   font-size:12.5px;padding:5px 12px;border-radius:8px;
   border:1px solid var(--line);transition:.22s;cursor:default;
 }
-.mx:hover{transform:translateY(-2px)}
+.mx:hover{border-color:var(--accent)}
 .mx.lv-done{
   background:rgba(168,201,154,.15);color:#b6d9a8;
   border-color:rgba(168,201,154,.34);
@@ -1514,8 +1514,6 @@ html[data-theme="light"] .page-head h2{text-shadow:0 2px 12px rgba(255,255,255,.
   .rail-link:hover{transform:translateX(3px)}
   .icon-btn:hover{transform:translateY(-2px)}
   .btn:hover{transform:translateY(-2px)}
-  .card:hover{transform:translateY(-5px)}
-  .hobby:hover{transform:translateY(-5px)}
   .hobby:hover .hobby-ico{transform:scale(1.18) rotate(-7deg);transition:transform var(--dur-ui) var(--ease-out)}
   .site:hover{transform:translateX(5px)}
   .site:hover .site-arrow{transform:translate(2px,-2px);transition:transform var(--dur-pop) var(--ease-out)}
@@ -1750,3 +1748,61 @@ html[data-theme="light"] .elaina-feature::after{
 }
 .footer-credit a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .footer-credit a:hover{color:var(--accent)}
+
+
+/* ==========================================================
+   One live thing：旅人手记抽签
+   （规范要求：给访客一件真的能做的事，用主题自己的内容）
+   ========================================================== */
+.travel-draw{
+  display:grid;
+  grid-template-columns:1fr 1.05fr;
+  gap:clamp(18px,3vw,34px);
+  align-items:center;
+  padding:clamp(20px,3.2vw,32px);
+  margin-bottom:clamp(22px,3.4vw,34px);
+  border-radius:var(--radius);
+  background:var(--panel);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.td-left h4{
+  font-size:clamp(19px,2.4vw,23px);font-weight:800;
+  letter-spacing:-.3px;color:var(--text);margin-bottom:9px;
+}
+.td-desc{font-size:13.5px;color:var(--muted);line-height:1.75;margin-bottom:18px;max-width:40ch}
+.td-btn{width:auto}
+
+.td-card{
+  display:flex;align-items:center;gap:clamp(14px,2vw,20px);
+  margin:0;padding:clamp(14px,2vw,20px);
+  border-radius:var(--radius-sm);
+  background:var(--soft);
+  transition:opacity var(--dur-ui) var(--ease-out);
+}
+.td-card img{
+  flex:none;width:clamp(84px,13vw,120px);height:auto;
+  border-radius:12px;display:block;
+}
+.td-card blockquote{margin:0}
+.td-card p{
+  font-size:clamp(14px,1.85vw,16.5px);
+  line-height:1.78;color:var(--text);
+  font-family:var(--serif);
+}
+.td-card cite{
+  display:block;margin-top:11px;
+  font-size:12px;color:var(--faint);font-style:normal;letter-spacing:.02em;
+}
+/* 抽签时轻微闪一下，作为「换了一张」的反馈 */
+.td-card.swap{animation:td-swap 420ms var(--ease-out)}
+@keyframes td-swap{
+  0%{opacity:1;transform:translateY(0)}
+  38%{opacity:.25;transform:translateY(7px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+
+@media (max-width:760px){
+  .travel-draw{grid-template-columns:1fr;gap:20px}
+  .td-card{flex-direction:column;align-items:flex-start}
+  .td-card img{width:104px}
+}

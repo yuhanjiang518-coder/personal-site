@@ -307,7 +307,7 @@
   if (typedEl) setTimeout(type, 600);
 
   /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ---------- */
-  var revealSel = '.section > *, .panel, .card, .hobby, .site, .game, .anime-card, .rm-item, .mx-group, .page-head, .hero-inner > *';
+  var revealSel = '.section > *, .panel, .card, .hobby, .site, .game, .anime-card, .rm-item, .mx-group, .page-head';
   var revealTargets = $$(revealSel);
   revealTargets.forEach(function (el) { el.classList.add('reveal'); });
 

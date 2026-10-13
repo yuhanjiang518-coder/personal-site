@@ -1562,29 +1562,30 @@ html:not(.js) .sec-head{
   opacity:1;transform:none;clip-path:none;
 }
 
-/* --- 手法 A：标题走「遮罩上升」，不是淡入 --- */
+/* --- 手法 A：标题「整块上浮淡入」---
+   原先用 clip-path 做遮罩上升；切页时 transition 可能不触发，
+   标题会被永久裁掉。改为 opacity + transform，稳定可还原。 */
 html.js .page-head,
 html.js .sec-head,
 html.js .reveal.rise-mask{
-  opacity:1;
-  transform:none;
-  clip-path:inset(0 0 100% 0);
-  transition:clip-path 900ms var(--ease-in-out);
+  opacity:0;
+  transform:translateY(16px);
+  transition:opacity 620ms var(--ease-out),
+             transform 760ms var(--ease-out);
   transition-delay:calc(var(--stagger-i, 0) * 70ms);
 }
 html.js .page-head.show,
 html.js .sec-head.show,
-html.js .reveal.rise-mask.show{clip-path:inset(0 0 0 0)}
+html.js .reveal.rise-mask.show{opacity:1;transform:none}
 
-/* 标题内部再抬一点，形成「从基线后面升起来」的层次
-   （同样只在 JS 可用时隐藏，无 JS 直接可见） */
+/* 标题内部错开一点点，形成层次 */
 html.js .page-head > *,
 html.js .sec-head > *{
   display:block;
-  transform:translateY(18px);
+  transform:translateY(10px);
   opacity:0;
-  transition:transform 900ms var(--ease-out),opacity 700ms var(--ease-out);
-  transition-delay:calc(var(--stagger-i, 0) * 70ms + 60ms);
+  transition:transform 700ms var(--ease-out),opacity 620ms var(--ease-out);
+  transition-delay:calc(var(--stagger-i, 0) * 70ms + 90ms);
 }
 html.js .page-head.show > *,
 html.js .sec-head.show > *{transform:none;opacity:1}
@@ -1607,19 +1608,22 @@ html.js .site.show,
 html.js .game.show,
 html.js .anime-card.show{opacity:1;transform:none}
 
-/* --- 手法 C：面板/图片走「遮罩横向扫开」 --- */
+/* --- 手法 C：面板/矩阵/路线走「淡入 + 轻微上浮」 ---
+   原先用 clip-path: inset(0 100% 0 0) 做横向扫开，但在「隐藏视图内
+   切页后立刻加 .show」的场景下，transition 可能不触发，元素被永久裁掉
+   → 整块内容消失。改用 transform/opacity，任何情况下都能还原。 */
 html.js .panel,
 html.js .mx-group,
 html.js .rm-item{
-  opacity:1;
-  transform:none;
-  clip-path:inset(0 100% 0 0);
-  transition:clip-path 820ms var(--ease-in-out);
+  opacity:0;
+  transform:translateY(16px);
+  transition:opacity 640ms var(--ease-out),
+             transform 760ms var(--ease-out);
   transition-delay:calc(var(--stagger-i, 0) * 70ms);
 }
 html.js .panel.show,
 html.js .mx-group.show,
-html.js .rm-item.show{clip-path:inset(0 0 0 0)}
+html.js .rm-item.show{opacity:1;transform:none}
 
 /* --- 手法 D：其余（技能条容器等）只做淡入，不位移 --- */
 .reveal.fade-only{
@@ -2053,4 +2057,48 @@ html[data-theme="light"] .elaina-feature::after{
   font-size:11.5px;letter-spacing:.02em;
   color:var(--accent);
   background:rgba(var(--accent-rgb),.12);
+}
+
+
+/* ==========================================================
+   兜底：无论动画状态如何，内容都必须可见
+   做法——reveal 的隐藏态只在「JS 已就绪且尚未 show」时生效，
+   并且加一个不支持过渡属性时的直通规则。
+   ========================================================== */
+/* 浏览器不支持 transition 时（极旧内核），直接全部显示 */
+@supports not (transition: opacity 1s) {
+  html.js .reveal,
+  html.js .card,
+  html.js .hobby,
+  html.js .site,
+  html.js .game,
+  html.js .anime-card,
+  html.js .panel,
+  html.js .mx-group,
+  html.js .rm-item,
+  html.js .page-head,
+  html.js .sec-head,
+  html.js .page-head > *,
+  html.js .sec-head > *{
+    opacity:1 !important;
+    transform:none !important;
+    clip-path:none !important;
+  }
+}
+
+/* JS 报错时的兜底：body 没有 .loaded 说明脚本没跑完 → 全部显示 */
+html.js body:not(.loaded) .reveal,
+html.js body:not(.loaded) .card,
+html.js body:not(.loaded) .hobby,
+html.js body:not(.loaded) .site,
+html.js body:not(.loaded) .game,
+html.js body:not(.loaded) .anime-card,
+html.js body:not(.loaded) .panel,
+html.js body:not(.loaded) .mx-group,
+html.js body:not(.loaded) .rm-item,
+html.js body:not(.loaded) .page-head,
+html.js body:not(.loaded) .sec-head{
+  opacity:1 !important;
+  transform:none !important;
+  clip-path:none !important;
 }

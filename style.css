@@ -1932,3 +1932,109 @@ html[data-theme="light"] .elaina-feature::after{
   font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;
 }
 .method-card p{font-size:13px;color:var(--muted);line-height:1.78}
+
+
+/* ==========================================================
+   转场时出现的伊蕾娜（趴着休息）
+   只在切页那一瞬间露面，笑点式的过场，不长期占屏
+   ========================================================== */
+#curtain2 .c2-figure{
+  position:absolute;left:50%;top:50%;z-index:9;
+  transform:translate(-50%,-50%) scale(.86) rotate(-3deg);
+  opacity:0;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  pointer-events:none;
+  transition:opacity 220ms ease,transform 420ms var(--ease-out);
+}
+#curtain2 .c2-figure img{
+  width:clamp(150px,26vw,230px);height:auto;
+  border-radius:18px;
+  box-shadow:0 26px 60px -22px rgba(0,0,0,.85);
+}
+#curtain2 .c2-text{
+  font-size:clamp(12px,1.6vw,14px);
+  font-weight:700;letter-spacing:.06em;
+  color:#20160c;
+  background:rgba(255,255,255,.92);
+  padding:5px 14px;border-radius:999px;
+  box-shadow:0 8px 22px -10px rgba(0,0,0,.5);
+}
+/* 幕布盖满时露脸 */
+#curtain2.on .c2-figure{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1) rotate(0deg);
+}
+/* 揭开前先收走，避免和内容抢视线 */
+#curtain2.on.off .c2-figure{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.9) rotate(2deg);
+  transition:opacity 180ms ease,transform 300ms ease;
+}
+
+@media (prefers-reduced-motion:reduce){
+  #curtain2 .c2-figure{display:none}
+}
+
+
+/* ==========================================================
+   正式自我介绍（图文并排）
+   ========================================================== */
+.intro-block{
+  display:grid;
+  grid-template-columns:minmax(0,240px) 1fr;
+  gap:clamp(20px,3.2vw,36px);
+  align-items:start;
+  margin-bottom:clamp(20px,3vw,28px);
+}
+.intro-art{
+  margin:0;border-radius:var(--radius);overflow:hidden;
+  background:var(--panel);
+}
+.intro-art img{display:block;width:100%;height:auto}
+.intro-art figcaption{
+  padding:11px 14px;
+  font-size:12px;color:var(--faint);letter-spacing:.04em;
+  border-top:1px solid var(--line);
+}
+.intro-body p{
+  font-size:14.5px;line-height:1.95;color:var(--muted);
+  margin-bottom:14px;
+}
+.intro-body p:last-child{margin-bottom:0}
+.intro-hi{
+  font-size:clamp(17px,2.3vw,20px) !important;
+  color:var(--text) !important;font-weight:700;
+  line-height:1.7 !important;
+}
+.intro-body strong{color:var(--text);font-weight:700}
+.intro-goal{
+  padding:15px 18px;
+  border-radius:var(--radius-sm);
+  background:var(--soft);
+  border-left:3px solid var(--accent);
+  font-size:13.5px;line-height:1.85;color:var(--muted);
+}
+.goal-label{
+  display:block;margin-bottom:5px;
+  font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--accent);
+}
+@media (max-width:760px){
+  .intro-block{grid-template-columns:1fr;gap:18px}
+  .intro-art{max-width:210px}
+}
+
+
+/* 「现在在做什么」右侧的休息插画 */
+.now-art{
+  margin:0;border-radius:var(--radius-sm);overflow:hidden;
+  background:var(--panel);
+  display:flex;flex-direction:column;
+}
+.now-art img{display:block;width:100%;height:auto;flex:1;object-fit:cover}
+.now-art figcaption{
+  padding:10px 14px;font-size:11.5px;color:var(--faint);
+  border-top:1px solid var(--line);
+}
+/* 让三张卡 + 一张图共四列 */
+.now-grid{grid-template-columns:repeat(auto-fit,minmax(226px,1fr))}

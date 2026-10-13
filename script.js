@@ -15,6 +15,8 @@
     var bar   = $('#loaderBar');
     var msgEl = $('#loaderMsg');
     var pctEl = $('#loaderPct');
+    var arc   = $('.le-arc');
+    var RING  = 128.8;            // 2 * PI * r(20.5)
 
     var reduce = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -22,19 +24,32 @@
     var seen = false;
     try { seen = sessionStorage.getItem('jyh-booted') === '1'; } catch (e) {}
 
-    function finish() {
-      loader.classList.add('done');
-      document.body.classList.add('loaded');
+    // skip=true 表示不做开屏动画（无障碍 / 二次访问），直接让位
+    function finish(skip) {
+      if (arc) arc.style.strokeDashoffset = '0';
+      if (bar) bar.style.width = '100%';
+      if (pctEl) pctEl.textContent = '100';
+
+      var riseDelay = skip ? 0 : 240;
+
+      // 起幕；幕布 0.9s + 最后一层错峰 0.22s + 余量
+      setTimeout(function () {
+        loader.classList.add('done');
+        document.body.classList.add('loaded');
+      }, riseDelay);
+
       try { sessionStorage.setItem('jyh-booted', '1'); } catch (e) {}
+
       setTimeout(function () {
         if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
-      }, 700);
+      }, riseDelay + (skip ? 0 : 900 + 220 + 260));
+
       // 让首屏动画从头播放
       window.dispatchEvent(new Event('resize'));
     }
 
     // 无障碍 / 重复访问 / 无 JS 动画能力 → 直接跳过
-    if (reduce || seen) { finish(); return; }
+    if (reduce || seen) { finish(true); return; }
 
     // 锁定滚动，避免加载时背景滑动
     document.documentElement.style.overflow = 'hidden';
@@ -64,6 +79,7 @@
       var v = Math.max(0, Math.min(100, Math.round(p)));
       if (bar)   bar.style.width = v + '%';
       if (pctEl) pctEl.textContent = v;
+      if (arc)   arc.style.strokeDashoffset = (RING * (1 - v / 100)).toFixed(2);
       if (msgEl) {
         var t = label(v);
         if (msgEl.textContent !== t) msgEl.textContent = t;
@@ -156,6 +172,19 @@
         target = 100;
       }
     });
+  })();
+
+  /* ---------- 0a. 转场幕布节点 ---------- */
+  var curtain2 = (function () {
+    if (!$('#loader')) return null;
+    if (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+    var el = document.createElement('div');
+    el.id = 'curtain2';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<i></i>';
+    document.body.appendChild(el);
+    return el;
   })();
 
   /* ---------- 0b. 粒子星空背景 ---------- */
@@ -405,8 +434,8 @@
     return null;
   }
 
-  // 切到指定视图；立即滚到目标锚点或顶部
-  function showView(name, anchorId, instant) {
+  // 真正切换 DOM。转场幕布会在这之前盖住整屏。
+  function swapView(name, anchorId) {
     var target = null;
     Array.prototype.forEach.call(views, function (v) {
       if (v.getAttribute('data-view') === name) target = v;
@@ -421,22 +450,62 @@
       Array.prototype.forEach.call(target.querySelectorAll('.reveal'), function (el) {
         el.classList.remove('show');
       });
-      requestAnimationFrame(function () {
-        refillBars(target);
-        armReveal(target);
-      });
+      refillBars(target);
+      armReveal(target);
     }
 
-    // 定位
+    // 定位（幕布盖着，用 auto 避免看到滚动过程）
     var el = anchorId ? document.getElementById(anchorId) : null;
     if (el && viewOf(el) === target) {
-      var top = el.offsetTop - 22;
-      window.scrollTo({ top: top, behavior: instant ? 'auto' : 'smooth' });
+      window.scrollTo({ top: el.offsetTop - 22, behavior: 'auto' });
     } else if (changed) {
-      window.scrollTo({ top: 0, behavior: instant ? 'auto' : 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
     updateActive(name, anchorId);
     onScroll();
+    return changed;
+  }
+
+  var transitioning = false;
+
+  // 切到指定视图；带幕布转场
+  function showView(name, anchorId, instant) {
+    // 同视图内跳锚点：不盖幕布，平滑滚过去就行
+    var sameView = false;
+    var probe = anchorId ? document.getElementById(anchorId) : null;
+    if (probe) {
+      var pv = viewOf(probe);
+      sameView = pv && pv.getAttribute('data-view') === name &&
+                 !pv.hidden;
+    }
+
+    var wantCurtain = curtain2 && !instant && !sameView && !transitioning;
+
+    if (wantCurtain) {
+      transitioning = true;
+      curtain2.classList.remove('off');
+      curtain2.classList.add('on');
+
+      // 等幕布落下（0.3s + 0.1s 错峰）
+      var tDrop = 420;
+      setTimeout(function () {
+        swapView(name, anchorId);
+        // 让浏览器先把新视图画出来，再揭开
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            curtain2.classList.add('off');
+            setTimeout(function () {
+              curtain2.classList.remove('on');
+              curtain2.classList.remove('off');
+              transitioning = false;
+            }, 720);
+          });
+        });
+      }, tDrop);
+      return;
+    }
+
+    swapView(name, anchorId);
   }
 
   function updateActive(viewName, anchorId) {

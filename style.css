@@ -1806,3 +1806,129 @@ html[data-theme="light"] .elaina-feature::after{
   .td-card{flex-direction:column;align-items:flex-start}
   .td-card img{width:104px}
 }
+
+
+/* ==========================================================
+   首页：现在在做什么 + 关于我的关键词区
+   ========================================================== */
+.now-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(258px,1fr));
+  gap:clamp(14px,2vw,20px);
+}
+.now-card{
+  padding:clamp(20px,2.8vw,26px);
+  border-radius:var(--radius-sm);
+  background:var(--panel);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  transition:border-color var(--dur-ui) ease,background-color var(--dur-ui) ease;
+}
+.now-card:hover{border-color:var(--accent);background:var(--soft)}
+.now-ico{
+  display:grid;place-items:center;
+  width:42px;height:42px;border-radius:12px;margin-bottom:15px;
+  color:var(--accent);background:var(--soft-2);
+}
+.now-ico-2{color:var(--accent-2)}
+.now-ico-3{color:var(--accent-3)}
+.now-card h3{
+  font-size:16.5px;font-weight:800;color:var(--text);
+  letter-spacing:-.2px;margin-bottom:9px;
+}
+.now-card p{font-size:13.5px;color:var(--muted);line-height:1.78}
+.now-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
+.now-tags span{
+  font-size:11.5px;padding:4px 10px;border-radius:7px;
+  background:var(--soft);color:var(--faint);
+}
+
+/* 关于我：左图右要点 */
+.about-grid{
+  display:grid;
+  grid-template-columns:minmax(0,300px) 1fr;
+  gap:clamp(18px,3vw,34px);
+  align-items:center;
+  margin-top:clamp(20px,3vw,30px);
+}
+.about-art{
+  margin:0;border-radius:var(--radius);overflow:hidden;
+  background:var(--panel);
+}
+.about-art img{display:block;width:100%;height:auto}
+.about-keys{display:flex;flex-direction:column;gap:clamp(13px,2vw,17px)}
+.key-row{display:flex;gap:14px;align-items:flex-start}
+.key-ico{
+  flex:none;display:grid;place-items:center;
+  width:38px;height:38px;border-radius:11px;
+  color:var(--accent);background:var(--soft);
+}
+.key-ico-2{color:var(--accent-2)}
+.key-ico-3{color:var(--accent-3)}
+.key-row b{display:block;font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.key-row p{font-size:13px;color:var(--muted);line-height:1.7}
+
+@media (max-width:760px){
+  .about-grid{grid-template-columns:1fr;gap:20px}
+  .about-art{max-width:220px}
+}
+
+
+/* ==========================================================
+   学习 / 工作 页横幅（这页原先完全没有图片）
+   ========================================================== */
+.study-banner{
+  display:grid;
+  grid-template-columns:minmax(0,260px) 1fr;
+  gap:clamp(18px,3vw,32px);
+  align-items:center;
+  margin:0 0 clamp(24px,3.6vw,38px);
+  padding:clamp(18px,2.6vw,26px);
+  border-radius:var(--radius);
+  background:var(--panel);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.study-banner img{
+  display:block;width:100%;height:auto;
+  border-radius:var(--radius-sm);
+  aspect-ratio:3/4;object-fit:cover;object-position:50% 42%;
+}
+.study-banner figcaption b{
+  display:block;font-size:clamp(19px,2.6vw,24px);font-weight:800;
+  letter-spacing:-.4px;color:var(--text);margin-bottom:9px;
+}
+.study-banner figcaption span{
+  display:block;font-size:13.5px;color:var(--muted);line-height:1.82;max-width:58ch;
+}
+@media (max-width:700px){
+  .study-banner{grid-template-columns:1fr;gap:16px}
+  .study-banner img{max-width:190px}
+}
+
+
+/* 学习方法：四条编号卡（编号是内容顺序，不是装饰） */
+.method-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
+  gap:clamp(13px,2vw,18px);
+  margin-top:clamp(24px,3.6vw,36px);
+}
+.method-card{
+  position:relative;
+  padding:clamp(19px,2.6vw,24px);
+  border-radius:var(--radius-sm);
+  background:var(--panel);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  transition:border-color var(--dur-ui) ease;
+}
+.method-card:hover{border-color:var(--accent)}
+.method-num{
+  display:block;
+  font-size:26px;font-weight:800;line-height:1;
+  color:var(--accent);opacity:.34;
+  margin-bottom:13px;
+  font-variant-numeric:tabular-nums;
+}
+.method-card h4{
+  font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;
+}
+.method-card p{font-size:13px;color:var(--muted);line-height:1.78}

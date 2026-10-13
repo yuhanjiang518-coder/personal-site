@@ -449,6 +449,13 @@ body[data-wall="none"] .hero-shade{
   background:radial-gradient(ellipse 70% 60% at 22% 45%, rgba(var(--accent-rgb),.07), transparent 70%);
 }
 
+
+/* 保险：hero 内的元素一律不走 reveal 系统（用 CSS 动画入场） */
+.hero-inner > .reveal,
+.hero-inner > .reveal.show{
+  opacity:1;transform:none;transition:none;
+}
+
 /* --- 漂浮光点 --- */
 .hero-sparks{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .hero-sparks i{

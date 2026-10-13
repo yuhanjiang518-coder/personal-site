@@ -195,7 +195,13 @@
     var el = document.createElement('div');
     el.id = 'curtain2';
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = '<i></i>';
+    // 三层幕布 + 中间一个「休息一下」的伊蕾娜（转场时短暂出现）
+    el.innerHTML =
+      '<i></i>' +
+      '<div class="c2-figure">' +
+        '<img src="assets/muki-art-tired.webp" alt="" width="512" height="512" decoding="async">' +
+        '<span class="c2-text">ちょっと待って…</span>' +
+      '</div>';
     document.body.appendChild(el);
     return el;
   })();

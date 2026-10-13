@@ -335,19 +335,37 @@
   }
   if (typedEl) setTimeout(type, 600);
 
-  /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ---------- */
+  /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ----------
+     错峰由 CSS 的 --stagger-i × 45ms 承担，这里只负责标序号和触发，
+     避免 setTimeout 排队导致长列表越来越慢。 */
   var revealSel = '.section > *, .panel, .card, .hobby, .site, .game, .anime-card, .rm-item, .mx-group, .page-head';
   var revealTargets = $$(revealSel);
   revealTargets.forEach(function (el) { el.classList.add('reveal'); });
 
+  // 同一组（同一个父元素）内的兄弟依次错峰，跨组重置
+  var STAGGER_STEP = 45;   // ms，落在规范建议的 30–80ms
+  var STAGGER_MAX  = 8;    // 最多叠 8 档（360ms），再长就一起出来
+  function assignStagger(scope) {
+    var groups = {};
+    Array.prototype.forEach.call(scope.querySelectorAll('.reveal'), function (el) {
+      var key = el.parentNode;
+      groups[key] = groups[key] || [];
+      groups[key].push(el);
+    });
+    Object.keys(groups).forEach(function (k) {
+      groups[k].forEach(function (el, i) {
+        el.style.setProperty('--stagger-i', Math.min(i, STAGGER_MAX));
+      });
+    });
+  }
+
   var io = null;
   if ('IntersectionObserver' in window) {
     io = new IntersectionObserver(function (es) {
-      es.forEach(function (e, i) {
+      es.forEach(function (e) {
         if (!e.isIntersecting) return;
-        var el = e.target;
-        setTimeout(function () { el.classList.add('show'); }, Math.min(i, 5) * 60);
-        io.unobserve(el);
+        e.target.classList.add('show');
+        io.unobserve(e.target);   // 只播一次，不在每次滚动时重放
       });
     }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
   }
@@ -356,6 +374,10 @@
   function armReveal(scope) {
     var nodes = scope ? scope.querySelectorAll(revealSel) : [];
     if (!nodes.length && scope) nodes = scope.querySelectorAll('.reveal');
+
+    // 错峰序号先标好，无 IO 的分支也要有（否则 CSS 拿到默认值 0，全挤在一起）
+    assignStagger(scope || document);
+
     if (!io) {
       Array.prototype.forEach.call(nodes, function (el) { el.classList.add('show'); });
       return;

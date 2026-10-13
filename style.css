@@ -121,6 +121,13 @@ html[data-theme="light"] .bg-glow{opacity:.16}
   .bg{background-image:url("assets/bg-dark-portrait.webp");background-position:center 30%}
 }
 /* 用户自选壁纸时覆盖 */
+/* 「暗色柔化」是默认档：明确写出，不再依赖基础 .bg 的隐式行为 */
+body[data-wall="dark"] .bg{background-image:url("assets/bg-dark.webp")}
+body[data-wall="dark"] .bg-veil{background:linear-gradient(180deg,
+  rgba(13,15,9,.50) 0%,rgba(13,15,9,.36) 34%,rgba(13,15,9,.58) 100%)}
+html[data-theme="light"] body[data-wall="dark"] .bg-veil{background:linear-gradient(180deg,
+  rgba(252,250,246,.62) 0%,rgba(252,250,246,.38) 34%,rgba(252,250,246,.58) 100%)}
+
 body[data-wall="landscape"] .bg{background-image:url("assets/bg-landscape.webp")}
 body[data-wall="landscape"] .bg-veil{background:linear-gradient(180deg,
   rgba(13,15,9,.42) 0%,rgba(13,15,9,.30) 35%,rgba(13,15,9,.52) 100%)}

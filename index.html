@@ -98,59 +98,62 @@
   <!-- ==================== 界面 1：首页 ==================== -->
   <div class="view" id="view-home" data-view="home">
   <section id="home" class="hero">
-    <div class="hero-main">
-      <p class="eyebrow">你好，我是</p>
-      <h2 class="hero-title">向き</h2>
-      <p class="hero-type"><span id="typed"></span><span class="caret">|</span></p>
-      <p class="hero-desc">
-        沈阳理工大学 · 信息科学与工程学院 · 网络工程。<br>
-        喜欢用代码把想法变成现实，也喜欢在动漫与游戏里寻找灵感。
+
+    <!-- 整屏插画背景 -->
+    <div class="hero-bg" aria-hidden="true">
+      <picture>
+        <source media="(max-width:800px)" srcset="assets/hero-portrait.webp">
+        <img src="assets/hero-landscape.webp" alt="" loading="eager" decoding="async">
+      </picture>
+      <div class="hero-shade"></div>
+    </div>
+
+    <div class="hero-inner">
+
+      <p class="hero-badge"><span class="pulse"></span>沈阳理工大学 · 信息科学与工程学院 · 网络工程</p>
+
+      <h2 class="hero-hello">你好，我是</h2>
+      <h1 class="hero-name">向き<span class="hero-en">MUKI</span></h1>
+
+      <p class="hero-type">
+        <span class="hero-prefix">我是一名&nbsp;</span><span id="typed"></span><span class="caret">|</span>
       </p>
-      <div class="chips">
-        <span class="chip">C</span>
-        <span class="chip">C++</span>
-        <span class="chip">Python</span>
-        <span class="chip">网络工程</span>
-        <span class="chip">AI 探索</span>
-      </div>
+
+      <p class="hero-lede">
+        在沈阳理工大学读网络工程。平时喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
+        也喜欢在动漫与游戏里寻找灵感。最近在做的事情是研究 AI，
+        试着把它真正用进日常的学习和开发里。
+      </p>
+
       <div class="hero-actions">
-        <a href="#about" class="btn btn-primary">了解更多</a>
-        <a href="#contact" class="btn btn-ghost">联系我</a>
+        <a href="#about" class="btn btn-primary">关于我 →</a>
+        <a href="#skills" class="btn btn-ghost" data-goto="study">学习 / 工作 →</a>
+        <a href="#life" class="btn btn-ghost" data-goto="life">兴趣 / 日常 →</a>
+      </div>
+
+      <div class="hero-facts">
+        <div class="fact"><b data-count="2">0</b><span>编程语言</span></div>
+        <div class="fact"><b data-count="6">0</b><span>技能方向</span></div>
+        <div class="fact"><b data-count="4" data-suffix=" 类">0</b><span>游戏口味</span></div>
       </div>
 
       <div class="hero-socials">
-        <span class="hs-label">在这些地方找到我</span>
-        <a class="hs" href="https://github.com/yuhanjiang518-coder"
-           target="_blank" rel="noopener">
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-          GitHub
+        <a class="hs" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
         </a>
-        <a class="hs" href="https://space.bilibili.com/627368437"
-           target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
-               stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
-               stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 3.5 9 7M18 3.5 15 7"/>
-            <rect x="2.5" y="7" width="19" height="13" rx="4"/>
-            <path d="M8 12v2M16 12v2"/>
-          </svg>
-          哔哩哔哩
+        <a class="hs" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener" aria-label="哔哩哔哩">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg>
+        </a>
+        <a class="hs" href="mailto:3356559040@qq.com" aria-label="邮箱">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
         </a>
       </div>
-    </div>
-    <div class="hero-side">
-      <div class="quote-card">
-        <div class="quote-mark">”</div>
-        <p>把喜欢的事，做成擅长的事。</p>
-        <span class="quote-by">— 写在最前面</span>
+
+      <div class="scroll-hint" aria-hidden="true">
+        <span>Scroll</span>
+        <span class="rail"></span>
       </div>
-      <div class="mini-grid">
-        <div class="mini"><b data-count="2">0</b><span>编程语言</span></div>
-        <div class="mini"><b data-count="3">0</b><span>核心兴趣</span></div>
-        <div class="mini"><b data-count="6">0</b><span>技能方向</span></div>
-      </div>
+
     </div>
   </section>
 

@@ -123,92 +123,252 @@ body[data-wall="none"] .bg-veil{background:var(--bg)}
 
 
 /* ==========================================================
-   加载动画（终端启动风格）
+   开屏动画 + 转场幕布
+   参考 JIEJOE 006-jump-animation 的「幕布升起」机制，
+   在此之上扩展为：环形描边进度 + 三色幕布分层揭示
    ========================================================== */
+:root{
+  --curtain-1:#f6c9d9;   /* 蝶粉  */
+  --curtain-2:#f0dfae;   /* 暖金  */
+  --curtain-3:#cfe0c2;   /* 草绿  */
+  --loader-curtain-dur:.9s;
+}
+html[data-theme="light"]{
+  --curtain-1:#e79ab7;
+  --curtain-2:#dcc178;
+  --curtain-3:#a9c99a;
+}
+
 .loader{
   position:fixed;inset:0;z-index:9000;
   display:grid;place-items:center;
   background:var(--bg-deep);
-  transition:opacity .55s ease,visibility .55s ease;
+  transition:opacity .5s ease .05s,visibility .5s ease .05s;
 }
+
+/* --- 三色幕布：固定在下层，开屏时向上抽走 --- */
+.curtain{
+  position:absolute;inset:0;z-index:0;
+  pointer-events:none;
+}
+.curtain::before,
+.curtain::after{
+  content:"";position:absolute;left:0;right:0;
+  will-change:transform;
+}
+/* 上两层用伪元素，第三层用幕布本体 */
+.curtain::before{
+  top:0;height:100%;z-index:3;
+  background:var(--curtain-1);
+  transform:translateY(0);
+}
+.curtain::after{
+  top:0;height:100%;z-index:2;
+  background:var(--curtain-2);
+  transform:translateY(0);
+}
+.curtain{
+  background:var(--curtain-3);
+  transform:translateY(0);
+  z-index:1;
+}
+
 .loader-bg{
-  position:absolute;inset:0;
+  position:absolute;inset:0;z-index:4;
   background-image:url("assets/bg-dark.webp");
   background-size:cover;background-position:center 38%;
-  opacity:.22;
+  opacity:.20;
+  transition:opacity .9s ease;
 }
 .loader-bg::after{
   content:"";position:absolute;inset:0;
-  background:radial-gradient(ellipse at 50% 45%,transparent 5%,var(--bg-deep) 78%);
+  background:radial-gradient(ellipse at 50% 45%,transparent 4%,var(--bg-deep) 76%);
 }
-.loader-inner{
-  position:relative;z-index:1;width:min(340px,78vw);text-align:center;
+/* 细颗粒噪点，避免大面积纯色发闷 */
+.loader-grain{
+  position:absolute;inset:0;z-index:4;opacity:.5;
+  background-image:
+    radial-gradient(circle at 18% 24%,rgba(var(--accent-rgb),.20),transparent 42%),
+    radial-gradient(circle at 82% 72%,rgba(232,200,106,.16),transparent 46%);
 }
 
-/* 品牌 */
-.loader-brand{
-  display:flex;align-items:center;justify-content:center;gap:13px;
-  margin-bottom:26px;
-  opacity:0;transform:translateY(10px);
-  animation:ld-in .6s cubic-bezier(.22,1,.36,1) .05s forwards;
+.loader-core{
+  position:relative;z-index:6;
+  display:flex;flex-direction:column;align-items:center;
+  width:min(360px,80vw);text-align:center;
+  transition:opacity .38s ease,transform .5s cubic-bezier(.5,0,.75,0);
 }
-.lb-mark{
-  width:50px;height:50px;flex:none;border-radius:14px;
+
+/* --- 环形描边：进度由 stroke-dashoffset 驱动 --- */
+.loader-emblem{
+  position:relative;
+  width:88px;height:88px;
   display:grid;place-items:center;
-  font-size:22px;font-weight:800;color:#20160c;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  box-shadow:0 10px 26px -10px rgba(var(--accent-rgb),.9);
+  margin-bottom:26px;
+  opacity:0;transform:scale(.72);
+  animation:le-pop .9s cubic-bezier(.22,1,.36,1) .06s forwards;
 }
-.lb-text{text-align:left;display:flex;flex-direction:column}
-.lb-name{font-size:19px;font-weight:800;color:var(--text);letter-spacing:.5px;line-height:1.3}
-.lb-sub{font-size:11.5px;color:var(--faint);letter-spacing:.02em}
+@keyframes le-pop{
+  60%{opacity:1;transform:scale(1.045)}
+  100%{opacity:1;transform:scale(1)}
+}
+.loader-emblem svg{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:visible;
+}
+.le-track{
+  fill:none;stroke:rgba(var(--accent-rgb),.20);stroke-width:1.6;
+}
+.le-arc{
+  fill:none;stroke:var(--accent);stroke-width:2.4;
+  stroke-linecap:round;
+  /* r=20.5 → 周长 128.8 */
+  stroke-dasharray:128.8;
+  stroke-dashoffset:128.8;
+  transform:rotate(-90deg);transform-origin:50% 50%;
+  transition:stroke-dashoffset .34s cubic-bezier(.22,1,.36,1),stroke .4s ease;
+  filter:drop-shadow(0 0 7px rgba(var(--accent-rgb),.55));
+}
+.le-mark{
+  font-size:31px;font-weight:800;line-height:1;
+  color:var(--text);letter-spacing:0;
+  text-shadow:0 2px 18px rgba(var(--accent-rgb),.5);
+}
 
-/* 进度条 */
-.loader-line{
-  height:3px;border-radius:99px;overflow:hidden;
-  background:rgba(255,255,255,.09);
-  opacity:0;animation:ld-in .6s ease .18s forwards;
+/* --- 站名：逐字浮起 --- */
+.loader-word{
+  display:flex;gap:3px;justify-content:center;
+  font-size:clamp(32px,7.4vw,44px);font-weight:800;
+  letter-spacing:.06em;line-height:1.16;color:var(--text);
 }
-.loader-line i{
+.lw-item{
+  display:inline-block;opacity:0;
+  transform:translateY(120%) rotate(7deg);
+  animation:lw-up .95s cubic-bezier(.22,1,.36,1) forwards;
+}
+.lw-item:nth-child(1){animation-delay:.20s}
+.lw-item:nth-child(2){animation-delay:.30s}
+@keyframes lw-up{to{opacity:1;transform:translateY(0) rotate(0)}}
+
+.loader-sub{
+  margin-top:13px;font-size:13px;color:var(--muted);letter-spacing:.06em;
+  opacity:0;animation:ld-in .8s ease .46s forwards;
+}
+.loader-en{
+  margin-top:7px;font-family:var(--mono);font-size:10px;
+  color:var(--faint);letter-spacing:.30em;text-transform:uppercase;
+  opacity:0;animation:ld-in .8s ease .56s forwards;
+}
+@keyframes ld-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+/* --- 进度条 --- */
+.loader-meter{
+  width:min(230px,58vw);height:2px;margin-top:30px;
+  border-radius:99px;overflow:hidden;
+  background:rgba(255,255,255,.10);
+  opacity:0;animation:ld-in .8s ease .62s forwards;
+}
+html[data-theme="light"] .loader-meter{background:rgba(30,36,20,.12)}
+.loader-meter i{
   display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--accent-3),var(--accent),var(--accent-2));
-  transition:width .32s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 0 12px rgba(var(--accent-rgb),.7);
+  transition:width .34s cubic-bezier(.22,1,.36,1);
 }
 
-/* 状态文字 */
-.loader-status{
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  margin-top:15px;font-family:var(--mono);font-size:12px;
-  color:var(--muted);min-height:1.6em;
-  opacity:0;animation:ld-in .6s ease .26s forwards;
+.loader-state{
+  display:flex;align-items:center;justify-content:space-between;
+  width:min(230px,58vw);margin-top:11px;
+  font-family:var(--mono);font-size:11px;color:var(--faint);
+  opacity:0;animation:ld-in .8s ease .68s forwards;
 }
-.loader-prompt{color:var(--accent)}
-.loader-caret{
-  width:7px;height:13px;background:var(--accent);
-  animation:ld-blink .9s step-end infinite;
-}
-@keyframes ld-blink{0%,100%{opacity:1}50%{opacity:0}}
+.loader-num{color:var(--accent);letter-spacing:.06em;font-variant-numeric:tabular-nums}
 
-.loader-pct{
-  margin-top:9px;font-family:var(--mono);font-size:11px;
-  color:var(--faint);letter-spacing:.08em;
-  opacity:0;animation:ld-in .6s ease .34s forwards;
+/* ==========================================================
+   开屏退出：核心上浮 → 三色幕布依次抽走
+   ========================================================== */
+.loader.done .loader-core{
+  opacity:0;transform:translateY(-26px) scale(.94);
 }
-@keyframes ld-in{to{opacity:1;transform:translateY(0)}}
+.loader.done .loader-bg,
+.loader.done .loader-grain{opacity:0;transition:opacity .5s ease}
 
-/* 退出：整体上移淡出 */
+/* 三色幕布错峰上升，做出「三层揭示」的层次 */
+.loader.done .curtain{transform:translateY(-100%)}
+.loader.done .curtain::after{transform:translateY(-100%)}
+.loader.done .curtain::before{transform:translateY(-100%)}
+
+.loader.done .curtain{
+  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) 0s;
+}
+.loader.done .curtain::after{
+  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) .11s;
+}
+.loader.done .curtain::before{
+  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) .22s;
+}
+
+/* 抽走之后整个 loader 也要让位 */
 .loader.done{
   opacity:0;visibility:hidden;pointer-events:none;
 }
-.loader.done .loader-inner{transform:translateY(-14px) scale(.98);transition:transform .5s ease}
+
+/* ==========================================================
+   视图转场幕布（切页时盖住内容再揭开）
+   两段式：.on 落下遮住 → 换视图 → 去掉 .on 揭开
+   ========================================================== */
+#curtain2{
+  position:fixed;inset:0;z-index:8500;pointer-events:none;
+  visibility:hidden;
+}
+#curtain2.on{visibility:visible}
+
+#curtain2 i,
+#curtain2::before,
+#curtain2::after{
+  position:absolute;left:0;right:0;top:0;height:100%;
+  transform:translateY(-100%);
+  transition:transform .46s cubic-bezier(.76,0,.24,1) 0s;
+  will-change:transform;
+}
+#curtain2 i{
+  content:"";display:block;z-index:1;background:var(--curtain-3);
+}
+#curtain2::after{
+  content:"";z-index:2;background:var(--curtain-2);
+  transition-delay:.07s;
+}
+#curtain2::before{
+  content:"";z-index:3;background:var(--curtain-1);
+  transition-delay:.14s;
+}
+
+/* 落下：三层几乎同时，整体一团颜色压下来 */
+#curtain2.on i,
+#curtain2.on::before,
+#curtain2.on::after{
+  transform:translateY(0);
+  transition-duration:.30s;
+}
+#curtain2.on i{transition-delay:0s}
+#curtain2.on::after{transition-delay:.05s}
+#curtain2.on::before{transition-delay:.10s}
+
+/* 揭开：最上层的粉色先走，露出下面两层，形成扫过感 */
+#curtain2.on.off i{transition-delay:0s}
+#curtain2.on.off::after{transition-delay:.11s}
+#curtain2.on.off::before{transition-delay:.22s}
 
 /* 无动画偏好：直接隐藏 */
 @media (prefers-reduced-motion:reduce){
   .loader{display:none}
+  #curtain2{display:none}
+  .curtain{display:none}
 }
 @media (max-width:520px){
-  .loader-brand{flex-direction:column;gap:10px}
-  .lb-text{text-align:center}
+  .loader-emblem{width:74px;height:74px;margin-bottom:20px}
+  .le-mark{font-size:26px}
+  .loader-en{letter-spacing:.22em}
 }
 
 

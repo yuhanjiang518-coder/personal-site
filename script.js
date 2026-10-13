@@ -158,6 +158,134 @@
     });
   })();
 
+  /* ---------- 0b. 粒子星空背景 ---------- */
+  (function starField() {
+    var cv = $('#stars');
+    if (!cv) return;
+    var reduce = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+
+    var ctx = cv.getContext && cv.getContext('2d');
+    if (!ctx) return;
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = 0, h = 0, pts = [];
+    var mouse = { x: -9999, y: -9999, active: false };
+
+    // 从主题色板取色：蝶粉 / 暖金 / 草绿
+    var DOT   = 'rgba(240, 166, 192, ';   // --accent 蝶粉
+    var LINE  = 'rgba(232, 200, 106, ';   // --accent-2 暖金
+    var LINK  = 'rgba(240, 166, 192, ';
+    var isLight = function () {
+      return document.documentElement.getAttribute('data-theme') === 'light';
+    };
+
+    function build() {
+      var vw = window.innerWidth, vh = window.innerHeight;
+      w = cv.width  = Math.floor(vw * dpr);
+      h = cv.height = Math.floor(vh * dpr);
+      cv.style.width  = vw + 'px';
+      cv.style.height = vh + 'px';
+
+      // 密度：每 11000 平方 CSS 像素一颗，上限 150
+      var n = Math.min(150, Math.round((vw * vh) / 11000));
+      if (vw < 600) n = Math.min(n, 70);        // 手机上收一点，省电
+
+      pts = [];
+      for (var i = 0; i < n; i++) {
+        pts.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.20 * dpr,
+          vy: (Math.random() - 0.5) * 0.20 * dpr,
+          r: (Math.random() * 1.5 + 0.5) * dpr,
+          a: Math.random() * 0.45 + 0.22,
+          gold: Math.random() < 0.3          // 三成粒子用暖金色
+        });
+      }
+    }
+
+    window.addEventListener('mousemove', function (e) {
+      mouse.x = e.clientX * dpr;
+      mouse.y = e.clientY * dpr;
+      mouse.active = true;
+    }, { passive: true });
+    window.addEventListener('mouseleave', function () {
+      mouse.active = false;
+      mouse.x = mouse.y = -9999;
+    }, { passive: true });
+
+    var running = true;
+    var raf = 0;
+
+    function frame() {
+      if (!running) return;
+      ctx.clearRect(0, 0, w, h);
+
+      var link   = 130 * dpr;
+      var reach  = 150 * dpr;
+      var light  = isLight();
+      var dim    = light ? 1.35 : 1;   // 浅色主题下加深一点
+
+      for (var i = 0; i < pts.length; i++) {
+        var p = pts[i];
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+        // 圆点
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = (p.gold ? LINE : DOT) + (p.a * dim).toFixed(3) + ')';
+        ctx.fill();
+
+        // 粒子之间连线
+        for (var j = i + 1; j < pts.length; j++) {
+          var q = pts[j];
+          var dx = p.x - q.x, dy = p.y - q.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < link * link) {
+            var d = Math.sqrt(d2);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = LINK + (0.15 * (1 - d / link) * dim).toFixed(3) + ')';
+            ctx.lineWidth = dpr * 0.6;
+            ctx.stroke();
+          }
+        }
+
+        // 鼠标附近的粒子与指针连线
+        if (mouse.active) {
+          var mdx = p.x - mouse.x, mdy = p.y - mouse.y;
+          var md2 = mdx * mdx + mdy * mdy;
+          if (md2 < reach * reach) {
+            var md = Math.sqrt(md2);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = DOT + (0.30 * (1 - md / reach) * dim).toFixed(3) + ')';
+            ctx.lineWidth = dpr * 0.7;
+            ctx.stroke();
+          }
+        }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    build();
+    window.addEventListener('resize', build);
+
+    // 切到后台就暂停，省电
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { running = false; cancelAnimationFrame(raf); }
+      else if (!running) { running = true; raf = requestAnimationFrame(frame); }
+    });
+
+    raf = requestAnimationFrame(frame);
+  })();
+
   /* ---------- 1. 打字机 ---------- */
   var phrases = [
     '网络工程 · 本科生',

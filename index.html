@@ -18,22 +18,49 @@
   <div class="loader-bg" aria-hidden="true"></div>
   <div class="loader-grain" aria-hidden="true"></div>
 
+  <!-- 背景装饰层：旋转光环 + 呼吸光晕 + 环绕光点 -->
+  <div class="loader-aura" aria-hidden="true">
+    <span class="la-ring la-ring-1"></span>
+    <span class="la-ring la-ring-2"></span>
+    <span class="la-ring la-ring-3"></span>
+    <span class="la-glow"></span>
+    <span class="la-orbit"><i></i><i></i><i></i><i></i></span>
+  </div>
+
   <div class="loader-core">
+    <!-- 徽记：双环 + 渐变进度弧 + 中心字 -->
     <div class="loader-emblem">
       <svg viewBox="0 0 50 50" aria-hidden="true">
+        <defs>
+          <linearGradient id="leGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stop-color="#a8c99a"></stop>
+            <stop offset="52%"  stop-color="#f0a6c0"></stop>
+            <stop offset="100%" stop-color="#e8c86a"></stop>
+          </linearGradient>
+        </defs>
         <circle class="le-track" cx="25" cy="25" r="20.5"></circle>
+        <circle class="le-tick"  cx="25" cy="25" r="20.5"></circle>
         <circle class="le-arc"   cx="25" cy="25" r="20.5"></circle>
       </svg>
+      <span class="le-pulse" aria-hidden="true"></span>
       <span class="le-mark">向</span>
     </div>
 
     <div class="loader-word" aria-hidden="true">
       <span class="lw-item">向</span><span class="lw-item">き</span>
+      <span class="lw-caret"></span>
     </div>
-    <p class="loader-sub">写代码，也写点生活</p>
-    <p class="loader-en" aria-hidden="true">MUKI &nbsp;·&nbsp; PERSONAL SITE</p>
 
-    <div class="loader-meter" aria-hidden="true"><i id="loaderBar"></i></div>
+    <p class="loader-sub">写代码，也写点生活</p>
+
+    <div class="loader-rule" aria-hidden="true"><i></i></div>
+
+    <p class="loader-en" aria-hidden="true">M U K I &nbsp;·&nbsp; P E R S O N A L &nbsp; S I T E</p>
+
+    <div class="loader-meter" aria-hidden="true">
+      <i id="loaderBar"></i>
+      <span class="lm-shine"></span>
+    </div>
     <p class="loader-state">
       <span id="loaderMsg">初始化环境…</span>
       <span class="loader-num"><span id="loaderPct">0</span>%</span>

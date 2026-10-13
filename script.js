@@ -348,6 +348,45 @@
   }
   if (typedEl) setTimeout(type, 600);
 
+  /* ---------- 1c. 旅人手记抽签（one live thing） ---------- */
+  (function travelDraw() {
+    var btn  = $('#tdBtn');
+    var card = $('#tdCard');
+    var txt  = $('#tdText');
+    var from = $('#tdFrom');
+    var art  = $('#tdArt');
+    if (!btn || !card || !txt) return;
+
+    // 内容是「旅途」这个主题自己的东西，不是通用鸡汤
+    var NOTES = [
+      ['旅途中遇到的人，多半只陪你走一段路。也正因为只走一段，才记得清楚。', '魔女之旅 · 旅途随笔', 'muki-art-cake.webp'],
+      ['想去的地方不用一次走完。留一点没去过的，下次才有理由出发。',        '魔女之旅 · 旅途随笔', 'muki-art-icecream.webp'],
+      ['地图上最短的那条线，往往不是最好走的那条。',                    '魔女之旅 · 旅途随笔', 'muki-art-happy.webp'],
+      ['写代码和旅行有点像：走错了就退回来，重走一遍也不丢人。',          '写给自己',            'muki-art-cake.webp'],
+      ['看过很多风景以后，最想念的还是出发那天的心情。',                 '魔女之旅 · 旅途随笔', 'muki-art-happy.webp'],
+      ['一个人上路没什么不好，安静的时候思路最清楚。',                   '写给自己',            'muki-art-icecream.webp'],
+      ['遇到不会的东西，先记下来。等哪天回头，会发现早就懂了。',          '写给自己',            'muki-art-cake.webp']
+    ];
+
+    var last = -1;
+    btn.addEventListener('click', function () {
+      var i;
+      do { i = Math.floor(Math.random() * NOTES.length); }
+      while (NOTES.length > 1 && i === last);
+      last = i;
+
+      var n = NOTES[i];
+      txt.textContent  = n[0];
+      from.textContent = '— ' + n[1];
+      if (art) art.src = 'assets/' + n[2];
+
+      // 重放动画：先摘类，强制回流，再加回
+      card.classList.remove('swap');
+      void card.offsetWidth;
+      card.classList.add('swap');
+    });
+  })();
+
   /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ----------
      错峰由 CSS 的 --stagger-i × 45ms 承担，这里只负责标序号和触发，
      避免 setTimeout 排队导致长列表越来越慢。 */

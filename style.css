@@ -211,17 +211,84 @@ html[data-theme="light"]{
   transition:opacity .38s ease,transform .5s var(--ease-out);
 }
 
-/* --- 环形描边：进度由 stroke-dashoffset 驱动 --- */
+/* ==========================================================
+   装饰层：呼吸光晕 + 单圈细虚线 + 环绕光点
+   原则（taste）：装饰是「氛围」，不能比主体更抢眼。
+   三层大圆环会让画面变成靶心 → 收敛为一圈柔光 + 一圈细虚线。
+   ========================================================== */
+.loader-aura{
+  position:absolute;inset:0;z-index:3;
+  display:grid;place-items:center;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+/* 呼吸光晕：唯一的大面积元素，柔和、低对比 */
+.la-glow{
+  position:absolute;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,
+    rgba(var(--accent-rgb),.17) 0%,
+    rgba(232,200,106,.07) 42%,
+    transparent 70%);
+  filter:blur(22px);
+  opacity:0;
+  animation:la-in 1.6s var(--ease-out) .12s forwards,
+            la-breathe 5s ease-in-out .8s infinite;
+}
+@keyframes la-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes la-breathe{
+  0%,100%{transform:scale(1);opacity:.7}
+  50%{transform:scale(1.09);opacity:1}
+}
+@keyframes la-spin{to{transform:rotate(360deg)}}
+
+/* 单圈细虚线：比徽记大一圈，仅作「轨道」暗示 */
+.la-ring-1{
+  position:absolute;width:150px;height:150px;border-radius:50%;
+  border:1px dashed rgba(var(--accent-rgb),.22);
+  opacity:0;
+  animation:la-in 1.2s var(--ease-out) .22s forwards,
+            la-spin 30s linear infinite;
+}
+/* 第二圈更远更淡，拉开层次但不抢戏 */
+.la-ring-2{
+  position:absolute;width:236px;height:236px;border-radius:50%;
+  border:1px solid rgba(232,200,106,.10);
+  opacity:0;
+  animation:la-in 1.4s var(--ease-out) .4s forwards,
+            la-spin 52s linear infinite reverse;
+}
+/* 第三层由 HTML 保留但不再画环，避免靶心感 */
+.la-ring-3{display:none}
+
+/* 环绕光点：只沿「第一圈虚线」走，与徽记产生关系 */
+.la-orbit{
+  position:absolute;width:150px;height:150px;
+  opacity:0;
+  animation:la-in 1.3s var(--ease-out) .5s forwards,
+            la-spin 14s linear infinite;
+}
+.la-orbit i{
+  position:absolute;width:4px;height:4px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 8px 2px rgba(var(--accent-rgb),.7);
+}
+.la-orbit i:nth-child(1){top:-2px;left:50%;margin-left:-2px}
+.la-orbit i:nth-child(2){bottom:-2px;left:50%;margin-left:-2px;
+  background:var(--accent-2);box-shadow:0 0 8px 2px rgba(232,200,106,.7)}
+.la-orbit i:nth-child(3),.la-orbit i:nth-child(4){display:none}
+
+/* --- 徽记：双环 + 渐变进度弧 --- */
 .loader-emblem{
   position:relative;
-  width:88px;height:88px;
+  width:96px;height:96px;
   display:grid;place-items:center;
-  margin-bottom:26px;
-  opacity:0;transform:scale(.72);
-  animation:le-pop .9s var(--ease-soft) .06s forwards;
+  margin-bottom:30px;
+  opacity:0;transform:scale(.78);
+  animation:le-pop 1s var(--ease-out) .05s forwards;
 }
 @keyframes le-pop{
-  60%{opacity:1;transform:scale(1.045)}
+  55%{opacity:1;transform:scale(1.05)}
   100%{opacity:1;transform:scale(1)}
 }
 .loader-emblem svg{
@@ -229,70 +296,136 @@ html[data-theme="light"]{
   overflow:visible;
 }
 .le-track{
-  fill:none;stroke:rgba(var(--accent-rgb),.20);stroke-width:1.6;
+  fill:none;stroke:rgba(var(--accent-rgb),.16);stroke-width:1.4;
 }
+/* 刻度环：极淡的虚线，随进度缓慢旋转 → 视觉上「在算」 */
+.le-tick{
+  fill:none;stroke:rgba(255,255,255,.10);
+  stroke-width:5;stroke-dasharray:.6 4.2;
+  transform-origin:50% 50%;
+  animation:la-spin 44s linear infinite;
+}
+html[data-theme="light"] .le-tick{stroke:rgba(30,36,20,.10)}
+
+/* 进度弧：渐变描边 */
 .le-arc{
-  fill:none;stroke:var(--accent);stroke-width:2.4;
+  fill:none;
+  stroke:url(#leGrad);
+  stroke-width:2.6;
   stroke-linecap:round;
   /* r=20.5 → 周长 128.8 */
   stroke-dasharray:128.8;
   stroke-dashoffset:128.8;
   transform:rotate(-90deg);transform-origin:50% 50%;
-  transition:stroke-dashoffset .34s var(--ease-soft),stroke .4s ease;
-  filter:drop-shadow(0 0 7px rgba(var(--accent-rgb),.55));
+  transition:stroke-dashoffset .38s var(--ease-out);
+  filter:drop-shadow(0 0 7px rgba(var(--accent-rgb),.6));
+}
+/* 内圈脉冲：进度每推进一段就荡开一圈 */
+.le-pulse{
+  position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(var(--accent-rgb),.5);
+  opacity:0;
+  pointer-events:none;
+}
+.loader-emblem.tick .le-pulse{
+  animation:le-ripple .7s var(--ease-out);
+}
+@keyframes le-ripple{
+  0%{opacity:.85;transform:scale(.72)}
+  100%{opacity:0;transform:scale(1.5)}
 }
 .le-mark{
-  font-size:31px;font-weight:800;line-height:1;
+  font-size:34px;font-weight:800;line-height:1;
   color:var(--text);letter-spacing:0;
-  text-shadow:0 2px 18px rgba(var(--accent-rgb),.5);
+  text-shadow:0 2px 20px rgba(var(--accent-rgb),.55);
 }
 
-/* --- 站名：逐字浮起 --- */
+/* --- 站名：逐字浮起 + 光标 --- */
 .loader-word{
-  display:flex;gap:3px;justify-content:center;
+  display:flex;align-items:center;gap:3px;justify-content:center;
   font-size:clamp(32px,7.4vw,44px);font-weight:800;
   letter-spacing:.06em;line-height:1.16;color:var(--text);
 }
 .lw-item{
   display:inline-block;opacity:0;
-  transform:translateY(120%) rotate(7deg);
-  animation:lw-up .95s var(--ease-soft) forwards;
+  transform:translateY(118%) rotate(6deg);
+  animation:lw-up .92s var(--ease-out) forwards;
 }
-.lw-item:nth-child(1){animation-delay:.20s}
-.lw-item:nth-child(2){animation-delay:.30s}
+.lw-item:nth-child(1){animation-delay:.22s}
+.lw-item:nth-child(2){animation-delay:.32s}
 @keyframes lw-up{to{opacity:1;transform:translateY(0) rotate(0)}}
+.lw-caret{
+  display:inline-block;width:3px;height:1.02em;margin-left:6px;
+  background:var(--accent);border-radius:2px;
+  opacity:0;
+  animation:lw-caret-in .3s ease .7s forwards,
+            ld-blink 1s step-end .95s infinite;
+}
+@keyframes lw-caret-in{to{opacity:1}}
 
 .loader-sub{
-  margin-top:13px;font-size:13px;color:var(--muted);letter-spacing:.06em;
-  opacity:0;animation:ld-in .8s ease .46s forwards;
-}
-.loader-en{
-  margin-top:7px;font-family:var(--mono);font-size:10px;
-  color:var(--faint);letter-spacing:.30em;text-transform:uppercase;
-  opacity:0;animation:ld-in .8s ease .56s forwards;
+  margin-top:14px;font-size:13px;color:var(--muted);letter-spacing:.06em;
+  opacity:0;animation:ld-in .8s var(--ease-out) .5s forwards;
 }
 @keyframes ld-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 
-/* --- 进度条 --- */
+/* 分隔线：从中向两侧扫开 */
+.loader-rule{
+  width:min(230px,58vw);height:1px;margin-top:16px;
+  background:rgba(255,255,255,.07);
+  overflow:hidden;
+  opacity:0;animation:ld-in .6s ease .58s forwards;
+}
+html[data-theme="light"] .loader-rule{background:rgba(30,36,20,.09)}
+.loader-rule i{
+  display:block;height:100%;
+  background:linear-gradient(90deg,transparent,var(--accent-2),transparent);
+  transform:scaleX(0);
+  animation:lr-sweep 1.5s var(--ease-in-out) .66s infinite;
+}
+@keyframes lr-sweep{
+  0%{transform:scaleX(0);transform-origin:left}
+  50%{transform:scaleX(1);transform-origin:left}
+  51%{transform:scaleX(1);transform-origin:right}
+  100%{transform:scaleX(0);transform-origin:right}
+}
+
+.loader-en{
+  margin-top:13px;font-family:var(--mono);font-size:9.5px;
+  color:var(--faint);letter-spacing:.10em;
+  opacity:0;animation:ld-in .8s var(--ease-out) .62s forwards;
+}
+
+/* --- 进度条：渐变 + 流光 --- */
 .loader-meter{
-  width:min(230px,58vw);height:2px;margin-top:30px;
+  position:relative;
+  width:min(230px,58vw);height:2px;margin-top:26px;
   border-radius:99px;overflow:hidden;
   background:rgba(255,255,255,.10);
-  opacity:0;animation:ld-in .8s ease .62s forwards;
+  opacity:0;animation:ld-in .8s var(--ease-out) .68s forwards;
 }
 html[data-theme="light"] .loader-meter{background:rgba(30,36,20,.12)}
 .loader-meter i{
   display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--accent-3),var(--accent),var(--accent-2));
-  box-shadow:0 0 12px rgba(var(--accent-rgb),.7);
-  transition:width .34s var(--ease-soft);
+  box-shadow:0 0 12px rgba(var(--accent-rgb),.75);
+  transition:width .34s var(--ease-out);
+}
+.lm-shine{
+  position:absolute;top:0;left:0;width:34%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);
+  animation:lm-run 1.9s var(--ease-in-out) .9s infinite;
+}
+@keyframes lm-run{
+  0%{transform:translateX(-120%)}
+  100%{transform:translateX(320%)}
 }
 
 .loader-state{
   display:flex;align-items:center;justify-content:space-between;
   width:min(230px,58vw);margin-top:11px;
   font-family:var(--mono);font-size:11px;color:var(--faint);
-  opacity:0;animation:ld-in .8s ease .68s forwards;
+  opacity:0;animation:ld-in .8s var(--ease-out) .74s forwards;
 }
 .loader-num{color:var(--accent);letter-spacing:.06em;font-variant-numeric:tabular-nums}
 
@@ -1416,7 +1549,15 @@ html[data-theme="light"] .page-head h2{text-shadow:0 2px 12px rgba(255,255,255,.
   .card:active,.hobby:active{transform:none}
   .hero-bg img{animation:none}
   .spark{animation:none;opacity:.45}
-  .loader-emblem,.lw-item{animation-duration:.01ms}
+  /* 开屏：保留淡入，去掉旋转/呼吸/涟漪等运动 */
+  .loader-emblem,.lw-item,.la-ring-1,.la-ring-2,.la-glow,.la-orbit,.loader-sub,.loader-en,.loader-rule,.loader-meter,.loader-state,.lw-caret{
+    animation-duration:.01ms;animation-iteration-count:1;
+  }
+  .la-glow{opacity:.6}
+  .la-orbit{display:none}
+  .le-tick{animation:none}
+  .le-pulse{display:none}
+  .lm-shine{animation:none;display:none}
   .loader .curtain{display:none}
   .loader-bg{opacity:.14}
 }

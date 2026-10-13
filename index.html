@@ -102,33 +102,48 @@
     <!-- 整屏插画背景 -->
     <div class="hero-bg" aria-hidden="true">
       <picture>
-        <source media="(max-width:800px)" srcset="assets/hero-portrait.webp">
+        <source media="(max-width:860px)" srcset="assets/hero-portrait.webp">
         <img src="assets/hero-landscape.webp" alt="" loading="eager" decoding="async">
       </picture>
-      <div class="hero-shade"></div>
+    </div>
+    <div class="hero-shade" aria-hidden="true"></div>
+
+    <!-- 漂浮光点（风格化装饰） -->
+    <div class="hero-sparks" aria-hidden="true">
+      <i style="--x:12%;--y:22%;--d:0s;--s:.9"></i>
+      <i style="--x:26%;--y:68%;--d:1.4s;--s:.7"></i>
+      <i style="--x:41%;--y:14%;--d:2.8s;--s:1.1"></i>
+      <i style="--x:58%;--y:82%;--d:.7s;--s:.8"></i>
+      <i style="--x:73%;--y:33%;--d:2.1s;--s:1"></i>
+      <i style="--x:88%;--y:61%;--d:3.4s;--s:.75"></i>
+      <i style="--x:7%;--y:47%;--d:1.9s;--s:.65"></i>
+      <i style="--x:66%;--y:9%;--d:3.9s;--s:.85"></i>
     </div>
 
     <div class="hero-inner">
 
       <p class="hero-badge"><span class="pulse"></span>沈阳理工大学 · 信息科学与工程学院 · 网络工程</p>
 
-      <h2 class="hero-hello">你好，我是</h2>
-      <h1 class="hero-name">向き<span class="hero-en">MUKI</span></h1>
+      <p class="hero-hello">你好，我是</p>
+
+      <h1 class="hero-name">
+        <span class="nm-cn">向き</span>
+        <span class="nm-en">MUKI</span>
+      </h1>
 
       <p class="hero-type">
         <span class="hero-prefix">我是一名&nbsp;</span><span id="typed"></span><span class="caret">|</span>
       </p>
 
       <p class="hero-lede">
-        在沈阳理工大学读网络工程。平时喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
-        也喜欢在动漫与游戏里寻找灵感。最近在做的事情是研究 AI，
-        试着把它真正用进日常的学习和开发里。
+        在沈阳理工大学读网络工程。喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
+        也喜欢在动漫与游戏里寻找灵感。最近在研究 AI，试着把它真正用进日常的学习和开发里。
       </p>
 
       <div class="hero-actions">
-        <a href="#about" class="btn btn-primary">关于我 →</a>
-        <a href="#skills" class="btn btn-ghost" data-goto="study">学习 / 工作 →</a>
-        <a href="#life" class="btn btn-ghost" data-goto="life">兴趣 / 日常 →</a>
+        <a href="#about" class="btn btn-primary">关于我 <span class="ar">→</span></a>
+        <a href="#skills" class="btn btn-ghost">学习 / 工作 <span class="ar">→</span></a>
+        <a href="#life" class="btn btn-ghost">兴趣 / 日常 <span class="ar">→</span></a>
       </div>
 
       <div class="hero-facts">
@@ -149,12 +164,12 @@
         </a>
       </div>
 
-      <div class="scroll-hint" aria-hidden="true">
-        <span>Scroll</span>
-        <span class="rail"></span>
-      </div>
-
     </div>
+
+    <a class="scroll-hint" href="#about" aria-label="向下滚动">
+      <span class="sh-text">SCROLL</span>
+      <span class="sh-rail"></span>
+    </a>
   </section>
 
   <!-- 关于 -->

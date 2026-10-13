@@ -33,6 +33,18 @@
          BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
   --serif:Georgia,"Songti SC","Times New Roman",serif;
+
+  /* --- 运动令牌（取值来自 Emil Kowalski 的动画规范） --- */
+  --ease-out:cubic-bezier(.23,1,.32,1);        /* 通用出场 / 入场 */
+  --ease-in-out:cubic-bezier(.77,0,.175,1);    /* 屏幕上位移 / 形变 */
+  --ease-drawer:cubic-bezier(.32,.72,0,1);     /* iOS 抽屉曲线 */
+  --ease-soft:var(--ease-soft);       /* 本站原有的柔和曲线 */
+
+  --dur-press:160ms;    /* 按压反馈 */
+  --dur-pop:200ms;      /* 小浮层 */
+  --dur-ui:250ms;       /* 常规 UI 上限 */
+  --dur-reveal:600ms;   /* 滚动揭示（营销型，可超 300ms） */
+  --dur-scene:900ms;    /* 开屏幕布（一次性，delight 预算） */
 }
 
 /* --- 浅色主题（日光草地） --- */
@@ -196,7 +208,7 @@ html[data-theme="light"]{
   position:relative;z-index:6;
   display:flex;flex-direction:column;align-items:center;
   width:min(360px,80vw);text-align:center;
-  transition:opacity .38s ease,transform .5s cubic-bezier(.5,0,.75,0);
+  transition:opacity .38s ease,transform .5s var(--ease-out);
 }
 
 /* --- 环形描边：进度由 stroke-dashoffset 驱动 --- */
@@ -206,7 +218,7 @@ html[data-theme="light"]{
   display:grid;place-items:center;
   margin-bottom:26px;
   opacity:0;transform:scale(.72);
-  animation:le-pop .9s cubic-bezier(.22,1,.36,1) .06s forwards;
+  animation:le-pop .9s var(--ease-soft) .06s forwards;
 }
 @keyframes le-pop{
   60%{opacity:1;transform:scale(1.045)}
@@ -226,7 +238,7 @@ html[data-theme="light"]{
   stroke-dasharray:128.8;
   stroke-dashoffset:128.8;
   transform:rotate(-90deg);transform-origin:50% 50%;
-  transition:stroke-dashoffset .34s cubic-bezier(.22,1,.36,1),stroke .4s ease;
+  transition:stroke-dashoffset .34s var(--ease-soft),stroke .4s ease;
   filter:drop-shadow(0 0 7px rgba(var(--accent-rgb),.55));
 }
 .le-mark{
@@ -244,7 +256,7 @@ html[data-theme="light"]{
 .lw-item{
   display:inline-block;opacity:0;
   transform:translateY(120%) rotate(7deg);
-  animation:lw-up .95s cubic-bezier(.22,1,.36,1) forwards;
+  animation:lw-up .95s var(--ease-soft) forwards;
 }
 .lw-item:nth-child(1){animation-delay:.20s}
 .lw-item:nth-child(2){animation-delay:.30s}
@@ -273,7 +285,7 @@ html[data-theme="light"] .loader-meter{background:rgba(30,36,20,.12)}
   display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--accent-3),var(--accent),var(--accent-2));
   box-shadow:0 0 12px rgba(var(--accent-rgb),.7);
-  transition:width .34s cubic-bezier(.22,1,.36,1);
+  transition:width .34s var(--ease-soft);
 }
 
 .loader-state{
@@ -299,13 +311,13 @@ html[data-theme="light"] .loader-meter{background:rgba(30,36,20,.12)}
 .loader.done .curtain::before{transform:translateY(-100%)}
 
 .loader.done .curtain{
-  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) 0s;
+  transition:transform var(--loader-curtain-dur) var(--ease-drawer) 0s;
 }
 .loader.done .curtain::after{
-  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) .11s;
+  transition:transform var(--loader-curtain-dur) var(--ease-drawer) .11s;
 }
 .loader.done .curtain::before{
-  transition:transform var(--loader-curtain-dur) cubic-bezier(.76,0,.24,1) .22s;
+  transition:transform var(--loader-curtain-dur) var(--ease-drawer) .22s;
 }
 
 /* 抽走之后整个 loader 也要让位 */
@@ -328,7 +340,7 @@ html[data-theme="light"] .loader-meter{background:rgba(30,36,20,.12)}
 #curtain2::after{
   position:absolute;left:0;right:0;top:0;height:100%;
   transform:translateY(-100%);
-  transition:transform .46s cubic-bezier(.76,0,.24,1) 0s;
+  transition:transform .46s var(--ease-drawer) 0s;
   will-change:transform;
 }
 #curtain2 i{
@@ -482,7 +494,7 @@ body[data-wall="none"] .rail-art::after{
   transition:.22s;position:relative;
 }
 .rail-link .ri{color:var(--faint);font-size:9px;transition:.22s}
-.rail-link:hover{background:var(--soft-2);color:var(--text);transform:translateX(3px)}
+.rail-link:hover{background:var(--soft-2);color:var(--text)}
 .rail-link:hover .ri{color:var(--accent)}
 .rail-link.active{
   background:rgba(var(--accent-rgb),.16);color:var(--text);font-weight:600;
@@ -516,7 +528,7 @@ body[data-wall="none"] .rail-art::after{
   background:var(--soft);color:var(--text);
   font-size:14px;display:grid;place-items:center;transition:.22s;
 }
-.icon-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+.icon-btn:hover{border-color:var(--accent)}
 .icon-btn.on{border-color:var(--accent);background:rgba(var(--accent-rgb),.18)}
 
 .rail-toggle{
@@ -646,16 +658,17 @@ body[data-wall="none"] .hero-shade{
 /* 入场：逐项上浮 */
 .hero-inner > *{
   opacity:0;transform:translateY(22px);
-  animation:hero-in .85s cubic-bezier(.22,1,.36,1) forwards;
+  animation:hero-in 520ms var(--ease-out) forwards;
 }
-.hero-badge   {animation-delay:.10s}
-.hero-hello   {animation-delay:.20s}
-.hero-name    {animation-delay:.30s}
-.hero-type    {animation-delay:.46s}
-.hero-lede    {animation-delay:.56s}
-.hero-actions {animation-delay:.68s}
-.hero-facts   {animation-delay:.80s}
-.hero-socials {animation-delay:.92s}
+/* 首屏入场：60ms 步进（规范建议 30–80ms），整体 0→420ms 收完 */
+.hero-badge   {animation-delay:0ms}
+.hero-hello   {animation-delay:60ms}
+.hero-name    {animation-delay:120ms}
+.hero-type    {animation-delay:180ms}
+.hero-lede    {animation-delay:240ms}
+.hero-actions {animation-delay:300ms}
+.hero-facts   {animation-delay:360ms}
+.hero-socials {animation-delay:420ms}
 @keyframes hero-in{to{opacity:1;transform:translateY(0)}}
 
 .hero-badge{
@@ -823,7 +836,7 @@ html[data-theme="light"] .hero-socials .hs{background:rgba(255,255,255,.66);bord
 .bar i{
   display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  transition:width 1.2s cubic-bezier(.22,1,.36,1);
+  transition:width 1.2s var(--ease-soft);
 }
 .bar i.fill{width:var(--w)}
 
@@ -845,7 +858,7 @@ html[data-theme="light"] .hero-socials .hs{background:rgba(255,255,255,.66);bord
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   box-shadow:var(--shadow);
 }
-.card:hover{transform:translateY(-5px);border-color:var(--accent)}
+.card:hover{border-color:var(--accent)}
 .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
 .card-ico{font-size:26px}
 .badge{
@@ -871,9 +884,9 @@ html[data-theme="light"] .hero-socials .hs{background:rgba(255,255,255,.66);bord
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   box-shadow:var(--shadow);
 }
-.hobby:hover{transform:translateY(-5px);border-color:var(--accent)}
+.hobby:hover{border-color:var(--accent)}
 .hobby-ico{font-size:30px;display:block;margin-bottom:11px;transition:transform .35s}
-.hobby:hover .hobby-ico{transform:scale(1.18) rotate(-7deg)}
+
 .hobby h3{font-size:16px;font-weight:700;margin-bottom:7px}
 .hobby p{font-size:13.5px;color:var(--muted);line-height:1.7}
 
@@ -886,7 +899,7 @@ html[data-theme="light"] .hero-socials .hs{background:rgba(255,255,255,.66);bord
   background:var(--panel-2);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
 }
-.site:hover{border-color:var(--accent);transform:translateX(5px);background:var(--soft)}
+.site:hover{border-color:var(--accent);background:var(--soft)}
 .site-ico{font-size:22px;flex:none}
 .site b{display:block;font-size:14.5px;color:var(--text);font-weight:650}
 .site small{font-size:12.5px;color:var(--faint)}
@@ -941,9 +954,7 @@ html[data-theme="light"] .toast{color:#fff}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- 动画 ---------- */
-.reveal{opacity:0;transform:translateY(26px);
-  transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
-.reveal.show{opacity:1;transform:translateY(0)}
+/* .reveal 的正式定义在文末「运动层」，这里不再重复 */
 
 
 /* ---------- 社交账号按钮（侧边栏） ---------- */
@@ -962,7 +973,7 @@ html[data-theme="light"] .toast{color:#fff}
   color:var(--text);border-color:var(--accent);
   background:rgba(var(--accent-rgb),.14);transform:translateY(-2px);
 }
-.social:hover svg{transform:scale(1.12)}
+
 /* GitHub 与 B 站各自品牌的悬浮色 */
 .social[href*="github.com"]:hover{border-color:#8ea6ff;background:rgba(142,166,255,.14)}
 .social[href*="bilibili.com"]:hover{border-color:#ff8fb1;background:rgba(255,143,177,.14);color:#ffb3c9}
@@ -1248,7 +1259,7 @@ html[data-theme="light"] .toast{color:#fff}
    ========================================================== */
 .view[hidden]{display:none}
 .view{
-  animation:view-in .45s cubic-bezier(.22,1,.36,1);
+  animation:view-in .45s var(--ease-soft);
 }
 @keyframes view-in{
   from{opacity:0;transform:translateY(14px)}
@@ -1318,7 +1329,7 @@ html[data-theme="light"] .page-head h2{text-shadow:0 2px 12px rgba(255,255,255,.
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
-  .reveal{opacity:1;transform:none}
+  /* .reveal 的减弱处理见文末运动层 */
 }
 
 /* 不支持 backdrop-filter 时的兜底 */
@@ -1327,4 +1338,85 @@ html[data-theme="light"] .page-head h2{text-shadow:0 2px 12px rgba(255,255,255,.
   html[data-theme="light"] .rail{background:rgba(255,255,255,.97)}
   html[data-theme="light"] .panel,html[data-theme="light"] .card,
   html[data-theme="light"] .hobby,html[data-theme="light"] .site,
+}
+
+/* ==========================================================
+   运动层（Motion Layer）
+   规范来源：Emil Kowalski「animate / review-animations」
+   原则：只动 transform / opacity；入场用 ease-out；UI 动效 < 300ms；
+        悬停位移必须门控；减弱动画保留 opacity、去掉位移
+   ========================================================== */
+
+/* ---------- 1. 按钮按压反馈（100–160ms，scale .97） ---------- */
+.btn,
+.icon-btn,
+.wall-opt,
+.hs,
+.social,
+.rail-link,
+.site,
+.card,
+.hobby{
+  transition:transform var(--dur-press) var(--ease-out),
+             border-color var(--dur-pop) ease,
+             background-color var(--dur-pop) ease,
+             color var(--dur-pop) ease,
+             box-shadow var(--dur-pop) ease;
+}
+.btn:active,
+.icon-btn:active,
+.wall-opt:active,
+.hs:active,
+.social:active,
+.site:active{transform:scale(.97)}
+
+.card:active,
+.hobby:active{transform:scale(.985)}
+
+/* ---------- 2. 悬停位移：只在真有指针的设备上生效 ---------- */
+@media (hover:hover) and (pointer:fine){
+  .rail-link:hover{transform:translateX(3px)}
+  .icon-btn:hover{transform:translateY(-2px)}
+  .btn:hover{transform:translateY(-2px)}
+  .card:hover{transform:translateY(-5px)}
+  .hobby:hover{transform:translateY(-5px)}
+  .hobby:hover .hobby-ico{transform:scale(1.18) rotate(-7deg);transition:transform var(--dur-ui) var(--ease-out)}
+  .site:hover{transform:translateX(5px)}
+  .site:hover .site-arrow{transform:translate(2px,-2px);transition:transform var(--dur-pop) var(--ease-out)}
+  .social:hover svg{transform:scale(1.12);transition:transform var(--dur-pop) var(--ease-out)}
+  .hero-actions .btn:hover .ar{transform:translateX(4px);transition:transform var(--dur-pop) var(--ease-out)}
+  .hs:hover{transform:translateY(-2px)}
+}
+
+/* ---------- 3. 滚动揭示 + 入场错峰 ----------
+   位移用 transform（GPU），延迟由 JS 写 --stagger-i（45ms/项，落在 30–80ms 区间） */
+.reveal{
+  opacity:0;
+  transform:translateY(14px);
+  transition:opacity var(--dur-reveal) var(--ease-out),
+             transform var(--dur-reveal) var(--ease-soft);
+  transition-delay:calc(var(--stagger-i, 0) * 45ms);
+}
+.reveal.show{opacity:1;transform:none}
+
+/* ---------- 5. 视图切换时内容轻微跟进（不阻挡） ---------- */
+.view{will-change:auto}
+
+/* ---------- 6. 减弱动画：保留 opacity/颜色过渡，去掉位移 ----------
+   规范：减弱 ≠ 归零。理解性的淡入保留，位移与循环动画去掉。 */
+@media (prefers-reduced-motion:reduce){
+  .reveal{
+    opacity:1;
+    transform:none;
+    transition:opacity 200ms ease;
+    transition-delay:0ms;
+  }
+  .btn:active,.icon-btn:active,.wall-opt:active,
+  .hs:active,.social:active,.site:active,
+  .card:active,.hobby:active{transform:none}
+  .hero-bg img{animation:none}
+  .spark{animation:none;opacity:.45}
+  .loader-emblem,.lw-item{animation-duration:.01ms}
+  .loader .curtain{display:none}
+  .loader-bg{opacity:.14}
 }

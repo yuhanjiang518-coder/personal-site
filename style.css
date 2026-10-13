@@ -1565,9 +1565,9 @@ html.js .reveal.rise-mask{
   transition:clip-path 900ms var(--ease-in-out);
   transition-delay:calc(var(--stagger-i, 0) * 70ms);
 }
-.page-head.show,
-.sec-head.show,
-.reveal.rise-mask.show{clip-path:inset(0 0 0 0)}
+html.js .page-head.show,
+html.js .sec-head.show,
+html.js .reveal.rise-mask.show{clip-path:inset(0 0 0 0)}
 
 /* 标题内部再抬一点，形成「从基线后面升起来」的层次
    （同样只在 JS 可用时隐藏，无 JS 直接可见） */
@@ -1594,11 +1594,11 @@ html.js .anime-card{
              transform 720ms var(--ease-out);
   transition-delay:calc(var(--stagger-i, 0) * 70ms);
 }
-.card.show,
-.hobby.show,
-.site.show,
-.game.show,
-.anime-card.show{opacity:1;transform:none}
+html.js .card.show,
+html.js .hobby.show,
+html.js .site.show,
+html.js .game.show,
+html.js .anime-card.show{opacity:1;transform:none}
 
 /* --- 手法 C：面板/图片走「遮罩横向扫开」 --- */
 html.js .panel,
@@ -1610,9 +1610,9 @@ html.js .rm-item{
   transition:clip-path 820ms var(--ease-in-out);
   transition-delay:calc(var(--stagger-i, 0) * 70ms);
 }
-.panel.show,
-.mx-group.show,
-.rm-item.show{clip-path:inset(0 0 0 0)}
+html.js .panel.show,
+html.js .mx-group.show,
+html.js .rm-item.show{clip-path:inset(0 0 0 0)}
 
 /* --- 手法 D：其余（技能条容器等）只做淡入，不位移 --- */
 .reveal.fade-only{

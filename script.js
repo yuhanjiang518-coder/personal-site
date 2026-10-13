@@ -15,8 +15,10 @@
     var bar   = $('#loaderBar');
     var msgEl = $('#loaderMsg');
     var pctEl = $('#loaderPct');
-    var arc   = $('.le-arc');
-    var RING  = 128.8;            // 2 * PI * r(20.5)
+    var arc    = $('.le-arc');
+    var emblem = $('.loader-emblem');
+    var RING   = 128.8;           // 2 * PI * r(20.5)
+    var lastRipple = 0;           // 每推进 20% 荡开一圈脉冲
 
     var reduce = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -80,6 +82,17 @@
       if (bar)   bar.style.width = v + '%';
       if (pctEl) pctEl.textContent = v;
       if (arc)   arc.style.strokeDashoffset = (RING * (1 - v / 100)).toFixed(2);
+
+      // 每跨过 20% 让徽记荡一圈涟漪（只在跨档时触发一次）
+      if (emblem) {
+        var mark = Math.floor(v / 20) * 20;
+        if (mark > lastRipple && v < 100) {
+          lastRipple = mark;
+          emblem.classList.remove('tick');
+          void emblem.offsetWidth;      // 强制回流，让动画能重播
+          emblem.classList.add('tick');
+        }
+      }
       if (msgEl) {
         var t = label(v);
         if (msgEl.textContent !== t) msgEl.textContent = t;

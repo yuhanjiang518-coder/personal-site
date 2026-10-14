@@ -381,6 +381,93 @@ body.nav-hidden .topbar { transform: translateY(-102%); }
 .icon-btn:active { transform: scale(.9); }
 .icon-btn[aria-expanded="true"] { background: var(--primary-soft); color: var(--primary-deep); }
 
+/* --- 跟随指针的高光（spotlight card）---
+   指针位置由 script.js 那趟已有的 rAF 里写成 --mx/--my（复用同一份 rect，不额外读布局），
+   --spot-o 控制淡入淡出。高光用 z-index:-1 画在「卡片背景之上、文字之下」：
+   给卡片 isolation:isolate 让它成立，并且不会溢出到父层。 */
+.spot { isolation: isolate; }
+.spot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--primary) 34%, transparent) 0%,
+    transparent 66%);
+  opacity: var(--spot-o, 0);
+  transition: opacity .35s var(--ease-out);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot::after { display: none; }
+}
+
+/* --- 图标按钮的 tooltip ---
+   原来是原生 title：样式不可控、要等一秒、还会和 aria-label 重复播报。
+   现在用 data-tip + 伪元素：悬停延迟 350ms 出现，键盘 focus 立刻出现。
+   悬停只管精确指针（触屏上点按会"粘住" tooltip），键盘路径不受影响。 */
+.icon-btn[data-tip] { position: relative; }
+.icon-btn[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + .5rem);
+  left: 50%;
+  z-index: 5;
+  padding: .3rem .6rem;
+  border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--text) 92%, transparent);
+  color: var(--page-bg);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% -4px;
+  pointer-events: none;
+  transition: opacity .18s ease, translate .24s var(--ease-out);
+  transition-delay: .35s;
+}
+.icon-btn[data-tip]:focus-visible::after {
+  opacity: 1;
+  translate: -50% 0;
+  transition-delay: 0s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn[data-tip]:hover::after { opacity: 1; translate: -50% 0; }
+}
+/* 面板关掉时（右上角）tooltip 往左收，别顶出视口 */
+@media (max-width: 560px) {
+  .icon-btn[data-tip]::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn[data-tip]::after { transition: opacity .12s ease; translate: -50% 0; transition-delay: 0s; }
+}
+
+/* --- 正文里的行内链接：下划线从左侧生长（而不是悬停时整条闪现） --- */
+.foot-links a,
+.view p > a,
+.view figcaption a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size .32s var(--ease-out), color var(--d-fast) ease;
+}
+.foot-links a:hover,
+.foot-links a:focus-visible,
+.view p > a:hover,
+.view p > a:focus-visible,
+.view figcaption a:hover,
+.view figcaption a:focus-visible {
+  background-size: 100% 1px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot-links a,
+  .view p > a,
+  .view figcaption a { transition: none; background-size: 100% 1px; }
+}
+
 .nav-toggle { display: none; }
 
 /* ============================ 5. 抽屉式设置面板 ============================ */
@@ -1346,6 +1433,23 @@ body[data-wall-mode="none"] .hero {
   background: linear-gradient(to bottom, var(--primary),
       color-mix(in oklab, var(--primary) 30%, transparent) 70%, transparent);
 }
+/* 学习路线的进度光柱：在既有竖轨上叠一条实色线，长度跟着"时间轴越过视口中线"的比例走
+   （由 ⑧ 那趟滚动帧写 --tl-p）。不另起一条轨道，避免两条线错位。 */
+.timeline::after {
+  content: '';
+  position: absolute;
+  left: .34rem; top: .55rem; bottom: .55rem;
+  width: 2px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  transform: scaleY(var(--tl-p, 0));
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeline::after { transform: none; opacity: .45; }   /* 不动：整条淡淡地铺满 */
+}
+
 .tl-item { position: relative; }
 .tl-item::before {
   content: "";

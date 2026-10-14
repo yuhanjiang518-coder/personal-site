@@ -1824,6 +1824,8 @@
 
     /* ---------- ① 滚动进度条 ---------- */
     var sp = $('#scrollProgress');
+    /* 学习路线的时间轴：它的进度线长度由 ⑧ 的滚动帧写 --tl-p */
+    var tlEl = $('.timeline');
     /* ---------- ⑦ 数字滚动（任意 [data-count]） ---------- */
     var countIO = null;
     if ('IntersectionObserver' in window && !reduceMotion) {
@@ -1883,7 +1885,7 @@
     /* ---------- ④ 3D 倾斜 + ⑤ 磁吸（只在有真指针的设备） ---------- */
     if (fine && !reduceMotion) {
       var tiltEls = $$('.card, .proj, .anime, .hslide, .feat, .now-item');
-      tiltEls.forEach(function (el) { el.classList.add('tilt'); });
+      tiltEls.forEach(function (el) { el.classList.add('tilt', 'spot'); });
 
       var magEls = $$('.btn, .icon-btn');
       magEls.forEach(function (el) { el.classList.add('magnetic'); });
@@ -1908,6 +1910,7 @@
           var r = el.getBoundingClientRect();
           if (r.bottom < -60 || r.top > vh + 60) {
             if (el.classList.contains('is-live')) el.classList.remove('is-live');
+            if (el.style.getPropertyValue('--spot-o') !== '0') el.style.setProperty('--spot-o', '0');
             continue;
           }
           /* 指针在元素外圈 90px 内才开始反应，避免整屏卡片都在动 */
@@ -1921,8 +1924,13 @@
               el.style.setProperty('--rx', '0deg');
               el.style.setProperty('--ry', '0deg');
             }
+            if (el.style.getPropertyValue('--spot-o') !== '0') el.style.setProperty('--spot-o', '0');
             continue;
           }
+          /* 跟随指针的高光：复用这一趟已经读到的 rect，不再额外触发布局 */
+          el.style.setProperty('--mx', (px - r.left).toFixed(1) + 'px');
+          el.style.setProperty('--my', (py - r.top).toFixed(1) + 'px');
+          el.style.setProperty('--spot-o', '1');
           var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
           var nx = (px - cx) / (r.width / 2 || 1);   /* -1 ~ 1 */
           var ny = (py - cy) / (r.height / 2 || 1);
@@ -1997,6 +2005,16 @@
         var max = (doc.scrollHeight || 1) - (window.innerHeight || 1);
         var p = max > 0 ? (window.pageYOffset || doc.scrollTop || 0) / max : 0;
         sp.style.setProperty('--sp', Math.max(0, Math.min(1, p)).toFixed(4));
+
+        /* 时间轴进度：视口中线扫过时间轴的比例。视图隐藏时 rect 全是 0，会被这层判断挡掉 */
+        if (tlEl) {
+          var tr = tlEl.getBoundingClientRect();
+          var vh = window.innerHeight || 800;
+          if (tr.height > 0 && tr.bottom > 0 && tr.top < vh) {
+            var tp = (vh * 0.62 - tr.top) / tr.height;
+            tlEl.style.setProperty('--tl-p', Math.max(0, Math.min(1, tp)).toFixed(4));
+          }
+        }
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });

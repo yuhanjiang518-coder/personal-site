@@ -792,14 +792,16 @@ html.aw-ready .aw-scrollbar { opacity: 1; }
   content: '';
   position: absolute;
   top: 1rem; bottom: 1rem; left: 50%;
-  width: .28rem;
+  width: .5rem;                 /* 定成粗的那档，靠 scaleX 缩小 —— width 过渡会触发 layout */
   translate: -50% 0 0;
+  transform: scaleX(.56);       /* .28rem / .5rem */
+  transform-origin: 50% 50%;
   background: var(--text);
   opacity: .55;
-  transition: width .18s var(--ease-out), opacity .18s var(--ease-out);
+  transition: transform .18s var(--ease-out), opacity .18s var(--ease-out);
 }
 .aw-scrollbar__thumb:hover::after,
-.aw-scrollbar.is-dragging .aw-scrollbar__thumb::after { width: .5rem; opacity: 1; }
+.aw-scrollbar.is-dragging .aw-scrollbar__thumb::after { transform: scaleX(1); opacity: 1; }
 
 @media (max-width: 48rem) { .aw-scrollbar { width: .5rem; } }
 

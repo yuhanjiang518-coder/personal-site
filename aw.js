@@ -26,6 +26,8 @@
 
   Emitter.prototype.on = function (name, fn, ctx) {
     (this.listeners[name] || (this.listeners[name] = [])).push({ fn: fn, ctx: ctx });
+    /* 有人在听 tick，就把帧循环叫醒（空闲时它是停着的，见 Ticker.step） */
+    if (name === 'tick') Ticker.init();
     return this;
   };
 
@@ -56,6 +58,13 @@
     step: function (now) {
       if (!Ticker.start) Ticker.start = now;
       Ticker.last = now;
+      /* 没人在听就停掉循环 —— 波浪、打字机、分隔条都各自会在进屏/离屏时增删监听，
+         全都离屏时没必要每帧空转一次（这是站上唯一一个常驻帧循环）。 */
+      var list = bus.listeners.tick;
+      if (!list || !list.length) {
+        Ticker.running = false;
+        return;
+      }
       bus.emit('tick', now - Ticker.start);
       window.requestAnimationFrame(Ticker.step);
     },

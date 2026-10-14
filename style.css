@@ -1059,11 +1059,15 @@ body[data-wall-mode="none"] .hero {
 .bar > i {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--primary),
       color-mix(in oklab, var(--primary) 55%, oklch(.78 .14 210)));
-  transition: width 1.05s var(--ease-out);
+  /* 用 scaleX 代替 width：width 会触发 layout，scaleX 只走合成器。
+     视觉完全一致（配合 transform-origin: left）。 */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1.05s var(--ease-out);
 }
 .bar-meta {
   display: flex;
@@ -1548,11 +1552,14 @@ body[data-wall-mode="none"] .hero {
 .fr-luck-bar > i {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--primary),
       color-mix(in oklab, var(--primary) 50%, oklch(.8 .14 200)));
-  transition: width .9s var(--ease-out);
+  /* 抽签运势条同样用 scaleX */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .9s var(--ease-out);
 }
 .fr-luck-v {
   flex: 0 0 2.6rem;
@@ -1734,7 +1741,8 @@ body[data-wall-mode="none"] .hero {
   font-weight: 650;
   line-height: 1.2;
   cursor: pointer;
-  will-change: transform;
+  /* 刻意不写 will-change：标签墙一次动 24 个元素，
+     逐个常驻合成层反而会拖垮移动端。物理循环只在需要时改 transform。 */
   background: var(--btn-bg);
   color: var(--text-soft);
   box-shadow: var(--shadow-sm);
@@ -2386,11 +2394,14 @@ html.js #loader:not(.is-gone) {
 .load-track > i {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--primary),
       color-mix(in oklab, var(--primary) 55%, oklch(.8 .14 200)));
-  transition: width 280ms var(--ease-out);
+  /* 同上：scaleX 代替 width，避免每次进度更新都触发 layout */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 280ms var(--ease-out);
 }
 .load-pct {
   font-size: .7rem;

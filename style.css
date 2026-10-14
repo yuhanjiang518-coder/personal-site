@@ -577,6 +577,10 @@ input[type="range"]::-moz-range-thumb {
 
 .btn-block { width: 100%; }
 
+/* 兜底：抽屉面板绝不常驻 —— 只有 .is-open 时才可见 */
+.panel:not(.is-open) { transform: translateX(100%); visibility: hidden; }
+.panel-scrim:not(.is-open) { opacity: 0; visibility: hidden; }
+
 /* ============================ 6. 页面主体 ============================ */
 .wrap {
   position: relative;
@@ -1537,6 +1541,18 @@ html.js body:not(.loaded) .reveal {
 }
 #loader.is-gone { opacity: 0; visibility: hidden; pointer-events: none; }
 
+/* 兜底：即使 JS 完全没跑（或无 JS），加载屏也必须在几秒后自行让位，
+   绝不能永久盖住页面。 */
+@keyframes loader-failsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+html:not(.js) #loader {
+  animation: loader-failsafe .4s ease 1.2s both;
+}
+html.js #loader:not(.is-gone) {
+  animation: loader-failsafe .4s ease 8s both;
+}
+
 .load-inner {
   display: flex;
   flex-direction: column;
@@ -1600,7 +1616,9 @@ html.js body:not(.loaded) .reveal {
   font-variant-numeric: tabular-nums;
 }
 
-/* 三道幕布 */
+/* 三道幕布
+   容器铺满全屏且 z-index 很高，空闲时必须彻底隐藏——
+   否则某些手机浏览器会把这一层当作不透明块合成，盖住页面顶部。 */
 #curtain {
   position: fixed;
   inset: 0;
@@ -1608,7 +1626,9 @@ html.js body:not(.loaded) .reveal {
   pointer-events: none;
   display: flex;
   flex-direction: column;
+  visibility: hidden;
 }
+#curtain.is-sweeping { visibility: visible; }
 #curtain > span { flex: 1; transform: translateY(-101%); }
 #curtain > span:nth-child(1) { background: var(--curtain-1, var(--primary)); }
 #curtain > span:nth-child(2) { background: var(--curtain-2, var(--card-solid)); }

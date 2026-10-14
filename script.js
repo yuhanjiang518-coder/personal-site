@@ -21,7 +21,11 @@
      1. 壁纸库
      ================================================================== */
   var WALLS = [
-    { id: 'main', name: '旅途 · 树下小憩' }
+    { id: 'bed',    name: '卧床读书' },
+    { id: 'rain',   name: '星伞雨空' },
+    { id: 'window', name: '夜窗蓝调' },
+    { id: 'desert', name: '沙漠舞娘' },
+    { id: 'lemon',  name: '柠檬庭院' }
   ];
   var MODES = ['full', 'soft', 'none'];
 
@@ -41,14 +45,14 @@
      2. 状态
      ================================================================== */
   var state = {
-    wall:  LS.get('jyh-wall', 'main'),
+    wall:  LS.get('jyh-wall', 'bed'),
     mode:  LS.get('jyh-wall-mode', 'full'),
     veil:  parseInt(LS.get('jyh-veil', '62'), 10),
     hue:   LS.get('jyh-hue', '340'),
     theme: LS.get('jyh-theme', 'dark')
   };
   if (MODES.indexOf(state.mode) < 0) state.mode = 'full';
-  if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'main';
+  if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'bed';
   if (isNaN(state.veil)) state.veil = 62;
   state.veil = Math.max(0, Math.min(96, state.veil));
 
@@ -204,6 +208,14 @@
   });
 
 
+  var randBtn = $('#wallRandom');
+  if (randBtn) {
+    randBtn.addEventListener('click', function () {
+      var others = WALLS.filter(function (w) { return w.id !== state.wall; });
+      setWallpaper(others[Math.floor(Math.random() * others.length)].id);
+    });
+  }
+
   if (veilRange) {
     veilRange.value = String(state.veil);
     if (veilVal) veilVal.textContent = state.veil + '%';
@@ -253,7 +265,7 @@
       }
       setMode('full');
       applyTheme('dark');
-      setWallpaper('main', { announce: false });
+      setWallpaper('bed', { announce: false });
       toast('已恢复默认外观');
     });
   }
@@ -933,9 +945,9 @@
   var CRITICAL = [
     'assets/avatar.webp',
     'assets/avatar@2x.webp',
-    'assets/wall-main.webp',
-    'assets/wall-main-p.webp',
-    'assets/wall-main-thumb.webp',
+    'assets/wall-' + state.wall + '.webp',
+    'assets/wall-' + state.wall + '-p.webp',
+    'assets/wall-' + state.wall + '-thumb.webp',
     'assets/muki-feature.webp',
     'assets/cover-elaina.webp'
   ];

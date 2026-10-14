@@ -2826,6 +2826,442 @@ html[data-curtain="life"] {
    位移同样交给 JS 时间轴（含方向：去后面的页面从左往右，回前面的从右往左）。 */
 #jump-figure.is-sliding { visibility: visible; }
 
+/* ============================ 16.35 开始界面（标题画面） ============================ */
+/* 机制来自 baier233/bocchi-template-1.21.5 的 Misayos 主菜单：
+   · 整屏 1500ms EASE_IN_OUT 淡入打底；
+   · 两块粉板"高度从 0 长出来"（1000ms），彼此错开 100ms；
+   · 描边元素依次登场：虚线靠 clip-path 扫出、斜条纹的间距从 9px 收到 4px；
+   · 大字是"位移 + 0.85→1 缩放 + 淡入"（700ms）；
+   · 立绘从画面外滑入后持续"呼吸"（余弦、3s 周期、绕底部轻微自转）；
+   · 唱片是 CIRC_OUT 500ms 缩放入场，然后一直匀速转。
+   基准态一律写成终态，关键帧只描述起始态 —— 这样"减弱动效"直接关掉动画就是成品。 */
+.start {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a0618 0%, #2a1c33 100%);
+  color: #fff;
+  animation: start-fade 1500ms cubic-bezier(.65, 0, .35, 1) both;
+  user-select: none;
+}
+@keyframes start-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.start.is-leaving {
+  animation: none;
+  transform: scale(1.06);
+  filter: blur(7px);
+  opacity: 0;
+  transition: transform .7s var(--ease-expo-out), filter .7s var(--ease-expo-out), opacity .7s ease;
+  pointer-events: none;
+}
+
+/* 背景渐变（叠在底色之上做一层偏紫的顶光） */
+.start-grad {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% -10%, rgb(255 120 187 / 22%) 0%, transparent 60%);
+  animation: start-fade 1500ms cubic-bezier(.65, 0, .35, 1) 200ms both;
+}
+
+/* 两块粉板 */
+.start-block {
+  position: absolute;
+  transform-origin: 50% 0;
+  overflow: hidden;
+  animation: start-grow 1000ms var(--ease-out) both;
+}
+@keyframes start-grow {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+.start-block--tall {
+  left: 15%;
+  top: 0;
+  width: clamp(3.2rem, 6.5vw, 6rem);
+  height: min(64vh, 34rem);
+  background: linear-gradient(180deg, #fb85ae 0%, #fc67a7 30%);
+  animation-delay: 400ms;
+}
+.start-block--tall i {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 6%;
+  background: #fb85ae;
+}
+.start-block--big {
+  left: 30%;
+  top: 11%;
+  width: min(46vw, 62vh);
+  height: min(78vh, 46rem);
+  background: linear-gradient(150deg, #f69db2 0%, #ff78bb 100%);
+  box-shadow: -15px 0 30px rgb(0 0 0 / 34%);
+  animation-delay: 500ms;
+}
+.start-block__mark {
+  position: absolute;
+  left: 6%;
+  bottom: -8%;
+  width: 88%;
+  height: 96%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  opacity: .07;
+}
+
+/* 描边元素 */
+.start-strokes { position: absolute; inset: 0; pointer-events: none; }
+.start-dash {
+  position: absolute;
+  height: 0;
+  border-top: 1px dashed rgb(255 255 255 / 72%);
+  clip-path: inset(0 100% 0 0);
+  animation: start-draw 600ms cubic-bezier(.55, .055, .675, .19) both;
+}
+@keyframes start-draw {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+.start-dash--1 {
+  left: 17%;
+  top: 22%;
+  width: 22%;
+  transform: rotate(-19deg);
+  animation-delay: 900ms;
+}
+.start-dash--2 {
+  left: 17%;
+  top: 62%;
+  width: 26%;
+  transform: rotate(14deg);
+  animation-duration: 760ms;
+  animation-timing-function: cubic-bezier(.215, .61, .355, 1);
+  animation-delay: 1000ms;
+}
+.start-sq {
+  position: absolute;
+  background: #fff;
+  animation: start-pop 600ms var(--ease-out) both;
+}
+@keyframes start-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.start-sq--dot { left: 16.5%; top: 21%; width: 4px; height: 4px; animation-delay: 1000ms; }
+.start-sq--grow {
+  left: 31.5%; top: 36%;
+  width: 5px;
+  height: 5px;
+  transform-origin: 50% 0;
+  animation: start-grow 700ms var(--ease-out) 1050ms both;
+}
+.start-sq--b3 { left: 17.5%; top: 62.5%; width: 8px; height: 8px; transform-origin: 50% 0; animation-delay: 1100ms; }
+.start-blinds {
+  position: absolute;
+  background-image: repeating-linear-gradient(48deg, #fff 0 2px, transparent 2px 100%);
+  animation: start-blinds 1000ms var(--ease-out) 1100ms both;
+}
+@keyframes start-blinds {
+  from { background-size: 9px 9px; opacity: 0; }
+  to   { background-size: 4px 4px; opacity: 1; }
+}
+.start-blinds--1 { left: 19%; top: 60%; width: 3.4rem; height: 8px; }
+.start-blinds--2 { left: 80%; top: 8%; width: 6rem; height: 8px; }
+
+/* 唱片 */
+.start-record {
+  position: absolute;
+  left: 58%;
+  top: 16%;
+  width: min(52vh, 34vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  animation: start-record-in 500ms cubic-bezier(.075, .82, .165, 1) 1400ms both;
+}
+@keyframes start-record-in {
+  from { transform: scale(.62); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.start-record__spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #241826 0 34%, #150d18 34% 100%);
+  animation: start-spin 26s linear 1900ms infinite;
+}
+.start-record__spin img,
+.start-record__spin .start-record__label { position: absolute; }
+@keyframes start-spin { to { transform: rotate(360deg); } }
+.start-record__grooves {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle at 50% 50%, rgb(255 255 255 / 7%) 0 1px, transparent 1px 7px);
+}
+/* 头像略偏左上：让唱片中心的轴孔落在颈肩，而不是正好戳在她脸上 */
+.start-record img {
+  position: absolute;
+  left: 46%; top: 45%;
+  width: 50%; height: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 22%;
+  border: 2px solid rgb(255 255 255 / 78%);
+}
+.start-record__label {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 4.5%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #f7eef3;
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 42%);
+}
+
+/* 立绘 */
+.start-char-wrap {
+  position: absolute;
+  left: 33%;
+  bottom: 0;
+  height: min(92vh, 52rem);
+  display: flex;
+  align-items: flex-end;
+  animation: start-char-in 900ms var(--ease-out) 1200ms both;
+}
+@keyframes start-char-in {
+  from { transform: translate3d(-14%, 8%, 0); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.start-char {
+  height: 100%;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 18px 40px rgb(0 0 0 / 45%));
+  transform-origin: 50% 96%;
+  animation: start-breathe 3s ease-in-out infinite;
+}
+@keyframes start-breathe {
+  0%, 100% { transform: rotate(-.6deg) translateY(0); }
+  50%      { transform: rotate(.6deg) translateY(-.35%); }
+}
+
+/* 文字层 */
+/* 文字在左、立绘在右 —— 参考站就是这么分的：大字压在竖粉板的右缘上，
+   立绘站在大粉板的中右侧并盖住唱片的左边一半。 */
+.start-text {
+  position: absolute;
+  left: 6%;
+  top: 36%;
+  width: min(35vw, 27rem);
+  z-index: 1;
+  isolation: isolate;      /* 自成层：里面的暗底(z-index:-1)才会压在文字之后、立绘之前 */
+}
+.start-kicker {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 86%);
+  animation: start-slide 700ms var(--ease-out) 800ms both;
+}
+.start-kicker i {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 1px;
+  background: currentColor;
+  transform-origin: 0 50%;
+  animation: start-draw 600ms var(--ease-out) 850ms both;
+}
+@keyframes start-slide {
+  from { transform: translate3d(-8%, 0, 0); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.start-title {
+  margin: .35rem 0 .5rem;
+  font-size: clamp(2.6rem, 7.4vw, 5.4rem);
+  line-height: .88;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 26px rgb(0 0 0 / 42%);
+}
+.start-title span {
+  display: block;
+  animation: start-title-in 700ms var(--ease-out) both;
+}
+.start-title span:nth-child(1) { animation-delay: 900ms; }
+.start-title span:nth-child(2) {
+  animation-delay: 1000ms;
+  color: #ffd9e6;
+  font-size: .78em;
+}
+@keyframes start-title-in {
+  from { transform: translate3d(0, 12%, 0) scale(.85); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.start-info {
+  font-size: .82rem;
+  line-height: 1.7;
+  color: rgb(255 255 255 / 84%);
+  animation: start-slide 700ms var(--ease-out) 1050ms both;
+}
+.start-info--2 { color: rgb(255 255 255 / 66%); animation-delay: 1120ms; }
+.start-rule {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: .8rem 0 .6rem;
+  background: rgb(255 255 255 / 55%);
+  transform-origin: 0 50%;
+  clip-path: inset(0 100% 0 0);
+  animation: start-draw 700ms var(--ease-out) 1180ms both;
+}
+.start-deco {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: 2.4px;          /* 终态：2.4px（动画从 0.5px 展开） */
+  color: #fff;
+  animation: start-deco 700ms var(--ease-out) 1250ms both;
+}
+@keyframes start-deco {
+  from { letter-spacing: .5px; opacity: 0; }
+  to   { letter-spacing: 2.4px; opacity: 1; }
+}
+.start-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin-top: .8rem;
+  animation: start-pop 600ms var(--ease-out) 1350ms both;
+}
+.start-tags span {
+  padding: .3rem .7rem;
+  border-radius: 999rem;
+  background: rgb(255 255 255 / 92%);
+  color: #2a1c33;
+  font-size: .7rem;
+  font-weight: 700;
+}
+.start-hand {
+  /* 挂在 .start 上而不是文字块里 —— 它是"手写批注"，位置要相对整屏（左上角空白处） */
+  position: absolute;
+  left: 7.5%;
+  top: 9%;
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: #fff;
+  opacity: .92;
+  transform: rotate(-13deg);
+  text-shadow: 0 3px 14px rgb(0 0 0 / 45%);
+  animation: start-hand 700ms var(--ease-back) 1450ms both;
+}
+@keyframes start-hand {
+  from { transform: rotate(-13deg) scale(.7); opacity: 0; }
+  to   { transform: rotate(-13deg) scale(1); opacity: .92; }
+}
+
+/* GUI 层 */
+.start-gui {
+  position: absolute;
+  left: 6%;
+  bottom: 11%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.start-btn {
+  padding: .62rem 1.15rem;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 999rem;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background-color var(--d-fast) ease, transform var(--d-instant) var(--ease-out), border-color var(--d-fast) ease;
+  animation: start-pop 600ms var(--ease-out) both;
+}
+.start-btn:nth-child(1) { animation-delay: 1650ms; }
+.start-btn:nth-child(2) { animation-delay: 1740ms; }
+.start-btn:nth-child(3) { animation-delay: 1830ms; }
+.start-btn--primary { background: rgb(255 255 255 / 92%); color: #2a1c33; border-color: transparent; }
+.start-btn:hover { background: rgb(255 255 255 / 26%); border-color: rgb(255 255 255 / 70%); }
+.start-btn--primary:hover { background: #fff; }
+.start-btn:active { transform: scale(.96); }
+.start-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+.start-foot {
+  position: absolute;
+  bottom: 1rem;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  color: rgb(255 255 255 / 62%);
+  animation: start-fade 800ms ease 1900ms both;
+}
+.start-foot--l { left: 1.2rem; }
+.start-foot--r { right: 1.2rem; }
+
+/* 开场期间锁滚动 */
+body.is-startup { overflow: hidden; }
+
+/* 窄屏：改成"上立绘、下文字"的堆叠，文字块自带自下而上的暗底保证可读 */
+@media (max-width: 900px) {
+  .start-block--tall { left: 7%; width: 2.6rem; height: 36vh; }
+  .start-block--big { left: 15%; top: 5%; width: 82vw; height: 42vh; }
+  .start-record { left: 58%; top: 3%; width: 34vw; }
+  .start-char-wrap { left: 26%; bottom: 27%; height: 46vh; }
+  .start-text {
+    left: 6%;
+    top: auto;
+    bottom: 15%;
+    width: 88vw;
+  }
+  .start-text::before {
+    content: '';
+    position: absolute;
+    left: -8vw;
+    right: -8vw;
+    top: -1.4rem;
+    bottom: -1.2rem;
+    z-index: -1;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgb(10 6 24 / 82%) 24%,
+      rgb(10 6 24 / 94%) 100%);
+  }
+  .start-title { font-size: clamp(1.9rem, 11.5vw, 3rem); }
+  .start-info, .start-info--2 { font-size: .76rem; }
+  .start-rule { margin: .6rem 0 .45rem; }
+  .start-gui { left: 6%; bottom: 6%; }
+  /* 手机上这些小装饰只会添乱：留斜条纹，其余收掉 */
+  .start-hand,
+  .start-dash--1,
+  .start-dash--2,
+  .start-sq,
+  .start-foot--r { display: none; }
+}
+@media (max-width: 560px) {
+  .start-blinds--1 { display: none; }
+  .start-tags span { font-size: .66rem; padding: .26rem .6rem; }
+}
+
+/* 减弱动效：全部按终态呈现，只保留一次很短的淡出 */
+@media (prefers-reduced-motion: reduce) {
+  .start, .start * { animation: none !important; }
+  .start.is-leaving { transition: opacity .25s ease; transform: none; filter: none; }
+}
+
 /* ============================ 16.4 伊蕾娜插画 ============================ */
 /* 图取自同人画廊（页脚已注明版权归原作者），统一压成 webp。
    三态：.art-band 横幅 / .art-split 图文并排 / .art-strip 缩略图组。

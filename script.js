@@ -18,6 +18,54 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ==================================================================
+     0. 开始界面（标题画面）
+     ------------------------------------------------------------------
+     它只是盖在最上层的一层，不去干预站点自己的加载与开屏：站点该预热的照旧预热。
+     点击后这层做"放大 + 模糊"退场（参考站那套模糊/缩放是挂在 GUI 展开动画上的），
+     露出来的要么是已经就绪的首页，要么是仍在跑的加载屏 —— 两条路都通。
+     ================================================================== */
+  (function initStartScreen() {
+    var el = $('#startScreen');
+    if (!el) return;
+
+    var leaving = false;
+    document.body.classList.add('is-startup');
+
+    function leave(anchor) {
+      if (leaving) return;
+      leaving = true;
+      el.classList.add('is-leaving');
+      document.body.classList.remove('is-startup');
+
+      window.setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        /* 退场后把焦点交给主导航，键盘用户不必重新 Tab 一圈 */
+        var first = $('.nav-link');
+        if (first && first.focus) first.focus({ preventScroll: true });
+      }, reduceMotion ? 320 : 780);
+
+      if (anchor) {
+        var trigger = $('.nav-link[data-anchor="' + anchor + '"]');
+        if (trigger) window.setTimeout(function () { trigger.click(); }, 140);
+      }
+    }
+
+    el.addEventListener('click', function (e) {
+      var targeted = e.target.closest ? e.target.closest('[data-start-go]') : null;
+      if (targeted) { leave(targeted.getAttribute('data-start-go')); return; }
+      leave();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (leaving) return;
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault();
+        leave();
+      }
+    });
+  })();
+
+  /* ==================================================================
      1. 壁纸库
      ================================================================== */
   var WALLS = [

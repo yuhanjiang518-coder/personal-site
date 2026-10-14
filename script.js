@@ -1993,8 +1993,85 @@
     }
     window.__afterView = animateView;
 
+    /* ---------- ⑦.5 逐词滚动擦亮（scrub）----------
+       进度定义照 reactbits 源码：p = (vh - rect.top) / (vh + rect.height)，每词窗口 0.7。
+       没搬它的"整句旋转 3°"—— 那句话在中文卡片里会像排版坏了。
+       模糊只给桌面精确指针：逐帧给十几个字重绘 blur 在手机上不划算。
+       另外用 IO 兜一道：切到学习视图但不滚动时，也得把字点亮，否则那行字会一直是暗的。 */
+    var scrubEls = [];
+    var scrubBlurOK = window.matchMedia('(min-width: 720px) and (pointer: fine)').matches;
+
+    if (!reduceMotion) {
+      $$('.scrub').forEach(function (el) {
+        var text = el.textContent.trim();
+        if (!text) return;
+        var re = /[A-Za-z0-9+#.]+|\s+|[\s\S]/g;
+        var m;
+        var frag = document.createDocumentFragment();
+        var words = [];
+        while ((m = re.exec(text)) !== null) {
+          if (/^\s+$/.test(m[0])) { frag.appendChild(document.createTextNode(m[0])); continue; }
+          var sw = document.createElement('span');
+          sw.className = 'sw';
+          sw.textContent = m[0];
+          frag.appendChild(sw);
+          words.push(sw);
+        }
+        el.textContent = '';
+        el.appendChild(frag);
+        /* 同步压到基态：这段在首帧之前跑完，所以不会"先亮一下再变暗" */
+        for (var i = 0; i < words.length; i++) words[i].style.opacity = '0.12';
+        el.__words = words;
+        scrubEls.push(el);
+      });
+    }
+
+    function updateScrub() {
+      if (!scrubEls.length) return;
+      var vhS = window.innerHeight || 800;
+      for (var si = 0; si < scrubEls.length; si++) {
+        var sc = scrubEls[si];
+        var sr = sc.getBoundingClientRect();
+        if (sr.height <= 0 || sr.bottom < 0 || sr.top > vhS) continue;
+        var prog = (vhS - sr.top) / (vhS + sr.height);
+        prog = Math.max(0, Math.min(1, prog));
+        var ws = sc.__words;
+        var span = 0.7;
+        for (var wi = 0; wi < ws.length; wi++) {
+          var start = (wi / ws.length) * (1 - span);
+          var wp = Math.max(0, Math.min(1, (prog - start) / span));
+          var w = ws[wi];
+          w.style.opacity = (0.12 + 0.88 * wp).toFixed(3);
+          if (scrubBlurOK) w.style.filter = wp > 0.98 ? '' : 'blur(' + (4 * (1 - wp)).toFixed(2) + 'px)';
+        }
+      }
+    }
+
+    if (scrubEls.length && 'IntersectionObserver' in window) {
+      var scrubIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) updateScrub(); });
+      }, { threshold: [0, 0.35, 1] });
+      scrubEls.forEach(function (el) { scrubIO.observe(el); });
+    }
+
     /* ---------- ⑧ 进度条 + 视差的统一滚动帧 ---------- */
     var sTick = false;
+    /* 进度条走阻尼：spSmooth += (目标 - spSmooth) * 0.12（MotionSites 用的就是这个系数）。
+       直接跟原始滚动值，顶栏那条线会一跳一跳。补间只在自己没收敛时继续排帧。 */
+    var spTarget = 0, spSmooth = 0, spRAF = 0;
+    var SP_K = 0.12;
+    function stepProgress() {
+      var diff = spTarget - spSmooth;
+      if (Math.abs(diff) < 0.0004) {
+        spSmooth = spTarget;
+        sp.style.setProperty('--sp', spSmooth.toFixed(4));
+        spRAF = 0;
+        return;
+      }
+      spSmooth += diff * SP_K;
+      sp.style.setProperty('--sp', spSmooth.toFixed(4));
+      spRAF = requestAnimationFrame(stepProgress);
+    }
     function onScroll() {
       if (sTick) return;
       sTick = true;
@@ -2004,7 +2081,8 @@
         var doc = document.documentElement;
         var max = (doc.scrollHeight || 1) - (window.innerHeight || 1);
         var p = max > 0 ? (window.pageYOffset || doc.scrollTop || 0) / max : 0;
-        sp.style.setProperty('--sp', Math.max(0, Math.min(1, p)).toFixed(4));
+        spTarget = Math.max(0, Math.min(1, p));
+        if (!spRAF) spRAF = requestAnimationFrame(stepProgress);
 
         /* 时间轴进度：视口中线扫过时间轴的比例。视图隐藏时 rect 全是 0，会被这层判断挡掉 */
         if (tlEl) {
@@ -2015,6 +2093,9 @@
             tlEl.style.setProperty('--tl-p', Math.max(0, Math.min(1, tp)).toFixed(4));
           }
         }
+
+        /* 逐词擦亮跟着同一趟帧走，不额外再开一个滚动监听 */
+        updateScrub();
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });

@@ -735,6 +735,32 @@ input[type="range"]::-moz-range-thumb {
 .btn-primary { background: var(--primary); color: var(--on-primary); }
 .btn-primary:hover { background: color-mix(in oklab, var(--primary) 86%, var(--text)); }
 
+/* --- 主按钮的扫光（ShinyText 的"表面版"）---
+   ShinyText 原效果是把渐变裁进文字里扫；主按钮是实底 + 深色字，裁进文字看不出，
+   所以改成同一套机制作用在按钮表面：120° 的白色高光带扫过一次。
+   只在精确指针上、且每次悬停只播一次 —— 不做常驻循环。 */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg,
+    transparent 40%, rgb(255 255 255 / 38%) 50%, transparent 60%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover::after { animation: btn-shine .9s var(--ease-out); }
+}
+@keyframes btn-shine {
+  from { background-position: 200% 0; }
+  to   { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::after { display: none; }
+}
+
 .btn-block { width: 100%; }
 
 /* 兜底：抽屉面板绝不常驻 —— 只有 .is-open 时才可见 */
@@ -2530,19 +2556,27 @@ html.js .ghost-title.reveal.show { transform: scaleY(.88); }
   font-style: normal;
   transform: translateY(108%);
   opacity: 0;
+  /* 从"失焦"到"对上焦"：6px 以内的模糊，按性能指南控制在 20px 以内 */
+  filter: blur(6px);
   transition:
     transform 720ms var(--ease-out),
-    opacity 520ms var(--ease-out);
+    opacity 520ms var(--ease-out),
+    filter 620ms var(--ease-out);
   transition-delay: calc(var(--wd-i, 0) * 62ms);
 }
 html.js .sec-head.show .wd > i,
-html.js .ghost-title.show .wd > i { transform: none; opacity: 1; }
+html.js .ghost-title.show .wd > i { transform: none; opacity: 1; filter: none; }
 /* 无 JS 兜底 */
-html:not(.js) .wd > i { transform: none; opacity: 1; }
+html:not(.js) .wd > i { transform: none; opacity: 1; filter: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .wd > i { transform: none !important; opacity: 1 !important; }
+  .wd > i { transform: none !important; opacity: 1 !important; filter: none !important; }
 }
+
+/* --- 逐词滚动擦亮（scrub）---
+   只给"一句话"用：正文段落用它会让阅读变慢，所以全站只在技能区那一句上挂了 .scrub。
+   默认文字完全可见；JS 才会把它压暗、再随着滚动逐字点亮 —— 脚本挂掉也读得到字。 */
+.scrub .sw { will-change: opacity; }
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
@@ -2962,6 +2996,20 @@ html[data-curtain="life"] {
   pointer-events: none;
 }
 
+/* 点阵底纹：纯 CSS、零 JS、无动画。
+   用 radial-gradient 平铺出 22px 的点阵，再用径向遮罩把中间挖空 ——
+   于是点阵只出现在四周，不跟中间的立绘和大字抢注意力（aceternity 的 grid 背景同一个思路）。 */
+.start::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(255 255 255 / 15%) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 24%, #000 78%);
+  mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 24%, #000 78%);
+  pointer-events: none;
+}
+
 /* 背景渐变（叠在底色之上做一层偏紫的顶光） */
 .start-grad {
   position: absolute;
@@ -3200,7 +3248,26 @@ html[data-curtain="life"] {
   display: block;
   animation: start-title-in 700ms var(--ease-out) both;
 }
-.start-title span:nth-child(1) { animation-delay: 900ms; }
+/* ELAINA 用"活体渐变"：渐变裁进文字后缓慢左右推移。
+   末尾必须重复首色（源码是 palette + [palette[0]]），否则循环接缝处会有一条硬边。
+   同时留一条入场动画 —— 两条动画分别管 transform/opacity 与 background-position，互不抢。 */
+.start-title span:nth-child(1) {
+  background-image: linear-gradient(90deg, #ff8fb8, #b497cf, #ffe3ee, #ff8fb8);
+  background-size: 300% 100%;
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;            /* 文字透明后阴影会变成一团脏色，关掉 */
+  animation:
+    start-title-in 700ms var(--ease-out) 900ms both,
+    gt-shift 8s ease-in-out infinite alternate;
+}
+@keyframes gt-shift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
 .start-title span:nth-child(2) {
   animation-delay: 1000ms;
   color: #ffd9e6;

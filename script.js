@@ -21,11 +21,12 @@
      1. 壁纸库
      ================================================================== */
   var WALLS = [
+    { id: 'desert', name: '沙漠舞娘' },
+    { id: 'lemon',  name: '柠檬庭院' },
     { id: 'bed',    name: '卧床读书' },
     { id: 'rain',   name: '星伞雨空' },
     { id: 'window', name: '夜窗蓝调' },
-    { id: 'desert', name: '沙漠舞娘' },
-    { id: 'lemon',  name: '柠檬庭院' }
+    { id: 'tree',   name: '树下小憩' }
   ];
   var MODES = ['full', 'soft', 'none'];
 

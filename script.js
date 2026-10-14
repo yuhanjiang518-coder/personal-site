@@ -464,6 +464,38 @@
     });
   }
 
+  /* 标题逐词拆分：中文没有空格，按「2 字一组」切，英文按空格切。
+     每个词包 <span class="wd"><i>词</i></span>，用 --wd-i 错峰。 */
+  function splitWords(el) {
+    if (!el || el.dataset.wdDone === '1') return;
+    var text = el.textContent.trim();
+    if (!text) return;
+    var tokens;
+    if (/^[\x00-\x7F\s\/·\-]+$/.test(text)) {
+      tokens = text.split(/\s+/);
+    } else {
+      /* 中日韩：2 字一组；遇到 ASCII 单词整体保留 */
+      tokens = [];
+      var re = /[A-Za-z0-9+#.]+|[\u4e00-\u9fa5]{1,2}|[^\s]/g;
+      var m;
+      while ((m = re.exec(text)) !== null) tokens.push(m[0]);
+    }
+    el.textContent = '';
+    tokens.forEach(function (t, i) {
+      if (/^\s+$/.test(t)) { el.appendChild(document.createTextNode(t)); return; }
+      var span = document.createElement('span');
+      span.className = 'wd';
+      span.style.setProperty('--wd-i', String(Math.min(i, 12)));
+      var inner = document.createElement('i');
+      inner.textContent = t;
+      span.appendChild(inner);
+      el.appendChild(span);
+    });
+    el.dataset.wdDone = '1';
+  }
+
+  $$('.sec-head h2').forEach(splitWords);
+
   /* 区块编号：01 / 02 … 按视图内顺序写入 */
   $$('.view').forEach(function (v) {
     $$('.sec-idx[data-idx]', v).forEach(function (el, i) {
@@ -1393,6 +1425,60 @@
       ticking = false;
     });
   }, { passive: true });
+
+  /* ==================================================================
+     13.5 滚动视差
+     ------------------------------------------------------------------
+     三层不同速度：壁纸最慢、水印中速、卡片最近。
+     只在视口内的元素上算，避免长页面里做无用功。
+     ================================================================== */
+  (function () {
+    if (reduceMotion) return;
+    var bgImgs = $$('#bg-layer .bg-img');
+    var mids = $$('.ghost-title, .marquee');
+    var nears = $$('.sec-head, .card, .proj, .anime, .feat');
+    if (!bgImgs.length && !mids.length && !nears.length) return;
+
+    var ticking = false;
+    function paint() {
+      ticking = false;
+      var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      var vh = window.innerHeight || 800;
+
+      /* 壁纸：整页 1/12 的慢速位移 */
+      var bgY = -(y * 0.08);
+      bgImgs.forEach(function (el) {
+        el.style.setProperty('--par-bg', bgY.toFixed(1) + 'px');
+      });
+
+      /* 水印 / 跑马灯：中速，只对进入视口的生效 */
+      mids.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.bottom < -120 || r.top > vh + 120) return;
+        var c = (r.top + r.height / 2 - vh / 2) / vh;   /* -1 ~ 1 */
+        el.style.setProperty('--par-mid', (-c * 26).toFixed(1) + 'px');
+      });
+
+      /* 卡片：最近，位移最大但幅度仍克制 */
+      var vh2 = vh * 0.5;
+      nears.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) return;
+        var c = (r.top + r.height / 2 - vh2) / vh;      /* 归一化 */
+        el.style.setProperty('--par-near', (-c * 14).toFixed(1) + 'px');
+      });
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(paint);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    paint();
+  })();
 
   /* ==================================================================
      14. 杂项

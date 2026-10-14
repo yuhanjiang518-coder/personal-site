@@ -21,22 +21,7 @@
      1. 壁纸库
      ================================================================== */
   var WALLS = [
-    /* --- 新五张：伊蕾娜原画 --- */
-    { id: 'dusk',     name: '卧床' },
-    { id: 'rain',     name: '星伞' },
-    { id: 'duskblue', name: '夜窗' },
-    { id: 'desert',   name: '沙漠' },
-    { id: 'lemon',    name: '柠檬' },
-    /* --- 早期生成 --- */
-    { id: 'mist',   name: '薄雾' },
-    { id: 'sakura', name: '樱色' },
-    { id: 'night',  name: '夜色' },
-    { id: 'dawn',   name: '晨光' },
-    { id: 'ink',    name: '水墨' },
-    { id: 'warm',   name: '暖阳' },
-    { id: 'star',   name: '星野' },
-    { id: 'mint',   name: '薄荷' },
-    { id: 'cream',  name: '奶油' }
+    { id: 'main', name: '旅途 · 树下小憩' }
   ];
   var MODES = ['full', 'soft', 'none'];
 
@@ -56,14 +41,14 @@
      2. 状态
      ================================================================== */
   var state = {
-    wall:  LS.get('jyh-wall', 'dusk'),
+    wall:  LS.get('jyh-wall', 'main'),
     mode:  LS.get('jyh-wall-mode', 'full'),
     veil:  parseInt(LS.get('jyh-veil', '62'), 10),
     hue:   LS.get('jyh-hue', '340'),
     theme: LS.get('jyh-theme', 'dark')
   };
   if (MODES.indexOf(state.mode) < 0) state.mode = 'full';
-  if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'dusk';
+  if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'main';
   if (isNaN(state.veil)) state.veil = 62;
   state.veil = Math.max(0, Math.min(96, state.veil));
 
@@ -218,13 +203,6 @@
     b.addEventListener('click', function () { setMode(b.dataset.mode); });
   });
 
-  var randBtn = $('#wallRandom');
-  if (randBtn) {
-    randBtn.addEventListener('click', function () {
-      var others = WALLS.filter(function (w) { return w.id !== state.wall; });
-      setWallpaper(others[Math.floor(Math.random() * others.length)].id);
-    });
-  }
 
   if (veilRange) {
     veilRange.value = String(state.veil);
@@ -275,7 +253,7 @@
       }
       setMode('full');
       applyTheme('dark');
-      setWallpaper('dusk', { announce: false });
+      setWallpaper('main', { announce: false });
       toast('已恢复默认外观');
     });
   }
@@ -955,9 +933,9 @@
   var CRITICAL = [
     'assets/avatar.webp',
     'assets/avatar@2x.webp',
-    'assets/wall-' + state.wall + '.webp',
-    'assets/wall-' + state.wall + '-p.webp',
-    'assets/wall-' + state.wall + '-thumb.webp',
+    'assets/wall-main.webp',
+    'assets/wall-main-p.webp',
+    'assets/wall-main-thumb.webp',
     'assets/muki-feature.webp',
     'assets/cover-elaina.webp'
   ];

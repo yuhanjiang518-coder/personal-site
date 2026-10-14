@@ -939,6 +939,347 @@
   });
 
   /* ==================================================================
+     11.5 技能标签墙（物理下落）
+     ------------------------------------------------------------------
+     Verlet 风格：重力累加到速度 → 位置积分 → 墙壁/地面位置修正
+     → 标签互推分离 → 重新贴地 → 静止判定。
+     不引第三方物理库，全部手写；核心循环刻意保持无 DOM 依赖。
+     ================================================================== */
+  (function () {
+    var stage  = $('#tagStage');
+    var field  = $('#tagField');
+    var chips  = $$('.tw-chip', field || document);
+    if (!stage || !field || !chips.length) return;
+
+    var btnDrop  = $('#tagDrop');
+    var btnReset = $('#tagReset');
+    var btnSet   = $('#tagSet');
+    var statEl   = $('#tagStat');
+    var filters  = $('#tagFilters');
+    var reduce   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* 时间用"帧单位"（1 = 1/60 秒），照参考站的做法夹在 [0.4, 2.1]，
+       这样切后台再回来、或者 120Hz 屏，都不会把模拟炸掉。 */
+    var GRAVITY      = 0.62;    /* px/帧²（≈2230 px/s²）*/
+    var RESTITUTION  = 0.22;    /* 撞地几乎不弹，参考站是 0.16 */
+    var FRICTION     = 0.72;
+    var AIR_DRAG     = 0.999;
+    var WALL_REST    = 0.48;
+    var REST_VY      = 1.1;     /* |vy| 低于此值直接归零 */
+    var REST_VX      = 0.9;
+    var CALM_SPEED   = 1.5;     /* 判定"安静"的合速度 */
+    var SLEEP_FRAMES = 12;      /* 连续安静多少帧就算落定 */
+    var MAX_STEPS    = 1500;
+    var DRIP_MS      = 55;      /* 每枚标签依次落下的间隔 */
+    var FLOOR_PAD    = 14;
+    var ITER         = 3;       /* 每帧互推迭代次数 */
+
+    var W = 0, H = 0;
+    var bodies = [];            /* {el,x,y,w,h,vx,vy,asleep,rest,active} */
+    var running = false;
+
+    function visible(b) { return !b.el.hidden; }
+
+    /* 量出每枚标签的真实尺寸，并给出初始排布 */
+    function measure() {
+      W = field.clientWidth;
+      var pad = 10;
+      var availW = W - pad * 2;
+
+      bodies = chips.map(function (el, i) {
+        var w = Math.round(el.offsetWidth);
+        var h = Math.round(el.offsetHeight);
+        return { el: el, w: w || 90, h: h || 32, x: 0, y: 0, vx: 0, vy: 0,
+                 asleep: false, rest: 0, supported: false, idx: i,
+                 active: !el.hidden, slide: false };
+      });
+
+      /* 目标高度：按"当前可见"标签的总面积估，堆得下又不空旷 */
+      var area = bodies.reduce(function (a, b) {
+        return b.active ? a + b.w * b.h : a;
+      }, 0);
+      var target = Math.max(320, Math.min(600, Math.round(area / availW * 2.55)));
+      field.style.height = target + 'px';
+      H = target - FLOOR_PAD;
+
+      layoutRows(availW, pad);
+    }
+
+    /* 初始：顶部排成几行（视觉上是"一堆待落的标签"） */
+    function layoutRows(availW, pad) {
+      var cx = pad, cy = 6, rowH = 0;
+      bodies.forEach(function (b) {
+        if (!b.active) return;
+        if (cx + b.w > pad + availW) { cx = pad; cy += rowH + 8; rowH = 0; }
+        b.x = cx; b.y = Math.max(4, cy);
+        b.homeX = b.x; b.homeY = b.y;
+        b.vx = 0; b.vy = 0; b.asleep = false; b.rest = 0; b.slide = false;
+        cx += b.w + 8;
+        rowH = Math.max(rowH, b.h);
+      });
+      paintAll();
+    }
+
+    /* 逐帧推进 */
+    function integrate(dt) {
+      for (var i = 0; i < bodies.length; i++) {
+        var b = bodies[i];
+        if (!b.active || b.asleep || !b.slide) continue;
+        b.vy += GRAVITY * dt;
+        b.vx *= AIR_DRAG; b.vy *= AIR_DRAG;
+        b.x += b.vx * dt; b.y += b.vy * dt;
+
+        if (b.x < 0) { b.x = 0; b.vx = Math.abs(b.vx) * WALL_REST; }
+        else if (b.x + b.w > W) { b.x = W - b.w; b.vx = -Math.abs(b.vx) * WALL_REST; }
+
+        var floor = H - b.h;
+        if (b.y >= floor) {
+          b.y = floor;
+          /* 先把小的反弹量吃掉，再按系数反弹 —— 否则永远在微弹 */
+          if (b.vy > 0) b.vy = (b.vy < REST_VY * 2) ? 0 : -b.vy * RESTITUTION;
+          b.vx *= FRICTION;
+          if (Math.abs(b.vx) < REST_VX) b.vx = 0;
+        }
+      }
+    }
+
+    function clamp(b) {
+      if (b.x < 0) b.x = 0;
+      if (b.x + b.w > W) b.x = W - b.w;
+      if (b.y < 0) b.y = 0;
+      if (b.y + b.h > H) b.y = H - b.h;
+    }
+
+    function separate(a, b) {
+      var ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+      if (ox <= 0) return false;
+      var oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+      if (oy <= 0) return false;
+
+      if (ox < oy) {
+        var dx = (a.x + a.w / 2 < b.x + b.w / 2) ? -1 : 1;
+        a.x += dx * ox / 2; b.x -= dx * ox / 2;
+        var av = (a.vx + b.vx) / 2;
+        a.vx = av * 0.7; b.vx = av * 0.7;
+      } else {
+        var dy = (a.y + a.h / 2 < b.y + b.h / 2) ? -1 : 1;
+        a.y += dy * oy / 2; b.y -= dy * oy / 2;
+        var ay = (a.vy + b.vy) / 2;
+        a.vy = ay * 0.5; b.vy = ay * 0.5;
+        /* 只在真的在下落时抖一下，静止阶段抖动会让人永远睡不着 */
+        if (ay > 4) {
+          var j = (Math.abs(a.vx) + Math.abs(b.vx) + 1) * 0.05;
+          a.vx += (Math.random() - 0.5) * j;
+          b.vx += (Math.random() - 0.5) * j;
+        }
+      }
+      return true;
+    }
+
+    function resolve() {
+      /* 互推（多轮，堆叠时收敛更快） */
+      for (var it = 0; it < ITER; it++) {
+        for (var i = 0; i < bodies.length; i++) {
+          var a = bodies[i];
+          if (!a.active) continue;
+          for (var k = i + 1; k < bodies.length; k++) {
+            var b = bodies[k];
+            if (!b.active) continue;
+            if (a.asleep && b.asleep) continue;
+            if (separate(a, b)) { clamp(a); clamp(b); }
+          }
+        }
+      }
+      /* 分离后重新贴地 */
+      for (var m = 0; m < bodies.length; m++) {
+        var c = bodies[m];
+        if (!c.active || c.asleep) continue;
+        var fl = H - c.h;
+        if (c.y >= fl - 0.5) { c.y = fl; if (c.vy > 0) c.vy = 0; c.vx *= FRICTION; }
+      }
+      /* 谁被谁托住 —— 被托住也算落地，否则叠在上面的永远睡不着 */
+      for (var p = 0; p < bodies.length; p++) bodies[p].supported = false;
+      for (var q = 0; q < bodies.length; q++) {
+        var u = bodies[q];
+        if (!u.active) continue;
+        for (var v = q + 1; v < bodies.length; v++) {
+          var w2 = bodies[v];
+          if (!w2.active) continue;
+          var ox2 = Math.min(u.x + u.w, w2.x + w2.w) - Math.max(u.x, w2.x);
+          if (ox2 <= 2) continue;
+          var gA = u.y + u.h - w2.y, gB = w2.y + w2.h - u.y;
+          if (gA > -1.5 && gA < 2) u.supported = true;
+          if (gB > -1.5 && gB < 2) w2.supported = true;
+        }
+      }
+    }
+
+    function settleCheck() {
+      var asleep = 0, total = 0;
+      for (var i = 0; i < bodies.length; i++) {
+        var b = bodies[i];
+        if (!b.active) continue;
+        total++;
+        if (b.asleep) { asleep++; continue; }
+        var fl = H - b.h;
+        var grounded = b.y >= fl - 0.5;
+        var speed = Math.abs(b.vx) + Math.abs(b.vy);
+        if ((grounded || b.supported) && speed < CALM_SPEED) {
+          b.rest++;
+          if (b.rest >= SLEEP_FRAMES) { b.asleep = true; b.vx = 0; b.vy = 0; asleep++; }
+        } else {
+          b.rest = 0;
+        }
+      }
+      return { asleep: asleep, total: total, done: total > 0 && asleep === total };
+    }
+
+    /* 只写 transform，不碰 left/top —— 避免每帧触发重排 */
+    var raf = 0, lastT = 0, steps = 0;
+    function frame(now) {
+      if (!running) return;
+      /* dt 以 1/60 秒为一单位，夹在 [0.4, 2.1]（参考站同款做法） */
+      var dt = lastT ? Math.min(2.1, Math.max(0.4, (now - lastT) / 16.67)) : 1;
+      lastT = now;
+      steps++;
+
+      /* 依次落下：还没轮到的钉在起点，轮到的给一个初速（参考站是预置 vy>0） */
+      for (var i = 0; i < bodies.length; i++) {
+        var b = bodies[i];
+        if (!b.active || b.slide) continue;
+        if (steps * (1000 / 60) < b.idx * DRIP_MS) {
+          b.vx = 0; b.vy = 0;
+          b.x = b.homeX; b.y = b.homeY;
+        } else {
+          b.slide = true;
+          b.vy = 1.2;                       /* 不是从静止开始掉 */
+          b.vx = (Math.random() - 0.5) * 1.4;
+        }
+      }
+
+      integrate(dt);
+      resolve();
+      paintAll();
+
+      var st = settleCheck();
+      if (st.done || steps > MAX_STEPS) {
+        running = false;
+        chips.forEach(function (el) { el.classList.remove('is-falling'); });
+        say('共 ' + st.total + ' 枚标签 · 已经全部落定');
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function paintAll() {
+      for (var i = 0; i < bodies.length; i++) {
+        var b = bodies[i];
+        if (!b.active) continue;
+        b.el.style.transform = 'translate(' + b.x.toFixed(2) + 'px,' + b.y.toFixed(2) + 'px)';
+      }
+    }
+
+    function say(msg) { if (statEl) statEl.textContent = msg; }
+
+    function start() {
+      if (running) return;
+      measure();
+      running = true;
+      steps = 0; lastT = 0;
+      chips.forEach(function (el) { el.classList.add('is-falling'); });
+      say('下落中…');
+      raf = requestAnimationFrame(frame);
+    }
+
+    /* 直接排成整齐的行（不跑物理） */
+    function tidy() {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      if (!bodies.length) measure();
+      var pad = 10, availW = W - pad * 2;
+      layoutRows(availW, pad);
+      chips.forEach(function (el) { el.classList.remove('is-falling'); });
+      var n = bodies.filter(function (b) { return b.active; }).length;
+      say('共 ' + n + ' 枚标签 · 已整理成行');
+    }
+
+    function reset() {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      measure();          /* 内部会调用 layoutRows，回到顶部 */
+      chips.forEach(function (el) { el.classList.remove('is-falling'); });
+      var n = bodies.filter(function (b) { return b.active; }).length;
+      say('共 ' + n + ' 枚标签 · 点「倒下来」开始');
+    }
+
+    if (btnDrop)  btnDrop.addEventListener('click', start);
+    if (btnReset) btnReset.addEventListener('click', reset);
+    if (btnSet)   btnSet.addEventListener('click', tidy);
+
+    /* 筛选：只影响可见性，然后重排 */
+    var activeCat = null;
+    if (filters) {
+      filters.addEventListener('click', function (e) {
+        var b = e.target.closest('.tw-filter');
+        if (!b) return;
+        var cat = b.dataset.cat;
+        activeCat = (activeCat === cat) ? null : cat;
+        $$('.tw-filter', filters).forEach(function (x) {
+          x.setAttribute('aria-pressed', String(x.dataset.cat === activeCat));
+        });
+        chips.forEach(function (el) {
+          el.hidden = !!activeCat && el.dataset.cat !== activeCat;
+        });
+        reset();
+      });
+    }
+
+    /* 点单个标签 → 把它弹起来 */
+    field.addEventListener('click', function (e) {
+      var el = e.target.closest('.tw-chip');
+      if (!el) return;
+      var b = null;
+      for (var i = 0; i < bodies.length; i++) if (bodies[i].el === el) { b = bodies[i]; break; }
+      if (!b || !b.active) return;
+      b.asleep = false; b.rest = 0; b.slide = true;
+      b.vy = -14 - Math.random() * 6;      /* 帧单位 */
+      b.vx = (Math.random() - 0.5) * 9;
+      if (!running) { running = true; lastT = 0; steps = 0; raf = requestAnimationFrame(frame); }
+    });
+
+    /* 初次进入视图时排好，滚到视野内自动倒一次 */
+    measure();
+    if (reduce) {
+      tidy();
+    } else {
+      reset();
+      var seen = false;
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (en) {
+          en.forEach(function (x) {
+            if (!x.isIntersecting || seen) return;
+            seen = true;
+            io.disconnect();
+            setTimeout(start, 260);
+          });
+        }, { threshold: 0.32 });
+        io.observe(stage);
+      }
+    }
+
+    /* 尺寸变了要重新量（手机上转屏） */
+    var rt = 0;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () {
+        if (running) return;
+        measure();
+        if (!reduce) reset();
+      }, 180);
+    });
+  })();
+
+  /* ==================================================================
      12. 加载屏
      ================================================================== */
   var loaderEl = $('#loader');

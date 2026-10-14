@@ -707,20 +707,108 @@ input[type="range"]::-moz-range-thumb {
 .g-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 /* ============================ 7. 英雄区 ============================ */
+/* 英雄区：不再是"浮在背景上的白板"，
+   而是把壁纸本身请进来做底 —— 柔焦 + 色调统一 + 边缘消融，
+   视觉上和页面背景连成一片，看不出这是一块独立图层。 */
 .hero {
   position: relative;
   overflow: hidden;
   border-radius: var(--r-2xl);
   margin-bottom: clamp(1.6rem, 4vw, 2.6rem);
+  border: 0;
+  box-shadow: none;
+  isolation: isolate;
+}
+
+/* ① 壁纸层：同一张壁纸，单独取景 + 柔焦 + 略微漂白，
+      让它和页面背景"同源同色"，只是更柔更亮一点。 */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image: var(--hero-img, none);
+  background-size: cover;
+  background-position: var(--hero-pos, 50% 38%);
+  background-repeat: no-repeat;
+  filter: blur(var(--hero-blur, 20px))
+          brightness(var(--hero-bright, 1.52))
+          contrast(.94) saturate(.92);
+  transform: scale(1.16);
+  pointer-events: none;
+  /* 中间不透明、四周一圈渐隐 —— 用 mask 而不是"盖一层颜色"，
+     这样壁纸本身的纹理能透出来，边缘又真正融入背景。 */
+  -webkit-mask-image: radial-gradient(118% 116% at 50% 46%,
+      #000 0%, #000 58%, rgb(0 0 0 / 62%) 74%,
+      rgb(0 0 0 / 22%) 87%, transparent 100%);
+  mask-image: radial-gradient(118% 116% at 50% 46%,
+      #000 0%, #000 58%, rgb(0 0 0 / 62%) 74%,
+      rgb(0 0 0 / 22%) 87%, transparent 100%);
+}
+
+/* ② 暖光晕＋极淡水洗：把冷色壁纸（雨夜 / 夜窗）拉回暖调，
+      同时让上半部分更接近纸白，和参考图的"亮色梦幻"一致。 */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 80% at 18% 6%,
+      color-mix(in oklab, var(--glow-warm) 62%, transparent) 0%,
+      transparent 62%),
+    radial-gradient(80% 70% at 92% 92%,
+      color-mix(in oklab, var(--glow-cool) 34%, transparent) 0%,
+      transparent 60%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--wash) 30%) 0%,
+      color-mix(in oklab, var(--wash) 4%) 34%,
+      color-mix(in oklab, var(--wash) 10%) 100%);
+}
+
+/* ③ 壁纸取景位：每张壁纸的"脸"不在正中间，逐张微调。
+   同时给出 --hero-img 的默认值 —— 这样在 JS 跑起来之前
+   英雄区就已经有底了，不会闪一下白板。 */
+body[data-wallpaper="desert"] .hero { --hero-pos: 50% 30%; --hero-blur: 20px; --hero-img: url("assets/wall-desert.webp"); }
+body[data-wallpaper="lemon"]  .hero { --hero-pos: 52% 40%; --hero-blur: 18px; --hero-img: url("assets/wall-lemon.webp"); }
+body[data-wallpaper="bed"]    .hero { --hero-pos: 50% 28%; --hero-blur: 22px; --hero-img: url("assets/wall-bed.webp"); }
+body[data-wallpaper="rain"]   .hero { --hero-pos: 50% 32%; --hero-blur: 20px; --hero-img: url("assets/wall-rain.webp"); }
+body[data-wallpaper="window"] .hero { --hero-pos: 50% 40%; --hero-blur: 20px; --hero-img: url("assets/wall-window.webp"); }
+body[data-wallpaper="tree"]   .hero { --hero-pos: 50% 34%; --hero-blur: 20px; --hero-img: url("assets/wall-tree.webp"); }
+
+/* 冷色壁纸额外补一点暖光，避免英雄区发蓝、和暖白页面打架 */
+body[data-wallpaper="rain"]   .hero::after,
+body[data-wallpaper="window"] .hero::after {
+  background:
+    radial-gradient(96% 86% at 20% 8%,
+      color-mix(in oklab, var(--glow-warm) 82%, transparent) 0%,
+      transparent 66%),
+    radial-gradient(80% 70% at 92% 92%,
+      color-mix(in oklab, var(--glow-cool) 26%, transparent) 0%,
+      transparent 58%),
+    linear-gradient(to bottom,
+      color-mix(in oklab, var(--wash) 36%) 0%,
+      color-mix(in oklab, var(--wash) 6%) 32%,
+      color-mix(in oklab, var(--wash) 12%) 100%);
+}
+
+/* 纯色模式：没有壁纸可取，退回原来的渐变色卡 */
+body[data-wall-mode="none"] .hero::before,
+body[data-wall-mode="none"] .hero::after { background-image: none; background: none; }
+body[data-wall-mode="none"] .hero {
   background: linear-gradient(135deg,
       color-mix(in oklab, var(--primary) 16%, var(--card-bg)),
       var(--card-bg) 62%);
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-lg);
 }
+
 .hero-inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;

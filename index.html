@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261017a">
+<link rel="stylesheet" href="style.css?v=20261017b">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
 </head>
@@ -52,6 +52,7 @@
     <button class="nav-link" type="button" data-view="home" data-anchor="about">关于我</button>
     <button class="nav-link" type="button" data-view="study" data-anchor="skills">学习 / 工作</button>
     <button class="nav-link" type="button" data-view="life" data-anchor="life">兴趣 / 日常</button>
+    <button class="nav-link" type="button" data-view="tags" data-anchor="tags">技能墙</button>
     <button class="nav-link" type="button" data-view="life" data-anchor="fortune">抽签</button>
     <button class="nav-link" type="button" data-view="home" data-anchor="contact">联系我</button>
   </nav>
@@ -158,6 +159,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
               关于我
             </button>
+            <button class="btn" type="button" data-view="tags" data-anchor="tags">技能墙</button>
             <button class="btn" type="button" data-view="study" data-anchor="skills">学习 / 工作</button>
             <button class="btn" type="button" data-view="life" data-anchor="life">兴趣 / 日常</button>
           </div>
@@ -379,75 +381,6 @@
       </div>
     </section>
 
-    <!-- 课程矩阵 -->
-    <section class="sec" id="courses">
-      <div class="sec-head reveal"><h2>课程技能矩阵</h2><span class="sec-more">学过什么，心里有数</span></div>
-      <div class="card card-pad reveal">
-        <div class="mx">
-          <div class="mx-legend">
-            <span><i class="mx-key k-done"></i>已掌握</span>
-            <span><i class="mx-key k-doing"></i>在学</span>
-            <span><i class="mx-key k-todo"></i>待学习</span>
-            <span><i class="mx-key k-love"></i>喜欢</span>
-          </div>
-
-          <div class="mx-group">
-            <p class="mx-title">编程语言</p>
-            <div class="mx-items">
-              <span class="mx-item done">C</span>
-              <span class="mx-item done">C++</span>
-              <span class="mx-item love">Python</span>
-              <span class="mx-item doing">JavaScript</span>
-              <span class="mx-item">SQL</span>
-            </div>
-          </div>
-
-          <div class="mx-group">
-            <p class="mx-title">计算机基础</p>
-            <div class="mx-items">
-              <span class="mx-item done">数据结构</span>
-              <span class="mx-item doing">计算机网络</span>
-              <span class="mx-item doing">操作系统</span>
-              <span class="mx-item">计算机组成原理</span>
-              <span class="mx-item">编译原理</span>
-            </div>
-          </div>
-
-          <div class="mx-group">
-            <p class="mx-title">网络工程</p>
-            <div class="mx-items">
-              <span class="mx-item done">TCP/IP 协议</span>
-              <span class="mx-item doing">路由与交换</span>
-              <span class="mx-item love">网络安全基础</span>
-              <span class="mx-item">渗透测试</span>
-              <span class="mx-item">网络编程</span>
-            </div>
-          </div>
-
-          <div class="mx-group">
-            <p class="mx-title">工具与工程</p>
-            <div class="mx-items">
-              <span class="mx-item done">Git / GitHub</span>
-              <span class="mx-item done">VS Code</span>
-              <span class="mx-item doing">Linux 命令行</span>
-              <span class="mx-item doing">HTML / CSS</span>
-              <span class="mx-item">Docker</span>
-            </div>
-          </div>
-
-          <div class="mx-group">
-            <p class="mx-title">AI 与前沿</p>
-            <div class="mx-items">
-              <span class="mx-item love">大模型应用</span>
-              <span class="mx-item doing">提示工程</span>
-              <span class="mx-item doing">AI 编程助手</span>
-              <span class="mx-item">机器学习基础</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- 学习方法 -->
     <section class="sec" id="method">
       <div class="sec-head reveal"><h2>我的学习法</h2><span class="sec-more">四条一直在用的原则</span></div>
@@ -535,7 +468,83 @@
     </section>
   </div>
 
-  <!-- ============ 视图 3：兴趣 / 日常 ============ -->
+
+  <!-- ============ 视图 3：技能标签墙 ============ -->
+  <div class="view" id="view-tags" data-view="tags" hidden>
+
+    <div class="sec-head reveal" style="margin-bottom:1rem">
+      <h2>技能标签墙</h2>
+      <span class="sec-more">把它们丢下去看看</span>
+    </div>
+    <p class="reveal" style="color:var(--text-soft);max-width:42rem;margin:-.4rem 0 1.2rem">
+      每一枚标签都是一件学过或在学的东西。点「倒下来」让它们自己落地堆叠 —— 下面这些是真的重力、碰撞和摩擦算出来的。
+    </p>
+
+    <!-- 图例 -->
+    <div class="tw-legend reveal">
+      <span><i class="tw-key k-done"></i>已掌握</span>
+      <span><i class="tw-key k-doing"></i>在学</span>
+      <span><i class="tw-key k-todo"></i>待学习</span>
+      <span><i class="tw-key k-love"></i>喜欢</span>
+    </div>
+
+    <!-- 舞台 -->
+    <div class="tw-stage reveal" id="tagStage">
+      <div class="tw-sky" aria-hidden="true">
+        <span class="tw-star"></span><span class="tw-star"></span><span class="tw-star"></span>
+        <span class="tw-star"></span><span class="tw-star"></span><span class="tw-star"></span>
+      </div>
+      <div class="tw-field" id="tagField">
+            <button class="tw-chip c-done" type="button" data-cat="编程语言" data-state="done">C</button>
+            <button class="tw-chip c-done" type="button" data-cat="编程语言" data-state="done">C++</button>
+            <button class="tw-chip c-love" type="button" data-cat="编程语言" data-state="love">Python</button>
+            <button class="tw-chip c-doing" type="button" data-cat="编程语言" data-state="doing">JavaScript</button>
+            <button class="tw-chip c-todo" type="button" data-cat="编程语言" data-state="todo">SQL</button>
+            <button class="tw-chip c-done" type="button" data-cat="计算机基础" data-state="done">数据结构</button>
+            <button class="tw-chip c-doing" type="button" data-cat="计算机基础" data-state="doing">计算机网络</button>
+            <button class="tw-chip c-doing" type="button" data-cat="计算机基础" data-state="doing">操作系统</button>
+            <button class="tw-chip c-todo" type="button" data-cat="计算机基础" data-state="todo">计算机组成原理</button>
+            <button class="tw-chip c-todo" type="button" data-cat="计算机基础" data-state="todo">编译原理</button>
+            <button class="tw-chip c-done" type="button" data-cat="网络工程" data-state="done">TCP/IP 协议</button>
+            <button class="tw-chip c-doing" type="button" data-cat="网络工程" data-state="doing">路由与交换</button>
+            <button class="tw-chip c-love" type="button" data-cat="网络工程" data-state="love">网络安全基础</button>
+            <button class="tw-chip c-todo" type="button" data-cat="网络工程" data-state="todo">渗透测试</button>
+            <button class="tw-chip c-todo" type="button" data-cat="网络工程" data-state="todo">网络编程</button>
+            <button class="tw-chip c-done" type="button" data-cat="工具与工程" data-state="done">Git / GitHub</button>
+            <button class="tw-chip c-done" type="button" data-cat="工具与工程" data-state="done">VS Code</button>
+            <button class="tw-chip c-doing" type="button" data-cat="工具与工程" data-state="doing">Linux 命令行</button>
+            <button class="tw-chip c-doing" type="button" data-cat="工具与工程" data-state="doing">HTML / CSS</button>
+            <button class="tw-chip c-todo" type="button" data-cat="工具与工程" data-state="todo">Docker</button>
+            <button class="tw-chip c-love" type="button" data-cat="AI 与前沿" data-state="love">大模型应用</button>
+            <button class="tw-chip c-doing" type="button" data-cat="AI 与前沿" data-state="doing">提示工程</button>
+            <button class="tw-chip c-doing" type="button" data-cat="AI 与前沿" data-state="doing">AI 编程助手</button>
+            <button class="tw-chip c-todo" type="button" data-cat="AI 与前沿" data-state="todo">机器学习基础</button>
+      </div>
+      <div class="tw-floor" aria-hidden="true"></div>
+    </div>
+
+    <!-- 控制条 -->
+    <div class="tw-bar reveal">
+      <button class="btn btn-primary" type="button" id="tagDrop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6.5 11.5 12 17l5.5-5.5"/><path d="M5 20h14"/></svg>
+        倒下来
+      </button>
+      <button class="btn" type="button" id="tagReset">重排</button>
+      <button class="btn" type="button" id="tagSet">整理成行</button>
+      <span class="tw-stat" id="tagStat">共 24 枚标签 · 点「倒下来」开始</span>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="tw-filters reveal" id="tagFilters" role="group" aria-label="按分类筛选">
+            <button class="tw-filter" type="button" data-cat="编程语言" aria-pressed="false">编程语言</button>
+            <button class="tw-filter" type="button" data-cat="计算机基础" aria-pressed="false">计算机基础</button>
+            <button class="tw-filter" type="button" data-cat="网络工程" aria-pressed="false">网络工程</button>
+            <button class="tw-filter" type="button" data-cat="工具与工程" aria-pressed="false">工具与工程</button>
+            <button class="tw-filter" type="button" data-cat="AI 与前沿" aria-pressed="false">AI 与前沿</button>
+    </div>
+  </div>
+
+  <!-- ============ 视图 4：兴趣 / 日常 ============ -->
   <div class="view" id="view-life" data-view="life" hidden>
 
     <div class="sec-head reveal" style="margin-bottom:1.4rem">
@@ -676,12 +685,12 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-17a · 英雄区融入背景 · 看到这行说明已加载最新版</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-17b · 技能标签墙 · 看到这行说明已加载最新版</p>
   </div>
 </footer>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="script.js?v=20261017a"></script>
+<script src="script.js?v=20261017b"></script>
 </body>
 </html>

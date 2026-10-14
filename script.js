@@ -336,6 +336,8 @@
     views.forEach(function (v) { v.hidden = v.dataset.view !== name; });
     currentView = name;
     setNavCurrent(name);
+    /* 新视图内容分段淡入（函数在后面的交互模块里定义，这里做存在性判断） */
+    if (typeof window.__afterView === 'function') window.__afterView(name);
     return true;
   }
 
@@ -1188,18 +1190,27 @@
 
     /* 只写 transform，不碰 left/top —— 避免每帧触发重排 */
     var raf = 0, lastT = 0, steps = 0;
+    /* 固定时间步长 + 累加器：
+       不管屏幕是 60Hz / 90Hz / 120Hz，物理每步都推进同样多 —— 于是
+       重力加速度在任何设备上一致，也不会因为掉一帧就"瞬移"。
+       单帧最多补 3 步，防止长时间切后台回来时一次补太多。 */
+    var STEP = 1 / 60;          /* 秒 */
+    var acc = 0;
+    var simSteps = 0;           /* 物理子步累计数 —— 节拍用它，不用 rAF 帧数 */
+
     function frame(now) {
       if (!running) return;
-      /* dt 以 1/60 秒为一单位，夹在 [0.4, 2.1]（参考站同款做法） */
-      var dt = lastT ? Math.min(2.1, Math.max(0.4, (now - lastT) / 16.67)) : 1;
+      var elapsedMs = lastT ? (now - lastT) : 16.67;
       lastT = now;
-      steps++;
+      /* 夹住单帧最大推进量：掉帧时宁可慢一点，也不要炸 */
+      elapsedMs = Math.min(elapsedMs, 60);
+      acc += elapsedMs / 1000;
 
       /* 依次落下：还没轮到的钉在起点，轮到的给一个初速（参考站是预置 vy>0） */
       for (var i = 0; i < bodies.length; i++) {
         var b = bodies[i];
         if (!b.active || b.slide) continue;
-        if (steps * (1000 / 60) < b.idx * DRIP_MS) {
+        if (simSteps * (1000 / 60) < b.idx * DRIP_MS) {
           b.vx = 0; b.vy = 0;
           b.x = b.homeX; b.y = b.homeY;
         } else {
@@ -1209,12 +1220,20 @@
         }
       }
 
-      integrate(dt);
-      resolve();
+      /* 按固定步长推进，可能一帧跑 0~3 个子步 */
+      var sub = 0;
+      while (acc >= STEP && sub < 3) {
+        integrate(STEP * 60);   /* integrate 用"帧单位"，×60 换算 */
+        resolve();
+        acc -= STEP;
+        sub++;
+        simSteps++;
+      }
+      if (sub === 3) acc = 0;   /* 追不上就丢弃积压，避免雪崩 */
       paintAll();
 
       var st = settleCheck();
-      if (st.done || steps > MAX_STEPS) {
+      if (st.done || simSteps > MAX_STEPS) {
         running = false;
         chips.forEach(function (el) { el.classList.remove('is-falling'); });
         say('共 ' + st.total + ' 枚标签 · 已经全部落定');
@@ -1237,7 +1256,7 @@
       if (running) return;
       measure();
       running = true;
-      steps = 0; lastT = 0;
+      steps = 0; simSteps = 0; acc = 0; lastT = 0;
       chips.forEach(function (el) { el.classList.add('is-falling'); });
       say('下落中…');
       raf = requestAnimationFrame(frame);
@@ -1296,7 +1315,7 @@
       b.asleep = false; b.rest = 0; b.slide = true;
       b.vy = -14 - Math.random() * 6;      /* 帧单位 */
       b.vx = (Math.random() - 0.5) * 9;
-      if (!running) { running = true; lastT = 0; steps = 0; raf = requestAnimationFrame(frame); }
+      if (!running) { running = true; lastT = 0; steps = 0; simSteps = 0; acc = 0; raf = requestAnimationFrame(frame); }
     });
 
     /* 初次进入视图时排好，滚到视野内自动倒一次 */
@@ -1478,6 +1497,194 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     paint();
+  })();
+
+  /* ==================================================================
+     13.6 交互：进度条 / 水波纹 / 3D 倾斜 / 磁吸 / 数字滚动 / 卡片浮动
+     ------------------------------------------------------------------
+     统一走一个「全局指针位置」缓存 + 单个 rAF，避免每个元素各挂一个监听、
+     每帧各触发一次重排。
+     ================================================================== */
+  (function () {
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    /* ---------- ① 滚动进度条 ---------- */
+    var sp = $('#scrollProgress');
+    /* ---------- ⑦ 数字滚动（任意 [data-count]） ---------- */
+    var countIO = null;
+    if ('IntersectionObserver' in window && !reduceMotion) {
+      countIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var el = en.target;
+          if (el.dataset.counted === '1') return;
+          el.dataset.counted = '1';
+          var goal = parseInt(el.dataset.count, 10) || 0;
+          var t0 = performance.now(), dur = 1100;
+          (function step(now) {
+            var p = Math.min(1, (now - t0) / dur);
+            /* 用 easeOutExpo 让结尾更稳，不像线性那样"卡住" */
+            var e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+            el.textContent = String(Math.round(goal * e));
+            if (p < 1) requestAnimationFrame(step);
+          })(t0);
+          countIO.unobserve(el);
+        });
+      }, { threshold: 0.4 });
+      $$('[data-count]').forEach(function (el) { countIO.observe(el); });
+    }
+
+    /* ---------- ② 卡片浮动：依次错峰，幅度很小 ---------- */
+    if (!reduceMotion) {
+      $$('.card, .now-item, .hslide').forEach(function (el, i) {
+        el.classList.add('float');
+        el.style.setProperty('--float-dur', (6.5 + (i % 3) * 0.9).toFixed(1) + 's');
+        el.style.setProperty('--float-delay', (-(i % 7) * 0.7).toFixed(2) + 's');
+      });
+    }
+
+    /* ---------- ③ 水波纹 ---------- */
+    $$('.btn, .tw-chip, .hslide, .site, .wall-item, .nav-link').forEach(function (el) {
+      el.classList.add('rip-host');
+    });
+    document.addEventListener('pointerdown', function (e) {
+      if (reduceMotion) return;
+      var host = e.target.closest('.rip-host');
+      if (!host) return;
+      var r = host.getBoundingClientRect();
+      var size = Math.max(r.width, r.height) * 2.1;
+      var dot = document.createElement('span');
+      dot.className = 'ripple';
+      dot.style.width = dot.style.height = size + 'px';
+      dot.style.left = (e.clientX - r.left) + 'px';
+      dot.style.top = (e.clientY - r.top) + 'px';
+      /* 用 host 的 paddingBox 定位，避免 border 造成偏移 */
+      host.appendChild(dot);
+      setTimeout(function () { dot.remove(); }, 640);
+    }, { passive: true });
+
+    /* ---------- ④ 3D 倾斜 + ⑤ 磁吸（只在有真指针的设备） ---------- */
+    if (fine && !reduceMotion) {
+      var tiltEls = $$('.card, .proj, .anime, .hslide, .feat, .now-item');
+      tiltEls.forEach(function (el) { el.classList.add('tilt'); });
+
+      var magEls = $$('.btn, .icon-btn');
+      magEls.forEach(function (el) { el.classList.add('magnetic'); });
+
+      var px = 0, py = 0, queued = false;
+      document.addEventListener('pointermove', function (e) {
+        px = e.clientX; py = e.clientY;
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(paintPointer);
+      }, { passive: true });
+
+      document.addEventListener('pointerleave', function () { resetAll(); });
+
+      function paintPointer() {
+        queued = false;
+        var vh = window.innerHeight, vw = window.innerWidth;
+
+        /* 倾斜：以元素中心为原点，最大 ±5.5 度 */
+        for (var i = 0; i < tiltEls.length; i++) {
+          var el = tiltEls[i];
+          var r = el.getBoundingClientRect();
+          if (r.bottom < -60 || r.top > vh + 60) {
+            if (el.classList.contains('is-live')) el.classList.remove('is-live');
+            continue;
+          }
+          /* 指针在元素外圈 90px 内才开始反应，避免整屏卡片都在动 */
+          var inside = px >= r.left - 90 && px <= r.right + 90 &&
+                       py >= r.top - 90 && py <= r.bottom + 90;
+          if (!inside) {
+            if (el.classList.contains('is-live')) {
+              el.classList.remove('is-live');
+              el.style.setProperty('--tx', '0px');
+              el.style.setProperty('--ty', '0px');
+              el.style.setProperty('--rx', '0deg');
+              el.style.setProperty('--ry', '0deg');
+            }
+            continue;
+          }
+          var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+          var nx = (px - cx) / (r.width / 2 || 1);   /* -1 ~ 1 */
+          var ny = (py - cy) / (r.height / 2 || 1);
+          nx = Math.max(-1.6, Math.min(1.6, nx));
+          ny = Math.max(-1.6, Math.min(1.6, ny));
+          el.classList.add('is-live');
+          el.style.setProperty('--tx', (nx * 5).toFixed(2) + 'px');
+          el.style.setProperty('--ty', (ny * 5).toFixed(2) + 'px');
+          el.style.setProperty('--ry', (nx * 5.5).toFixed(2) + 'deg');
+          el.style.setProperty('--rx', (-ny * 5.5).toFixed(2) + 'deg');
+        }
+
+        /* 磁吸：指针距按钮中心 70px 内被"吸引" */
+        for (var k = 0; k < magEls.length; k++) {
+          var b = magEls[k];
+          var br = b.getBoundingClientRect();
+          if (br.bottom < -40 || br.top > vh + 40) continue;
+          var bx = br.left + br.width / 2, by = br.top + br.height / 2;
+          var dx = px - bx, dy = py - by;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var reach = 70;
+          if (dist < reach) {
+            var k2 = (1 - dist / reach) * 0.34;
+            b.style.setProperty('--mg-x', (dx * k2).toFixed(2) + 'px');
+            b.style.setProperty('--mg-y', (dy * k2).toFixed(2) + 'px');
+          } else {
+            b.style.setProperty('--mg-x', '0px');
+            b.style.setProperty('--mg-y', '0px');
+          }
+        }
+      }
+
+      function resetAll() {
+        tiltEls.forEach(function (el) {
+          el.classList.remove('is-live');
+          el.style.setProperty('--tx', '0px');
+          el.style.setProperty('--ty', '0px');
+          el.style.setProperty('--rx', '0deg');
+          el.style.setProperty('--ry', '0deg');
+        });
+        magEls.forEach(function (b) {
+          b.style.setProperty('--mg-x', '0px');
+          b.style.setProperty('--mg-y', '0px');
+        });
+      }
+      $('.view') && resetAll();
+    }
+
+    /* ---------- ⑥ 视图切换：内容分段淡入 ---------- */
+    var animT = 0;
+    function animateView(name) {
+      var el = $('#view-' + name);
+      if (!el || reduceMotion) return;
+      el.classList.remove('view-anim');
+      /* 强制重排一次，让动画能重新触发 */
+      void el.offsetWidth;
+      el.classList.add('view-anim');
+      clearTimeout(animT);
+      animT = setTimeout(function () { el.classList.remove('view-anim'); }, 900);
+    }
+    window.__afterView = animateView;
+
+    /* ---------- ⑧ 进度条 + 视差的统一滚动帧 ---------- */
+    var sTick = false;
+    function onScroll() {
+      if (sTick) return;
+      sTick = true;
+      requestAnimationFrame(function () {
+        sTick = false;
+        if (!sp) return;
+        var doc = document.documentElement;
+        var max = (doc.scrollHeight || 1) - (window.innerHeight || 1);
+        var p = max > 0 ? (window.pageYOffset || doc.scrollTop || 0) / max : 0;
+        sp.style.setProperty('--sp', Math.max(0, Math.min(1, p)).toFixed(4));
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
   })();
 
   /* ==================================================================

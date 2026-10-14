@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261019a">
+<link rel="stylesheet" href="style.css?v=20261019c">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -19,42 +19,45 @@
 <body data-wallpaper="dusk">
 
 <!-- ==================== 开始界面（标题画面） ====================
-     机制来自 baier233/bocchi-template-1.21.5 的 Misayos 主菜单（竖带从顶端"长"下来 +
-     虚线/方块/斜条纹依次登场 + 大字位移缩放入场 + 唱片一直转），底色换成伊蕾娜的海边插画。
-     构图：满屏插画 → 左侧深海把文字托住 → 一条青绿竖带 → 一张奶白卡片 → 唱片。
-     卡片/胶囊/按钮全部沿用站内令牌，所以开场不是另一个世界，而是同一套 UI 的封面。 -->
+     机制来自 baier233/bocchi-template-1.21.5 的 Misayos 主菜单，但把"设计感"的来源补回来了：
+     参考站好看是因为它有一张抠干净、带白描边的立绘 —— 立绘能骑在色块边缘上、
+     能在背后投一层硬剪影、能被塞进唱片里。只有满屏照片时这些都做不了。
+     于是：
+       · 主立绘用 pic58（坐帚全身，1500x2122，抠图 + 白描边烘焙进 alpha）；
+       · 唱片圈里放 pic36 的裁切（圆形裁切本来就不需要抠图）；
+       · 海边插画切成两块照片块参与构图（不再当全屏底图，只做压暗模糊的气氛层）；
+       · 色块、唱片、斜虚线、斜纹标注、硬剪影 —— 参考站那套元素一个不少。 -->
 <div class="start" id="startScreen" role="dialog" aria-modal="true" aria-label="开始界面">
-  <img class="start-photo" src="assets/elaina/start-photo.webp"
-       srcset="assets/elaina/start-photo-sm.webp 880w, assets/elaina/start-photo.webp 1760w"
-       sizes="100vw" alt="" width="1760" height="997" fetchpriority="high" decoding="async">
+  <img class="start-photo" src="assets/elaina/start-photo.webp?v=20261019b"
+       srcset="assets/elaina/start-photo-sm.webp?v=20261019b 750w, assets/elaina/start-photo.webp?v=20261019b 1500w"
+       sizes="100vw" alt="" width="1500" height="850" fetchpriority="high" decoding="async">
   <div class="start-scrim" aria-hidden="true"></div>
 
-  <!-- 0. 青绿竖带：从左版心垂下来 -->
-  <div class="start-block start-block--tall" aria-hidden="true"><i></i></div>
+  <!-- 0. 两块照片块（海边插画的两个取景，斜着切进版面） -->
+  <figure class="start-panel start-panel--a" aria-hidden="true">
+    <img src="assets/elaina/start-panel-a.webp" alt="" width="900" height="776" fetchpriority="high" decoding="async">
+  </figure>
+  <figure class="start-panel start-panel--b" aria-hidden="true">
+    <img src="assets/elaina/start-panel-b.webp" alt="" width="700" height="494" loading="lazy" decoding="async">
+  </figure>
 
-  <!-- 1. 描边元素：虚线 / 方块 / 斜条纹。亮处用深海色，暗处用白与草帽的暖色 -->
-  <div class="start-strokes" aria-hidden="true">
-    <span class="start-dash start-dash--1"></span>
-    <span class="start-dash start-dash--2"></span>
-    <span class="start-sq start-sq--dot"></span>
-    <span class="start-sq start-sq--grow"></span>
-    <span class="start-sq start-sq--b3"></span>
-    <span class="start-blinds start-blinds--1"></span>
-    <span class="start-blinds start-blinds--2"></span>
-  </div>
-
-  <!-- 2. 唱片 -->
+  <!-- 1. 唱片：圆心里是另一张立绘 -->
   <div class="start-record" aria-hidden="true">
     <span class="start-record__spin">
       <span class="start-record__grooves"></span>
-      <img src="assets/elaina/start-portrait.webp?v=20261019a" alt="" width="720" height="720">
+      <img src="assets/elaina/start-portrait.webp?v=20261019b" alt="" width="900" height="900">
       <span class="start-record__label"></span>
     </span>
   </div>
 
-  <!-- 3. 奶白卡片：文字与按钮都装在里面（做法和站内的 .card 一致） -->
+  <!-- 2. 立绘：先影子（纯剪影 + 位移），再本体。两张是同一个文件，只是滤镜不同。 -->
+  <img class="start-tachie start-tachie--shadow" src="assets/elaina/tachie-a.webp" alt="" width="989" height="1400" aria-hidden="true">
+  <img class="start-tachie" src="assets/elaina/tachie-a.webp"
+       srcset="assets/elaina/tachie-a-sm.webp 494w, assets/elaina/tachie-a.webp 989w"
+       sizes="(max-width: 900px) 60vw, 42vw" alt="" width="989" height="1400">
+
+  <!-- 3. 色块：文字与按钮都压在这块平色上（参考站那块粉板的位置） -->
   <div class="start-block start-block--big">
-    <img class="start-block__mark" src="assets/elaina/start-char.webp" alt="" width="620" height="907" aria-hidden="true">
     <div class="start-text">
       <p class="start-kicker"><span>MUKI</span><i></i><span>旅人手记</span></p>
       <h1 class="start-title"><span>ELAINA</span><span>向き</span></h1>
@@ -71,6 +74,17 @@
       <button class="start-btn" type="button" data-start-go="about">关于我</button>
       <button class="start-btn" type="button" data-start-go="contact">联系方式</button>
     </div>
+  </div>
+
+  <!-- 5. 描边元素：虚线 / 方块 / 斜条纹（参考站那套标注） -->
+  <div class="start-strokes" aria-hidden="true">
+    <span class="start-dash start-dash--1"></span>
+    <span class="start-dash start-dash--2"></span>
+    <span class="start-sq start-sq--dot"></span>
+    <span class="start-sq start-sq--grow"></span>
+    <span class="start-sq start-sq--b3"></span>
+    <span class="start-blinds start-blinds--1"></span>
+    <span class="start-blinds start-blinds--2"></span>
   </div>
 
   <p class="start-hand" aria-hidden="true">ひとり旅</p>

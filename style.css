@@ -1896,36 +1896,36 @@ html:not(.js) .ghost-fill { clip-path: inset(0 0 0 0); }
 }
 
 /* --- 擦除式入场：从左到右掀开 --- */
-html.js .reveal.rv-wipe {
+html.js .reveal.rv-wipe.armed {
   opacity: 1;
   transform: none;
   clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
   transition: clip-path var(--d-reveal) var(--ease-out);
 }
-html.js .reveal.rv-wipe.show {
+html.js .reveal.rv-wipe.armed.show {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 /* 自下而上掀开（用于图片 / 封面） */
-html.js .reveal.rv-wipe-up {
+html.js .reveal.rv-wipe-up.armed {
   opacity: 1;
   transform: none;
   clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
   transition: clip-path var(--d-reveal) var(--ease-out);
 }
-html.js .reveal.rv-wipe-up.show {
+html.js .reveal.rv-wipe-up.armed.show {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 /* 文字逐行下沉（配合 .rv-drop 的父容器） */
-html.js .reveal.rv-drop {
+html.js .reveal.rv-drop.armed {
   opacity: 0;
   transform: translateY(-.5em);
   transition: opacity 420ms var(--ease-out), transform 480ms var(--ease-out);
 }
-html.js .reveal.rv-drop.show { opacity: 1; transform: none; }
+html.js .reveal.rv-drop.armed.show { opacity: 1; transform: none; }
 
-/* 擦除入场时不要同时缩放，免得看起来在抖 */
-html.js .reveal.rv-wipe,
-html.js .reveal.rv-wipe-up { will-change: clip-path; }
+/* 注意：这里刻意【不】写 will-change: clip-path。
+   实测在移动端 Chrome 上它会让元素被预先裁切、之后不再重绘，
+   于是整块内容永久不可见。这个坑踩过一次就够。 */
 
 /* 水印只淡入 + 填充，不做位移（位移会让 scaleY 一起被覆盖） */
 html.js .ghost-title.reveal { transform: scaleY(.88); }
@@ -2019,11 +2019,14 @@ html.js .ghost-title.reveal.show { transform: scaleY(.88); }
 /* --- 滚动视差：三层不同速度，制造纵深 ---
    壁纸最慢（最远），水印中速，卡片内容最快（最近）。
    位移量由 JS 写在 --par-bg / --par-mid / --par-near 上。 */
-.par-mid { transform: translate3d(0, var(--par-mid, 0px), 0); will-change: transform; }
-.par-near { transform: translate3d(0, var(--par-near, 0px), 0); will-change: transform; }
+/* 用独立的 translate 属性，而不是 transform ——
+   这样能和元素自身的 transform（比如水印的 scaleY）叠加，
+   不会把对方的变换整个覆盖掉。 */
+.par-mid  { translate: 0 var(--par-mid, 0px);  will-change: translate; }
+.par-near { translate: 0 var(--par-near, 0px); will-change: translate; }
 /* 视差只做很轻的一点点，过头会晕 */
 @media (prefers-reduced-motion: reduce) {
-  .par-mid, .par-near { transform: none !important; }
+  .par-mid, .par-near { translate: none !important; }
   #bg-layer .bg-img { transform: scale(1.04) !important; }
 }
 
@@ -2133,21 +2136,22 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
       这样能和 .reveal 的 transform 叠加，互不覆盖
    ③ 悬停类交互只在 (hover:hover) 且 (pointer:fine) 上开，手机上不做无用功 */
 
-/* --- 全局：让动画跑在合成层 --- */
-.card, .proj, .anime, .hslide, .feat, .now-item, .tw-chip, .btn, .site {
-  backface-visibility: hidden;
-}
-/* 网格父层给透视，子元素的 rotateX/Y 才有立体感 */
-.grid, .about-grid, .proj-grid, .now-grid, .anime-grid, .g-2, .g-3, .g-4 {
-  perspective: 1100px;
+/* 注意：这里刻意【不】给所有卡片加 backface-visibility / will-change。
+   每加一个都会真的多开一个合成层，几十个叠起来在手机上会直接卡死。
+   只在真正做 3D 的元素加，并且只在有鼠标的设备上启用透视。 */
+
+/* 透视只在真有指针的设备上开（手机上完全不需要 3D） */
+@media (hover: hover) and (pointer: fine) {
+  .grid, .about-grid, .proj-grid, .now-grid, .anime-grid, .g-2, .g-3, .g-4 {
+    perspective: 1100px;
+  }
 }
 
 /* --- ① 卡片跟随指针 3D 倾斜 --- */
-/* 倾斜（--tx/--ty/--rx/--ry）和浮动（--float-y）
-   共用同一个 translate，所以必须写成一条合成表达式，
-   否则后写的规则会把前一条整个覆盖掉。 */
-.tilt, .float {
-  translate: var(--tx, 0px) calc(var(--ty, 0px) + var(--float-y, 0px));
+/* 倾斜用 translate/rotate（独立变换属性），浮动用 transform，
+   两者互不覆盖，可以同时生效。 */
+.tilt {
+  translate: var(--tx, 0px) var(--ty, 0px);
 }
 .tilt {
   rotate: x var(--rx, 0deg) y var(--ry, 0deg);
@@ -2192,19 +2196,19 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
               box-shadow var(--d-ui) ease;
 }
 
-/* --- ④ 卡片持续轻浮动（用 translate，与 transform 不冲突） --- */
+/* --- ④ 图片卡持续轻浮动 ---
+   关键：动画必须作用在 transform 上才能交给 GPU 合成。
+   之前动画的是自定义属性 --float-y，自定义属性无法合成，
+   于是每张卡都在主线程逐帧重算 —— 19 个一起跑就是卡死。
+   现在只给「图片卡」加（不挡阅读），且直接动 transform。 */
 .float {
   animation: card-float var(--float-dur, 7s) ease-in-out infinite;
   animation-delay: var(--float-delay, 0s);
+  will-change: transform;
 }
 @keyframes card-float {
-  0%, 100% { --float-y: 0px; }
-  50%      { --float-y: -5px; }
-}
-@property --float-y {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 0px;
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
 }
 
 /* --- ⑤ 滚动进度条 --- */
@@ -2223,8 +2227,12 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
   transition: transform 90ms linear;
 }
 
-/* --- ⑥ 视图切换：内容分段淡入 --- */
-.view-anim > * {
+/* --- ⑥ 视图切换：内容分段淡入 ---
+   只作用于【非 .reveal】的直接子元素。
+   因为 CSS 动画优先级高于普通声明：如果连 .reveal 一起动，
+   动画的 opacity:1 会盖掉 .reveal.armed 的 opacity:0，
+   造成"标题显示、正文消失"这种半截状态。 */
+.view-anim > *:not(.reveal) {
   animation: view-in 560ms var(--ease-out) both;
 }
 @keyframes view-in {
@@ -2236,6 +2244,7 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
 .view-anim > *:nth-child(3) { animation-delay: 130ms; }
 .view-anim > *:nth-child(4) { animation-delay: 180ms; }
 .view-anim > *:nth-child(n+5) { animation-delay: 220ms; }
+.view-anim > .reveal { animation: none !important; }
 
 /* --- ⑦ 数字滚动：等宽数字避免跳动 --- */
 [data-count] { font-variant-numeric: tabular-nums; }
@@ -2248,37 +2257,41 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .ripple { display: none; }
-  .float { animation: none; }
+  .float { animation: none; transform: none; }
   .tilt, .magnetic { translate: none; rotate: none; }
-  .view-anim > * { animation: none; }
+  .view-anim > * { animation: none !important; }
   #scrollProgress { transition: none; }
 }
 
 /* ============================ 15. 揭示动画 ============================ */
 /* 隐藏态一律带 html.js，特异性 (0,2,x)；
    .show 规则写成 html.js ...show 达到 (0,3,x)，必定覆盖。 */
-html.js .reveal {
+/* 关键设计：隐藏态挂在 .reveal.armed 上，而不是 .reveal 上。
+   只有 JS 确认"我已经开始观察这个元素了"才加 .armed ——
+   万一 IO 没触发、JS 中途报错、或浏览器不支持，
+   元素根本没有隐藏态，内容默认可见。
+   宁可少一个入场动画，也绝不能把内容藏起来。 */
+html.js .reveal.armed {
   opacity: 0;
   transform: translateY(var(--rv-y, 18px));
   transition:
     opacity var(--d-reveal) var(--ease-out),
     transform var(--d-reveal) var(--ease-out);
   transition-delay: calc(var(--stagger-i, 0) * 62ms);
-  will-change: opacity, transform;
 }
-html.js .reveal.show { opacity: 1; transform: none; }
+html.js .reveal.armed.show { opacity: 1; transform: none; }
 
 /* 手法 B：从右侧滑入 */
-html.js .reveal.rv-x { transform: translateX(var(--rv-x, 26px)); }
-html.js .reveal.rv-x.show { transform: none; }
+html.js .reveal.rv-x.armed { transform: translateX(var(--rv-x, 26px)); }
+html.js .reveal.rv-x.armed.show { transform: none; }
 
 /* 手法 C：轻微缩放落定 */
-html.js .reveal.rv-pop { transform: translateY(var(--rv-y, 14px)) scale(.975); }
-html.js .reveal.rv-pop.show { transform: none; }
+html.js .reveal.rv-pop.armed { transform: translateY(var(--rv-y, 14px)) scale(.975); }
+html.js .reveal.rv-pop.armed.show { transform: none; }
 
 /* 手法 D：卡片抬升（幅度更大，用于网格） */
-html.js .reveal.rv-lift { transform: translateY(calc(var(--rv-y, 20px) + 6px)); }
-html.js .reveal.rv-lift.show { transform: none; }
+html.js .reveal.rv-lift.armed { transform: translateY(calc(var(--rv-y, 20px) + 6px)); }
+html.js .reveal.rv-lift.armed.show { transform: none; }
 
 /* --- 兜底：任何情况下内容都必须可见 --- */
 @supports not (transition: opacity 1s) {

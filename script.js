@@ -558,13 +558,13 @@
         entries.forEach(function (en) {
           if (!en.isIntersecting) return;
           var el = en.target;
-          setTimeout(function () { el.style.width = (el.dataset.w || 0) + '%'; }, reduceMotion ? 0 : 180);
+          setTimeout(function () { el.style.transform = 'scaleX(' + ((parseFloat(el.dataset.w) || 0) / 100) + ')'; }, reduceMotion ? 0 : 180);
           barIO.unobserve(el);
         });
       }, { threshold: 0.35 });
       bars.forEach(function (b) { barIO.observe(b); });
     } else {
-      bars.forEach(function (b) { b.style.width = (b.dataset.w || 0) + '%'; });
+      bars.forEach(function (b) { b.style.transform = 'scaleX(' + ((parseFloat(b.dataset.w) || 0) / 100) + ')'; });
     }
   }
 
@@ -957,7 +957,7 @@
 
     requestAnimationFrame(function () {
       $$('.fr-luck-bar > i', resultEl).forEach(function (b, i) {
-        setTimeout(function () { b.style.width = (b.dataset.w || 0) + '%'; }, 90 + i * 95);
+        setTimeout(function () { b.style.transform = 'scaleX(' + ((parseFloat(b.dataset.w) || 0) / 100) + ')'; }, 90 + i * 95);
       });
     });
   }
@@ -1413,7 +1413,7 @@
   var MSGS = ['正在展开地图…', '正在整理行囊…', '正在点亮灯火…', '马上出发…'];
 
   function finishLoad() {
-    if (loadBar) loadBar.style.width = '100%';
+    if (loadBar) loadBar.style.transform = 'scaleX(1)';
     if (loadArc) loadArc.style.strokeDashoffset = '0';
     if (loadPct) loadPct.textContent = '100';
     document.body.classList.add('loaded');
@@ -1440,7 +1440,7 @@
     function setProgress(p) {
       if (p <= shown) return;
       shown = p;
-      if (loadBar) loadBar.style.width = p + '%';
+      if (loadBar) loadBar.style.transform = 'scaleX(' + (p / 100) + ')';
       if (loadArc) loadArc.style.strokeDashoffset = String(201 - (201 * p) / 100);
       if (loadPct) loadPct.textContent = String(p);
       if (loadMsg) loadMsg.textContent = MSGS[Math.min(MSGS.length - 1, Math.floor((p / 100) * MSGS.length))];

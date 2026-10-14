@@ -21,7 +21,13 @@
      1. 壁纸库
      ================================================================== */
   var WALLS = [
-    { id: 'dusk',   name: '黄昏' },
+    /* --- 新五张：伊蕾娜原画 --- */
+    { id: 'dusk',     name: '卧床' },
+    { id: 'rain',     name: '星伞' },
+    { id: 'duskblue', name: '夜窗' },
+    { id: 'desert',   name: '沙漠' },
+    { id: 'lemon',    name: '柠檬' },
+    /* --- 早期生成 --- */
     { id: 'mist',   name: '薄雾' },
     { id: 'sakura', name: '樱色' },
     { id: 'night',  name: '夜色' },
@@ -138,19 +144,7 @@
     LS.set('jyh-wall', item.id);
 
     if (state.mode !== 'none') {
-      var back = 1 - front;
-      var el = layers[back];
-      var src = wallSrc(item.id);
-      var paint = function () {
-        el.style.backgroundImage = 'url("' + src + '")';
-        el.classList.add('is-active');
-        layers[front].classList.remove('is-active');
-        front = back;
-      };
-      var im = new Image();
-      im.onload = paint;
-      im.onerror = paint;
-      im.src = src;
+      paintWall(item.id, !!opts.immediate);
     }
 
     if (wallGrid) {
@@ -170,12 +164,37 @@
       b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
     });
     applyVeil();
+    /* 纯色：全部撤掉；其它模式：交给 setWallpaper 重新贴上当前壁纸 */
     if (mode === 'none') {
       layers.forEach(function (l) { l.classList.remove('is-active'); });
     } else {
-      layers[front].style.backgroundImage = 'url("' + wallSrc(state.wall) + '")';
-      layers[front].classList.add('is-active');
+      paintWall(state.wall, true);
     }
+  }
+
+  /* 把指定壁纸贴到「非当前」层，然后交叉淡入。
+     immediate=true 时不淡入（初次进入 / 从纯色切回）。 */
+  function paintWall(id, immediate) {
+    var src = wallSrc(id);
+    var el = layers[1 - front];
+    var other = front;
+    var paint = function () {
+      el.style.backgroundImage = 'url("' + src + '")';
+      el.classList.add('is-active');
+      layers[other].classList.remove('is-active');
+      front = 1 - other;
+    };
+    if (immediate) {
+      /* 立刻贴上，不做等待 */
+      el.style.transition = 'none';
+      paint();
+      requestAnimationFrame(function () { el.style.transition = ''; });
+      return;
+    }
+    var im = new Image();
+    im.onload = paint;
+    im.onerror = paint;
+    im.src = src;
   }
 
   /* 缩略图网格 */
@@ -261,9 +280,13 @@
     });
   }
 
-  /* 初次应用 */
-  setMode(state.mode);
-  setWallpaper(state.wall, { announce: false });
+  /* 初次应用：先定模式（不重绘），再一次性把壁纸贴上，避免两层互相撤掉 */
+  document.body.setAttribute('data-wall-mode', state.mode);
+  $$('#wallMode .seg-btn').forEach(function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+  });
+  applyVeil();
+  setWallpaper(state.wall, { announce: false, immediate: true });
 
   /* ==================================================================
      6. 面板开关

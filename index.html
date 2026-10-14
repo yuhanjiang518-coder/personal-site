@@ -2,911 +2,685 @@
 <html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
 <meta name="description" content="向き的个人主页：沈阳理工大学网络工程、开发技能、项目收藏，以及动漫与游戏口味。">
+<meta name="theme-color" content="#16141a">
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261014b">
+<link rel="stylesheet" href="style.css?v=20261015a">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
 </head>
-<body>
+<body data-wallpaper="dusk">
 
-<!-- ============ 开屏动画 + 转场幕布 ============ -->
-<div class="loader" id="loader" role="status" aria-live="polite" aria-label="页面加载中">
-  <div class="curtain" id="curtain" aria-hidden="true"></div>
-  <div class="loader-bg" aria-hidden="true"></div>
-  <div class="loader-grain" aria-hidden="true"></div>
+<!-- ==================== 背景层 ==================== -->
+<div id="bg-layer" aria-hidden="true"></div>
+<div id="bg-veil" aria-hidden="true"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
 
-  <!-- 背景装饰层：旋转光环 + 呼吸光晕 + 环绕光点 -->
-  <div class="loader-aura" aria-hidden="true">
-    <span class="la-ring la-ring-1"></span>
-    <span class="la-ring la-ring-2"></span>
-    <span class="la-ring la-ring-3"></span>
-    <span class="la-glow"></span>
-    <span class="la-orbit"><i></i><i></i><i></i><i></i></span>
-  </div>
-
-  <div class="loader-core">
-    <!-- 徽记：双环 + 渐变进度弧 + 中心字 -->
-    <div class="loader-emblem">
-      <svg viewBox="0 0 50 50" aria-hidden="true">
-        <defs>
-          <linearGradient id="leGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"   stop-color="#a8c99a"></stop>
-            <stop offset="52%"  stop-color="#f0a6c0"></stop>
-            <stop offset="100%" stop-color="#e8c86a"></stop>
-          </linearGradient>
-        </defs>
-        <circle class="le-track" cx="25" cy="25" r="20.5"></circle>
-        <circle class="le-tick"  cx="25" cy="25" r="20.5"></circle>
-        <circle class="le-arc"   cx="25" cy="25" r="20.5"></circle>
+<!-- ==================== 加载屏 ==================== -->
+<div id="loader" role="status" aria-live="polite" aria-label="页面加载中">
+  <div class="load-inner">
+    <div class="load-mark">
+      <svg class="load-ring" viewBox="0 0 50 50" aria-hidden="true">
+        <circle class="trk" cx="25" cy="25" r="22"></circle>
+        <circle class="bar" id="loadArc" cx="25" cy="25" r="22"></circle>
       </svg>
-      <span class="le-pulse" aria-hidden="true"></span>
-      <span class="le-mark">向</span>
+      <img src="assets/avatar.webp" alt="" width="48" height="48">
     </div>
-
-    <div class="loader-word" aria-hidden="true">
-      <span class="lw-item">向</span><span class="lw-item">き</span>
-      <span class="lw-caret"></span>
-    </div>
-
-    <p class="loader-sub">写代码，也写点生活</p>
-
-    <div class="loader-rule" aria-hidden="true"><i></i></div>
-
-    <p class="loader-en" aria-hidden="true">M U K I &nbsp;·&nbsp; P E R S O N A L &nbsp; S I T E</p>
-
-    <div class="loader-meter" aria-hidden="true">
-      <i id="loaderBar"></i>
-      <span class="lm-shine"></span>
-    </div>
-    <p class="loader-state">
-      <span id="loaderMsg">初始化环境…</span>
-      <span class="loader-num"><span id="loaderPct">0</span>%</span>
-    </p>
+    <p class="load-name">向 き</p>
+    <div class="load-track" aria-hidden="true"><i id="loadBar"></i></div>
+    <p class="load-sub"><span id="loadMsg">正在准备…</span> · <span class="load-pct"><span id="loadPct">0</span>%</span></p>
   </div>
 </div>
 
-<div class="bg" aria-hidden="true"></div>
-<canvas id="stars" aria-hidden="true"></canvas>
-<div class="bg-veil" aria-hidden="true"></div>
-<div class="bg-glow glow-1" aria-hidden="true"></div>
-<div class="bg-glow glow-2" aria-hidden="true"></div>
-<div class="scroll-progress" id="progress"></div>
+<!-- 三色幕布（开屏 + 切页共用） -->
+<div id="curtain" aria-hidden="true"><span></span><span></span><span></span></div>
+<img id="jump-figure" src="assets/muki-art-happy.webp" alt="" aria-hidden="true" hidden>
 
-<a href="#home" class="skip">跳到主要内容</a>
+<!-- ==================== 顶栏 ==================== -->
+<header class="topbar">
+  <a class="brand" href="#home" data-view="home" data-anchor="home">
+    <img class="brand-mark" src="assets/avatar.webp" alt="" width="30" height="30">
+    <span>向き<span class="brand-tw">MUKI · 旅人手记</span></span>
+  </a>
 
-<aside class="rail" id="rail">
-  <div class="rail-art" aria-hidden="true"></div>
-  <div class="rail-head">
-    <div class="avatar-ring"><div class="avatar"><img src="assets/avatar.webp" srcset="assets/avatar@2x.webp 2x" alt="向き的头像" width="66" height="66" loading="eager" decoding="async"></div></div>
-    <h1 class="rail-name">向き</h1>
-    <p class="rail-tag">写代码，也写点生活</p>
-    <p class="rail-sub">沈阳理工大学 · 网络工程</p>
-
-    <div class="socials">
-      <a class="social" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener" title="GitHub · yuhanjiang518-coder" aria-label="访问我的 GitHub">
-        <svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        <span>GitHub</span>
-      </a>
-      <a class="social" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener" title="哔哩哔哩 · 向きー" aria-label="访问我的哔哩哔哩空间">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg>
-        <span>Bilibili</span>
-      </a>
-    </div>
-  </div>
-
-  <nav class="rail-nav" id="railNav">
-    <p class="rail-label">导航</p>
-    <a href="#home" class="rail-link" data-view="home" data-anchor="home"><span class="ri">◆</span>首页</a>
-    <a href="#about" class="rail-link" data-anchor="about"><span class="ri">◇</span>关于我</a>
-    <a href="#contact" class="rail-link" data-anchor="contact"><span class="ri">◇</span>联系我</a>
-    <p class="rail-label">学习 / 工作</p>
-    <a href="#skills" class="rail-link" data-view="study" data-anchor="skills"><span class="ri">◆</span>技能与近况</a>
-    <a href="#roadmap" class="rail-link sub" data-anchor="roadmap"><span class="ri">◇</span>学习路线</a>
-    <a href="#courses" class="rail-link sub" data-anchor="courses"><span class="ri">◇</span>课程矩阵</a>
-    <a href="#major" class="rail-link sub" data-anchor="major"><span class="ri">◇</span>我的专业</a>
-    <a href="#projects" class="rail-link sub" data-anchor="projects"><span class="ri">◇</span>项目与收藏</a>
-    <p class="rail-label">兴趣 / 日常</p>
-    <a href="#life" class="rail-link" data-view="life" data-anchor="life"><span class="ri">◆</span>日常与兴趣</a>
-    <a href="#anime" class="rail-link sub" data-anchor="anime"><span class="ri">◇</span>动漫口味</a>
-    <a href="#games" class="rail-link sub" data-anchor="games"><span class="ri">◇</span>游戏口味</a>
-    <a href="#sites" class="rail-link sub" data-anchor="sites"><span class="ri">◇</span>常去的地方</a>
+  <nav class="nav" id="nav" aria-label="主导航">
+    <button class="nav-link" type="button" data-view="home" data-anchor="home" aria-current="page">首页</button>
+    <button class="nav-link" type="button" data-view="home" data-anchor="about">关于我</button>
+    <button class="nav-link" type="button" data-view="study" data-anchor="skills">学习 / 工作</button>
+    <button class="nav-link" type="button" data-view="life" data-anchor="life">兴趣 / 日常</button>
+    <button class="nav-link" type="button" data-view="life" data-anchor="fortune">抽签</button>
+    <button class="nav-link" type="button" data-view="home" data-anchor="contact">联系我</button>
   </nav>
 
-  <div class="rail-bottom">
-    <p class="rail-label">状态</p>
-    <div class="rail-status"><span class="dot"></span> 在线 · 欢迎来聊</div>
-    <div class="rail-tools">
-      <button class="icon-btn" id="themeToggle" title="切换主题" aria-label="切换主题"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></button>
-      <button class="icon-btn" id="copyBtn" data-mail="3356559040@qq.com" title="复制邮箱" aria-label="复制邮箱"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/></svg></button>
-      <button class="icon-btn" id="wallBtn" title="更换壁纸" aria-label="更换壁纸"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5 9.5 13l4 3.5 2.5-2 3.5 3"/></svg></button>
+  <div class="tools">
+    <button class="icon-btn" id="themeToggle" title="切换明暗" aria-label="切换明暗主题">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <button class="icon-btn" id="wallBtn" title="壁纸与外观" aria-label="壁纸与外观" aria-expanded="false" aria-controls="wallPanel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5 9.5 13l4 3.5 2.5-2 3.5 3"/></svg>
+    </button>
+    <button class="icon-btn nav-toggle" id="navToggle" aria-label="展开菜单" aria-expanded="false" aria-controls="nav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ==================== 壁纸 / 外观面板 ==================== -->
+<div class="panel-scrim" id="wallScrim"></div>
+<aside class="panel" id="wallPanel" role="dialog" aria-modal="true" aria-label="壁纸与外观设置">
+  <div class="panel-head">
+    <h2>壁纸与外观</h2>
+    <button class="panel-close" id="wallClose" aria-label="关闭面板">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="panel-body">
+    <!-- 壁纸模式 -->
+    <div class="field-set">
+      <p class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg>
+        壁纸模式
+      </p>
+      <div class="seg" id="wallMode" role="group" aria-label="壁纸模式">
+        <button class="seg-btn" type="button" data-mode="full" aria-pressed="true">铺满</button>
+        <button class="seg-btn" type="button" data-mode="soft" aria-pressed="false">柔化</button>
+        <button class="seg-btn" type="button" data-mode="none" aria-pressed="false">纯色</button>
+      </div>
     </div>
+
+    <!-- 内置壁纸 -->
+    <div class="field-set">
+      <p class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M4 17l5-5 3.5 3.5L16 12l4 4"/></svg>
+        内置壁纸
+      </p>
+      <div class="wall-grid" id="wallGrid" role="group" aria-label="选择壁纸"></div>
+      <button class="btn btn-block" id="wallRandom" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7M21 16v5h-5M14 14l7 7M3 8V3h5M10 10 3 3"/></svg>
+        随机换一张
+      </button>
+    </div>
+
+    <!-- 遮罩浓度 -->
+    <div class="field-set">
+      <p class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M12 3v18M5 8l7-5 7 5"/></svg>
+        内容遮罩
+      </p>
+      <div class="slider-row">
+        <input type="range" id="veilRange" min="0" max="96" step="2" value="62" aria-label="内容遮罩浓度">
+        <span class="slider-val" id="veilVal">62%</span>
+      </div>
+    </div>
+
+    <!-- 主题色 -->
+    <div class="field-set">
+      <p class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/></svg>
+        主题色
+      </p>
+      <div class="hue-row" id="hueRow" role="group" aria-label="选择主题色"></div>
+    </div>
+
+    <button class="btn btn-block" id="resetLook" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      恢复默认外观
+    </button>
   </div>
 </aside>
 
-<button class="rail-toggle" id="railToggle" aria-label="菜单"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+<!-- ==================== 主体 ==================== -->
+<main class="wrap" id="main">
 
-<main class="content" id="main">
-
-  <!-- ==================== 界面 1：首页 ==================== -->
+  <!-- ============ 视图 1：首页 ============ -->
   <div class="view" id="view-home" data-view="home">
-  <section id="home" class="hero">
 
-    <!-- 整屏插画背景 -->
-    <div class="hero-bg" aria-hidden="true">
-      <picture>
-        <source media="(max-width:860px)" srcset="assets/hero-portrait.webp">
-        <img src="assets/hero-landscape.webp" alt="" loading="eager" decoding="async">
-      </picture>
-    </div>
-    <div class="hero-shade" aria-hidden="true"></div>
-
-    <!-- 漂浮光点（风格化装饰） -->
-    <div class="hero-sparks" aria-hidden="true">
-      <i style="--x:12%;--y:22%;--d:0s;--s:.9"></i>
-      <i style="--x:26%;--y:68%;--d:1.4s;--s:.7"></i>
-      <i style="--x:41%;--y:14%;--d:2.8s;--s:1.1"></i>
-      <i style="--x:58%;--y:82%;--d:.7s;--s:.8"></i>
-      <i style="--x:73%;--y:33%;--d:2.1s;--s:1"></i>
-      <i style="--x:88%;--y:61%;--d:3.4s;--s:.75"></i>
-      <i style="--x:7%;--y:47%;--d:1.9s;--s:.65"></i>
-      <i style="--x:66%;--y:9%;--d:3.9s;--s:.85"></i>
-    </div>
-
-    <div class="hero-inner">
-
-      <p class="hero-badge"><span class="pulse"></span>沈阳理工大学 · 信息科学与工程学院 · 网络工程</p>
-
-      <p class="hero-hello">你好，我是</p>
-
-      <h1 class="hero-name lines">
-        <span class="line"><span class="nm-cn" data-line style="--i:0">向き</span></span>
-        <span class="line"><span class="nm-en" data-line style="--i:1">MUKI</span></span>
-      </h1>
-
-      <p class="hero-type">
-        <span class="hero-prefix">我是一名&nbsp;</span><span id="typed"></span><span class="caret">|</span>
-      </p>
-
-      <p class="hero-lede">
-        在沈阳理工大学读网络工程。喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
-        也喜欢在动漫与游戏里寻找灵感。最近在研究 AI，试着把它真正用进日常的学习和开发里。
-      </p>
-
-      <div class="hero-actions">
-        <a href="#about" class="btn btn-primary">关于我 <span class="ar">→</span></a>
-        <a href="#skills" class="btn btn-ghost">学习 / 工作 <span class="ar">→</span></a>
-        <a href="#life" class="btn btn-ghost">兴趣 / 日常 <span class="ar">→</span></a>
-      </div>
-
-      <div class="hero-facts">
-        <div class="fact"><b data-count="2">0</b><span>编程语言</span></div>
-        <div class="fact"><b data-count="6">0</b><span>技能方向</span></div>
-        <div class="fact"><b data-count="4" data-suffix=" 类">0</b><span>游戏口味</span></div>
-      </div>
-
-      <div class="hero-socials">
-        <a class="hs" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener" aria-label="GitHub">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        </a>
-        <a class="hs" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener" aria-label="哔哩哔哩">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg>
-        </a>
-        <a class="hs" href="mailto:3356559040@qq.com" aria-label="邮箱">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
-        </a>
-      </div>
-
-    </div>
-
-    <a class="scroll-hint" href="#about" aria-label="向下滚动">
-      <span class="sh-text">SCROLL</span>
-      <span class="sh-rail"></span>
-    </a>
-  </section>
-
-  <!-- 关于 -->
-  <section id="about" class="section">
-    <div class="sec-head">
-      <h2>关于我</h2>
-      <p class="sec-sub">先正式介绍一下自己</p>
-    </div>
-
-    <!-- 正式自我介绍：图文并排 -->
-    <div class="intro-block">
-      <figure class="intro-art">
-        <img src="assets/muki-art-cake.webp" alt="伊蕾娜呆萌表情的Q版插画" width="512" height="512" loading="lazy" decoding="async">
-        <figcaption>向き / MUKI</figcaption>
-      </figure>
-      <div class="intro-body">
-        <p class="intro-hi">你好，我是<strong>向き</strong>（读作 MUKI）。</p>
-        <p>
-          现在是<strong>沈阳理工大学 信息科学与工程学院</strong>的学生，专业是<strong>网络工程</strong>。
-          我的名字取自《魔女之旅》——喜欢那种一个人上路、边走边把见闻记下来的感觉，
-          所以这个网站也算是我的一份「旅人手记」。
-        </p>
-        <p>
-          平时的主线是<strong>写代码</strong>。能用 C / C++ 和 Python 把想法实现出来，
-          从算法题到小工具都愿意动手试一遍。对网络协议、系统底层和人工智能都很好奇，
-          遇到不懂的会先记下来，等哪天回头发现已经懂了。
-        </p>
-        <p>
-          学习之外我是个标准的<strong>二次元 + 游戏玩家</strong>：看番、打游戏是主要放松方式，
-          也常常因为喜欢某个游戏或某段剧情，冒出「自己动手做点什么」的念头。
-          最近在做的事是<strong>研究 AI</strong>，想把它真正用进日常的学习和开发里，
-          而不是只当个搜索引擎。
-        </p>
-        <p class="intro-goal">
-          <span class="goal-label">眼下最想做到的事</span>
-          把专业课的基础打扎实，同时攒出几个拿得出手的成品——这个网站是第一个。
-        </p>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3 class="panel-title">基本信息</h3>
-      <div class="info-rows">
-        <div class="info-row"><span class="k">学校</span><span class="v">沈阳理工大学</span></div>
-        <div class="info-row"><span class="k">学院</span><span class="v">信息科学与工程学院</span></div>
-        <div class="info-row"><span class="k">专业</span><span class="v">网络工程</span></div>
-        <div class="info-row"><span class="k">所在地</span><span class="v">辽宁 · 沈阳</span></div>
-      </div>
-    </div>
-
-    <!-- 个人关键词：把「我是谁」拆成能扫一眼读懂的几条 -->
-    <div class="about-grid">
-      <figure class="about-art">
-        <img src="assets/muki-art-happy.webp" alt="伊蕾娜眯眼微笑的Q版插画" width="512" height="512" loading="lazy" decoding="async">
-      </figure>
-      <div class="about-keys">
-        <div class="key-row">
-          <span class="key-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9.5 4.5 13 8 16.5M16 9.5 19.5 13 16 16.5M13.5 6l-3 14"/></svg></span>
-          <div><b>写代码</b><p>C / C++ / Python，从算法题到小工具都愿意动手试。</p></div>
-        </div>
-        <div class="key-row">
-          <span class="key-ico key-ico-2"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.4 3.6 8.5S14.4 18.1 12 20.5c-2.4-2.4-3.6-5.4-3.6-8.5S9.6 5.9 12 3.5z"/></svg></span>
-          <div><b>网络工程</b><p>沈阳理工大学在读，专业课按自己的节奏重新过。</p></div>
-        </div>
-        <div class="key-row">
-          <span class="key-ico key-ico-3"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="3"/><path d="M3.5 10h17M8 6l2 4M15 6l2 4"/></svg></span>
-          <div><b>看番打游戏</b><p>动漫与游戏是主要放松方式，也常因此想自己做点什么。</p></div>
-        </div>
-        <div class="key-row">
-          <span class="key-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.6 0 2.4 1.2 4.5 3.2 5.9v3l3-1.6c.7.1 1.5.2 2.3.2 4.7 0 8.5-3.4 8.5-7.5S16.7 3.5 12 3.5z"/></svg></span>
-          <div><b>在学 AI</b><p>把大模型真正用进学习和开发，而不只是当搜索用。</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 现在在做什么 -->
-  <section id="now" class="section">
-    <div class="sec-head">
-      <h2>现在在做什么</h2>
-      <p class="sec-sub">三条线同时在走</p>
-    </div>
-    <div class="now-grid">
-      <article class="now-card">
-        <span class="now-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.6 0 2.4 1.2 4.5 3.2 5.9v3l3-1.6c.7.1 1.5.2 2.3.2 4.7 0 8.5-3.4 8.5-7.5S16.7 3.5 12 3.5z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg></span>
-        <h3>把 AI 用进日常</h3>
-        <p>不只把大模型当搜索引擎。在试着让它帮我读代码、整理笔记、搭小工具——重点是「真的省下时间」，而不是看起来很酷。</p>
-        <div class="now-tags"><span>Prompt</span><span>Agent 工具链</span><span>自动化</span></div>
-      </article>
-
-      <article class="now-card">
-        <span class="now-ico now-ico-2"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9.5 4.5 13 8 16.5M16 9.5 19.5 13 16 16.5M13.5 6l-3 14"/></svg></span>
-        <h3>把基础打牢</h3>
-        <p>网络工程的专业课不能只靠考前突击。数据结构、计算机网络、操作系统这几门，我在按自己的节奏重新过一遍，配套把题也刷起来。</p>
-        <div class="now-tags"><span>数据结构</span><span>计算机网络</span><span>操作系统</span></div>
-      </article>
-
-      <article class="now-card">
-        <span class="now-ico now-ico-3"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 4 7.5v9L12 20.5l8-4v-9z"/><path d="m4 7.5 8 4 8-4M12 11.5v9"/></svg></span>
-        <h3>做点看得见的东西</h3>
-        <p>学编程最容易卡在「只看不写」。所以从猜数字到这个小站，我都坚持自己动手跑通一遍——能给别人看的成品，才算真的学会。</p>
-        <div class="now-tags"><span>Python</span><span>C / C++</span><span>前端</span></div>
-      </article>
-
-      <figure class="now-art">
-        <img src="assets/muki-art-sleep.webp" alt="伊蕾娜裹着被子睡觉的Q版插画" width="512" height="512" loading="lazy" decoding="async">
-        <figcaption>忙完这一段，就该休息了</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <!-- 技能与近况 -->
-  <section id="contact" class="section">
-    <div class="sec-head">
-      <h2>联系我</h2>
-      <p class="sec-sub">等你回来</p>
-    </div>
-    <div class="panel contact-panel">
-      <p class="contact-lead">如果你也对编程、动漫、游戏或者 AI 感兴趣，欢迎随时找我聊聊。</p>
-      <div class="contact-actions">
-        <a class="btn btn-primary" id="mailBtn" href="#"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" style="vertical-align:-3px;margin-right:7px"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/></svg>发送邮件</a>
-        <button class="btn btn-ghost" id="copyBtn2" data-mail="3356559040@qq.com"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 5.5H7a2 2 0 0 0-2 2v9"/></svg>复制邮箱</button>
-      </div>
-      <div class="info-rows">
-        <div class="info-row"><span class="k">邮箱</span><span class="v mono">3356559040@qq.com</span></div>
-        <div class="info-row"><span class="k">学校</span><span class="v">沈阳理工大学 · 网络工程</span></div>
-        <div class="info-row"><span class="k">GitHub</span><span class="v"><a class="link" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">github.com/yuhanjiang518-coder</a></span></div>
-        <div class="info-row"><span class="k">B 站</span><span class="v"><a class="link" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">space.bilibili.com/627368437</a></span></div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <p>© <span id="year"></span> 向き · 沈阳理工大学 网络工程</p>
-    <p class="footer-sub">Built with care · Deployed on GitHub Pages</p>
-    <p class="footer-credit">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-  </footer>
-  </div>
-
-  <!-- ==================== 界面 2：学习 / 工作 ==================== -->
-  <div class="view" id="view-study" data-view="study" hidden>
-
-    <header class="page-head">
-      <h2>学习 / 工作</h2>
-      <p>技能栈、学习路线、课程掌握情况，以及我的专业和做过的项目。</p>
-      <p class="build-tag">v2026-10-14b · 看到这行说明已加载最新版</p>
-    </header>
-  <!-- 学习页横幅：给这页一个视觉起点（原本整页零图片） -->
-  <figure class="study-banner">
-    <img src="assets/cover-travel.webp" alt="伊蕾娜戴魔女帽背挎包的Q版插画" width="480" height="640" loading="lazy" decoding="async">
-    <figcaption>
-      <b>一边学，一边记</b>
-      <span>这里放的是我正在学的技能、走过的路线、上过的课，以及动手做出来的东西。<br>不求看起来厉害，只求每一条都拿得出手。</span>
-    </figcaption>
-  </figure>
-
-  <section id="skills" class="section">
-    <div class="sec-head">
-      <h2>技能与近况</h2>
-      <p class="sec-sub">会一点，还在学更多</p>
-    </div>
-
-    <div class="split">
-      <div class="panel">
-        <h3 class="panel-title">常用技术栈</h3>
-        <div class="skills">
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">Python</span><span class="skill-pct">熟练</span></div>
-            <div class="bar"><i style="--w:80%"></i></div>
+    <!-- 英雄区 -->
+    <section class="hero reveal" id="home">
+      <span class="hero-orb a" aria-hidden="true"></span>
+      <span class="hero-orb b" aria-hidden="true"></span>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="hero-kicker"><span class="dot"></span>沈阳理工大学 · 网络工程</p>
+          <h1>你好，我是 <span class="accent">向き</span></h1>
+          <p class="hero-lead">
+            我是一名<span class="typed" id="typed"></span><span class="caret" aria-hidden="true"></span><br>
+            在沈阳理工大学读网络工程。喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
+            也喜欢在动漫与游戏里寻找灵感。最近在研究 AI，试着把它真正用进日常的学习和开发里。
+          </p>
+          <div class="hero-cta">
+            <button class="btn btn-primary" type="button" data-view="home" data-anchor="about">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              关于我
+            </button>
+            <button class="btn" type="button" data-view="study" data-anchor="skills">学习 / 工作</button>
+            <button class="btn" type="button" data-view="life" data-anchor="life">兴趣 / 日常</button>
           </div>
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">C 语言</span><span class="skill-pct">熟练</span></div>
-            <div class="bar"><i style="--w:75%"></i></div>
-          </div>
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">C++</span><span class="skill-pct">掌握</span></div>
-            <div class="bar"><i style="--w:70%"></i></div>
-          </div>
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">网络工程</span><span class="skill-pct">掌握</span></div>
-            <div class="bar"><i style="--w:65%"></i></div>
-          </div>
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">AI 应用</span><span class="skill-pct">探索中</span></div>
-            <div class="bar"><i style="--w:60%"></i></div>
-          </div>
-          <div class="skill">
-            <div class="skill-row"><span class="skill-name">Web 前端</span><span class="skill-pct">入门</span></div>
-            <div class="bar"><i style="--w:55%"></i></div>
+
+          <div class="stat-row">
+            <div class="stat"><div class="stat-n" data-count="6">0</div><div class="stat-l">编程语言</div></div>
+            <div class="stat"><div class="stat-n" data-count="5">0</div><div class="stat-l">技能方向</div></div>
+            <div class="stat"><div class="stat-n" data-count="4">0</div><div class="stat-l">游戏口味</div></div>
+            <div class="stat"><div class="stat-n" data-count="10">0</div><div class="stat-l">内置壁纸</div></div>
           </div>
         </div>
-      </div>
 
-      <div class="panel">
-        <h3 class="panel-title">最近在做</h3>
-        <ul class="doing">
-          <li>
-            <span class="doing-dot"></span>
-            <div><b>研究 AI 工具链</b><p>折腾各种大模型与 Agent 工具，试着把 AI 变成学习和开发的助力。</p></div>
-          </li>
-          <li>
-            <span class="doing-dot"></span>
-            <div><b>算法练习</b><p>用 C / C++ 刷一些简单算法题，把基础打牢一点。</p></div>
-          </li>
-          <li>
-            <span class="doing-dot"></span>
-            <div><b>写这个主页</b><p>纯静态三文件，手写 HTML / CSS / JS，顺便当成前端练手。</p></div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- 学习路线 -->
-  <section id="roadmap" class="section">
-    <div class="sec-head">
-      <h2>学习路线</h2>
-      <p class="sec-sub">从基础到方向，一步一个脚印</p>
-    </div>
-
-    <div class="roadmap">
-
-      <div class="rm-item done">
-        <div class="rm-marker"><span class="rm-dot"></span></div>
-        <div class="rm-body">
-          <div class="rm-head">
-            <h3>编程基础</h3>
-            <span class="rm-badge">已掌握</span>
-          </div>
-          <p>C / C++ / Python 语法、指针与内存、结构体、面向对象、STL 常用容器。</p>
-          <div class="rm-tags"><span>C</span><span>C++</span><span>Python</span></div>
+        <div class="hero-portrait reveal rv-pop">
+          <img src="assets/avatar@2x.webp" alt="向き的头像" width="176" height="176" fetchpriority="high">
         </div>
       </div>
-
-      <div class="rm-item done">
-        <div class="rm-marker"><span class="rm-dot"></span></div>
-        <div class="rm-body">
-          <div class="rm-head">
-            <h3>计算机基础</h3>
-            <span class="rm-badge">已掌握</span>
-          </div>
-          <p>数据结构与算法、计算机网络体系结构、操作系统基本概念。</p>
-          <div class="rm-tags"><span>数据结构</span><span>计算机网络</span><span>操作系统</span></div>
-        </div>
-      </div>
-
-      <div class="rm-item doing">
-        <div class="rm-marker"><span class="rm-dot"></span></div>
-        <div class="rm-body">
-          <div class="rm-head">
-            <h3>网络工程方向</h3>
-            <span class="rm-badge">进行中</span>
-          </div>
-          <p>网络协议细节、组网与路由交换、网络安全基础。目标是把「会用」变成「懂原理」。</p>
-          <div class="rm-tags"><span>TCP/IP</span><span>路由交换</span><span>网络安全</span></div>
-        </div>
-      </div>
-
-      <div class="rm-item doing">
-        <div class="rm-marker"><span class="rm-dot"></span></div>
-        <div class="rm-body">
-          <div class="rm-head">
-            <h3>AI 工具与开发</h3>
-            <span class="rm-badge">进行中</span>
-          </div>
-          <p>折腾大模型与 Agent 工具链，试着把 AI 真正用进学习和开发流程里。</p>
-          <div class="rm-tags"><span>大模型</span><span>Agent</span><span>提示工程</span></div>
-        </div>
-      </div>
-
-      <div class="rm-item next">
-        <div class="rm-marker"><span class="rm-dot"></span></div>
-        <div class="rm-body">
-          <div class="rm-head">
-            <h3>工程实践</h3>
-            <span class="rm-badge">下一步</span>
-          </div>
-          <p>把零散的知识做成完整项目：从需求、设计到部署上线，走通一次全流程。</p>
-          <div class="rm-tags"><span>Git</span><span>项目实战</span><span>部署</span></div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- 课程技能矩阵 -->
-  <section id="courses" class="section">
-    <div class="sec-head">
-      <h2>课程技能矩阵</h2>
-      <p class="sec-sub">学过什么，心里有数</p>
-    </div>
-
-    <div class="matrix-legend">
-      <span><i class="lg lg-done"></i>已掌握</span>
-      <span><i class="lg lg-doing"></i>在学</span>
-      <span><i class="lg lg-todo"></i>待学习</span>
-    </div>
-
-    <div class="matrix">
-
-      <div class="mx-group">
-        <h3 class="mx-title">编程语言</h3>
-        <div class="mx-items">
-          <span class="mx lv-done">C</span>
-          <span class="mx lv-done">C++</span>
-          <span class="mx lv-done">Python</span>
-          <span class="mx lv-doing">JavaScript</span>
-          <span class="mx lv-todo">SQL</span>
-        </div>
-      </div>
-
-      <div class="mx-group">
-        <h3 class="mx-title">计算机基础</h3>
-        <div class="mx-items">
-          <span class="mx lv-done">数据结构</span>
-          <span class="mx lv-done">计算机网络</span>
-          <span class="mx lv-doing">操作系统</span>
-          <span class="mx lv-doing">计算机组成原理</span>
-          <span class="mx lv-todo">编译原理</span>
-        </div>
-      </div>
-
-      <div class="mx-group">
-        <h3 class="mx-title">网络工程</h3>
-        <div class="mx-items">
-          <span class="mx lv-done">TCP/IP 协议</span>
-          <span class="mx lv-doing">路由与交换</span>
-          <span class="mx lv-doing">网络安全基础</span>
-          <span class="mx lv-todo">渗透测试</span>
-          <span class="mx lv-todo">网络编程</span>
-        </div>
-      </div>
-
-      <div class="mx-group">
-        <h3 class="mx-title">工具与工程</h3>
-        <div class="mx-items">
-          <span class="mx lv-done">Git / GitHub</span>
-          <span class="mx lv-done">VS Code</span>
-          <span class="mx lv-doing">Linux 命令行</span>
-          <span class="mx lv-doing">HTML / CSS</span>
-          <span class="mx lv-todo">Docker</span>
-        </div>
-      </div>
-
-      <div class="mx-group">
-        <h3 class="mx-title">AI 与前沿</h3>
-        <div class="mx-items">
-          <span class="mx lv-doing">大模型应用</span>
-          <span class="mx lv-doing">提示工程</span>
-          <span class="mx lv-doing">AI 编程助手</span>
-          <span class="mx lv-todo">机器学习基础</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 怎么学的：把方法讲清楚，比只列技能名有用 -->
-    <div class="method-grid">
-      <article class="method-card">
-        <span class="method-num">01</span>
-        <h4>先跑通，再深挖</h4>
-        <p>拿到新东西先写个能跑的最小例子，有了感觉再回头看原理。卡住超过半小时就记下来，不硬耗。</p>
-      </article>
-      <article class="method-card">
-        <span class="method-num">02</span>
-        <h4>用自己的话记一遍</h4>
-        <p>笔记不抄课件。合上书，用自己理解的话重写一遍——写不出来，就是还没懂。</p>
-      </article>
-      <article class="method-card">
-        <span class="method-num">03</span>
-        <h4>做成能给别人看的东西</h4>
-        <p>小游戏、工具、这个网站。有成品才有压力把细节做对，也才知道自己哪块是虚的。</p>
-      </article>
-      <article class="method-card">
-        <span class="method-num">04</span>
-        <h4>让 AI 当同学，不当答案</h4>
-        <p>用它解释概念、查报错、提思路；但代码要自己敲一遍，不然下次还是不会。</p>
-      </article>
-    </div>
-  </section>
-
-  <!-- 我的专业 -->
-  <section id="major" class="section">
-    <div class="sec-head">
-      <h2>我的专业</h2>
-      <p class="sec-sub">沈阳理工大学 · 网络工程</p>
-    </div>
-
-    <div class="major-grid stagger">
-      <div class="panel major-main">
-        <h3 class="panel-title">网络安全特色 · 辽宁省一流专业建设点</h3>
-        <p>
-          沈阳理工大学网络工程专业是<strong>辽宁省一流专业建设点</strong>，
-          专业特色为<strong>网络安全</strong>。2024 年软科中国大学专业排名中，
-          网络工程位列<strong>第 63 位</strong>（共 199 所高校参评），专业评价 <strong>B+</strong>，辽宁省内第四。
-        </p>
-        <p>
-          专业立足国防特色，注重夯实数学与自然科学基础，培养目标覆盖网络系统设计、开发、
-          运维与安全保障，毕业去向包括网络通信运营企业、政府事业单位、大中型企业网络信息中心、
-          互联网企业与网络设备研发制造企业等。网络工程也是 2015 年以来连续多年的
-          <strong>「绿牌专业」</strong>。
-        </p>
-        <div class="major-stats">
-          <div class="ms"><b>63</b><span>软科专业排名</span></div>
-          <div class="ms"><b>B+</b><span>专业评价</span></div>
-          <div class="ms"><b>300<span class="u">万</span></b><span>实验室设备</span></div>
-          <div class="ms"><b>30<span class="u">+</span></b><span>近三年国家级奖项</span></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3 class="panel-title">校企合作培养</h3>
-        <p>专业与多家国内网络安全头部企业建立了深度合作，形成培训—实习—就业的闭环。</p>
-        <ul class="coop">
-          <li><span class="coop-dot"></span><div><b>奇安信</b><small>沈理工工程师班</small></div></li>
-          <li><span class="coop-dot"></span><div><b>深信服</b><small>就业育人项目合作单位</small></div></li>
-          <li><span class="coop-dot"></span><div><b>绿盟</b><small>网络安全实战精英班</small></div></li>
-        </ul>
-        <p class="major-note">资料来源：<a class="link" href="https://sise.sylu.edu.cn/zyjs/zyjs/wlgc.htm" target="_blank" rel="noopener">学院官网专业介绍</a></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 项目与收藏 -->
-  <section id="projects" class="section">
-    <div class="sec-head">
-      <h2>项目与收藏</h2>
-      <p class="sec-sub">正在做的项目，和一些好地方</p>
-    </div>
-    <div class="cards stagger">
-      <article class="card">
-        <div class="card-top"><span class="card-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span><span class="badge badge-done">已完成</span></div>
-        <h3>猜数字小游戏</h3>
-        <p>电脑随机出 1–100 的数字，提示「大了 / 小了」，直到猜中并统计次数。单文件 Python 实现，用命令行运行。</p>
-        <div class="card-tags"><span>Python</span><span>命令行</span></div>
-      </article>
-
-      <article class="card">
-        <div class="card-top"><span class="card-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.4 3.6 8.5S14.4 18.1 12 20.5c-2.4-2.4-3.6-5.4-3.6-8.5S9.6 5.9 12 3.5z"/></svg></span><span class="badge badge-live">已上线</span></div>
-        <h3>个人主页</h3>
-        <p>就是你正在看的这个页面。纯静态 HTML / CSS / JavaScript 手写，托管在 GitHub Pages 上。</p>
-        <div class="card-tags"><span>HTML</span><span>CSS</span><span>JS</span></div>
-      </article>
-
-      <article class="card">
-        <div class="card-top"><span class="card-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="7.5" width="16" height="12" rx="4"/><path d="M12 3.5v4M8.5 12.5v2M15.5 12.5v2"/></svg></span><span class="badge">进行中</span></div>
-        <h3>AI 工具折腾</h3>
-        <p>试用各种大模型与 Agent，记录哪些场景真的能把效率提上去，哪些只是噱头。</p>
-        <div class="card-tags"><span>AI</span><span>Agent</span></div>
-      </article>
-
-      <article class="card">
-        <div class="card-top"><span class="card-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5.5h6a2 2 0 0 1 2 2v11a1.6 1.6 0 0 0-1.6-1.6H4z"/><path d="M20 5.5h-6a2 2 0 0 0-2 2v11a1.6 1.6 0 0 1 1.6-1.6H20z"/></svg></span><span class="badge">长期</span></div>
-        <h3>算法练习</h3>
-        <p>用 C / C++ 刷简单算法题，重点是理解思路而不是背题解。</p>
-        <div class="card-tags"><span>C</span><span>C++</span><span>算法</span></div>
-      </article>
-    </div>
-  </section>
-
-  <!-- 日常与兴趣 -->
-  </div>
-
-  <!-- ==================== 界面 3：兴趣 / 日常 ==================== -->
-  <div class="view" id="view-life" data-view="life" hidden>
-
-    <header class="page-head">
-      <h2>兴趣 / 日常</h2>
-      <p>看什么动漫、玩什么游戏，还有一些我常去的地方。</p>
-    </header>
-  <section id="life" class="section">
-    <div class="sec-head">
-      <h2>日常与兴趣</h2>
-      <p class="sec-sub">这个小世界</p>
-    </div>
-    <div class="hobbies stagger">
-      <article class="hobby hobby-wide">
-        <span class="hobby-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="6" width="17" height="12" rx="3"/><path d="M3.5 10h17M8 6l2 4M15 6l2 4"/></svg></span>
-        <h3>看动漫</h3>
-        <p>喜欢沉浸在故事与画面里，从热血番到治愈番都看，也常常被一句台词戳中。下面是我偏爱的几部。</p>
-      </article>
-      <article class="hobby hobby-wide">
-        <span class="hobby-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7.5 8h9a5 5 0 0 1 4.9 6l-.5 2.2a2.4 2.4 0 0 1-4.3.9L15.4 15H8.6l-1.2 2.1a2.4 2.4 0 0 1-4.3-.9L2.6 14a5 5 0 0 1 4.9-6z"/><path d="M8 11v2M7 12h2M15.5 11.5h.01M17 13h.01"/></svg></span>
-        <h3>玩游戏</h3>
-        <p>偏爱有设计感的单机与独立游戏，也喜欢研究玩法机制。下面是我常玩的几类。</p>
-      </article>
-      <article class="hobby">
-        <span class="hobby-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="7.5" width="16" height="12" rx="4"/><path d="M12 3.5v4M8.5 12.5v2M15.5 12.5v2"/></svg></span>
-        <h3>研究 AI</h3>
-        <p>关注大模型的发展，动手折腾各种 AI 工具，试着把它变成日常的助力。</p>
-      </article>
-      <article class="hobby">
-        <span class="hobby-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="10.5" rx="2.5"/><path d="M2.5 19h19"/></svg></span>
-        <h3>写代码</h3>
-        <p>用 C / C++ / Python 把想法实现出来，享受「跑通了」那一刻的成就感。</p>
-      </article>
-    </div>
-
-    <h3 class="sub-title" id="anime">动漫口味</h3>
-
-    <!-- One live thing：旅人手记抽签（来自《魔女之旅》的旅途主题） -->
-    <section class="travel-draw" id="travelDraw" aria-labelledby="travelDrawTitle">
-      <div class="td-left">
-        <h4 id="travelDrawTitle">旅人手记</h4>
-        <p class="td-desc">伊蕾娜的旅途是一站一站记下来的。抽一张，看看今天落在哪一句上。</p>
-        <button class="btn btn-primary td-btn" id="tdBtn" type="button">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:7px"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>
-          抽一张
-        </button>
-      </div>
-      <figure class="td-card" id="tdCard" aria-live="polite">
-        <img src="assets/muki-art-cake.webp" alt="" width="512" height="512" loading="lazy" decoding="async" id="tdArt">
-        <blockquote>
-          <p id="tdText">按下「抽一张」，开始一段小小的旅途。</p>
-          <cite id="tdFrom">— 旅人手记</cite>
-        </blockquote>
-      </figure>
     </section>
 
-    <!-- 伊蕾娜专题：本站视觉的出处 -->
-    <figure class="elaina-feature">
-      <img src="assets/muki-feature.webp"
-           alt="伊蕾娜三种表情的Q版插画：呆萌、眯眼微笑、裹被子睡觉"
-           width="1280" height="720" loading="lazy" decoding="async">
-      <figcaption>
-        <b>《魔女之旅》</b>
-        <span>本站的背景插画、配色与那句「写代码，也写点生活」，都来自这部作品。伊蕾娜一个人旅行，边走边记录——我也想把学到的东西这样留下来。</span>
-      </figcaption>
-    </figure>
+    <!-- 关于我 -->
+    <section class="sec" id="about">
+      <div class="sec-head reveal">
+        <h2>关于我</h2>
+        <span class="sec-more">先正式介绍一下自己</span>
+      </div>
 
-    <div class="anime">
+      <div class="about-grid">
+        <div class="card card-pad reveal rv-x">
+          <p>你好，我是 <strong>向き</strong>（读作 MUKI）。现在是 <strong>沈阳理工大学 信息科学与工程学院</strong> 的学生，专业是 <strong>网络工程</strong>。</p>
+          <p>我的名字取自《魔女之旅》——喜欢那种一个人上路、边走边把见闻记下来的感觉，所以这个网站也算是我的一份「旅人手记」。</p>
+          <p>平时的主线是 <strong>写代码</strong>。能用 C / C++ 和 Python 把想法实现出来，从算法题到小工具都愿意动手试一遍。对网络协议、系统底层和人工智能都很好奇，遇到不懂的会先记下来，等哪天回头发现已经懂了。</p>
+          <p>学习之外我是个标准的 <strong>二次元 + 游戏玩家</strong>：看番、打游戏是主要放松方式，也常常因为喜欢某个游戏或某段剧情，冒出「自己动手做点什么」的念头。</p>
+          <p>最近在做的事是 <strong>研究 AI</strong>，想把它真正用进日常的学习和开发里，而不是只当个搜索引擎。</p>
+          <p>眼下最想做到的事：把专业课的基础打扎实，同时攒出几个拿得出手的成品——这个网站是第一个。</p>
+        </div>
 
-      <article class="anime-card">
-        <div class="anime-cover">
-          <img src="assets/cover-travel.webp" alt="伊蕾娜戴魔女帽背挎包的Q版插画" width="480" height="640" loading="lazy" decoding="async">
+        <div class="card card-pad about-card reveal rv-x">
+          <h3 style="font-size:.88rem">基本信息</h3>
+          <dl class="fact-list">
+            <div class="fact"><dt>学校</dt><dd>沈阳理工大学</dd></div>
+            <div class="fact"><dt>学院</dt><dd>信息科学与工程学院</dd></div>
+            <div class="fact"><dt>专业</dt><dd>网络工程</dd></div>
+            <div class="fact"><dt>所在地</dt><dd>辽宁 · 沈阳</dd></div>
+            <div class="fact"><dt>邮箱</dt><dd>3356559040@qq.com</dd></div>
+            <div class="fact"><dt>B 站</dt><dd>UID 627368437</dd></div>
+          </dl>
+          <div class="tags" style="margin-top:.4rem">
+            <span class="tag is-hot">写代码</span>
+            <span class="tag">网络工程</span>
+            <span class="tag">看番打游戏</span>
+            <span class="tag">在学 AI</span>
+          </div>
         </div>
-        <div class="anime-body">
-          <h4>JoJo 的奇妙冒险</h4>
-          <p class="anime-meta">荒木飞吕彦 · 全系列</p>
-          <p class="anime-note">替身设定与战斗智斗的巅峰，越看越上头的长篇。</p>
-        </div>
-      </article>
+      </div>
+    </section>
 
-      <article class="anime-card anime-feature">
-        <div class="anime-cover anime-elaina">
-          <img src="assets/cover-elaina.webp" alt="伊蕾娜委屈掉眼泪的Q版插画" width="480" height="640" loading="lazy" decoding="async">
-        </div>
-        <div class="anime-body">
-          <h4>魔女之旅</h4>
-          <p class="anime-meta">白石定规 · あずーる</p>
-          <p class="anime-note">单元剧式的旅途故事，安静又带点苦涩。本站背景就出自这里。</p>
-        </div>
-      </article>
+    <!-- 现在在做什么 -->
+    <section class="sec" id="now">
+      <div class="sec-head reveal">
+        <h2>现在在做什么</h2>
+        <span class="sec-more">三条线同时在走</span>
+      </div>
 
-      <article class="anime-card">
-        <div class="anime-cover anime-bokuyaba" aria-hidden="true">
-          <span class="anime-mark">心</span>
+      <div class="now-grid">
+        <div class="now-item reveal">
+          <span class="now-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M3 12h3M18 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="3.2"/></svg>
+          </span>
+          <div class="now-body">
+            <p class="now-t">把 AI 用进日常</p>
+            <p class="now-d">不只把大模型当搜索引擎。在试着让它帮我读代码、整理笔记、搭小工具——重点是「真的省下时间」，而不是看起来很酷。</p>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">Prompt</span><span class="tag">Agent 工具链</span><span class="tag">自动化</span></div>
+          </div>
         </div>
-        <div class="anime-body">
-          <h4>我心里危险的东西</h4>
-          <p class="anime-meta">樱井纪雄</p>
-          <p class="anime-note">把中二与青涩刻画得很细的恋爱番，氛围感极好。</p>
-        </div>
-      </article>
 
-      <article class="anime-card">
-        <div class="anime-cover anime-grandblue" aria-hidden="true">
-          <span class="anime-mark">酔</span>
+        <div class="now-item reveal">
+          <span class="now-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H19v3H6.5"/></svg>
+          </span>
+          <div class="now-body">
+            <p class="now-t">把基础打牢</p>
+            <p class="now-d">网络工程的专业课不能只靠考前突击。数据结构、计算机网络、操作系统这几门，我在按自己的节奏重新过一遍，配套把题也刷起来。</p>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">数据结构</span><span class="tag">计算机网络</span><span class="tag">操作系统</span></div>
+          </div>
         </div>
-        <div class="anime-body">
-          <h4>碧蓝之海</h4>
-          <p class="anime-meta">井上坚二 · 吉冈公威</p>
-          <p class="anime-note">潜水社团的爆笑日常，笑点密度极高，放松首选。</p>
-        </div>
-      </article>
 
-    </div>
-
-    <h3 class="sub-title" id="games">游戏口味</h3>
-    <div class="games">
-
-      <article class="game">
-        <div class="game-head">
-          <span class="game-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
-          <h4>音游</h4>
+        <div class="now-item reveal">
+          <span class="now-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+          </span>
+          <div class="now-body">
+            <p class="now-t">做点看得见的东西</p>
+            <p class="now-d">学编程最容易卡在「只看不写」。所以从猜数字到这个小站，我都坚持自己动手跑通一遍——能给别人看的成品，才算真的学会。</p>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">Python</span><span class="tag">C / C++</span><span class="tag">前端</span></div>
+          </div>
         </div>
-        <p class="game-desc">最沉迷的一类，追求手感和准度，喜欢打高难度谱面。</p>
-        <div class="game-tags">
-          <span>Phigros</span>
-          <span>Rizline</span>
-          <span>Orzmic</span>
-          <span>世界计划</span>
-        </div>
-      </article>
+      </div>
+    </section>
 
-      <article class="game">
-        <div class="game-head">
-          <span class="game-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9.5 20v-6h5v6"/></svg></span>
-          <h4>类银河恶魔城</h4>
-        </div>
-        <p class="game-desc">喜欢探索地图、解锁能力、反复回头开新路的循环。</p>
-        <div class="game-tags">
-          <span>空洞骑士</span>
-          <span>空洞骑士：丝之歌</span>
-          <span>奥日与黑暗森林</span>
-          <span>奥日与萤火意志</span>
-          <span>苍翼：混沌效应</span>
-        </div>
-      </article>
+    <!-- 联系我 -->
+    <section class="sec" id="contact">
+      <div class="sec-head reveal">
+        <h2>联系我</h2>
+        <span class="sec-more">等你回来</span>
+      </div>
 
-      <article class="game">
-        <div class="game-head">
-          <span class="game-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h6.5a1.5 1.5 0 0 1 1.5 1.5V19a1.2 1.2 0 0 0-1.2-1.2H4z"/><path d="M20 5h-6.5A1.5 1.5 0 0 0 12 6.5V19a1.2 1.2 0 0 1 1.2-1.2H20z"/></svg></span>
-          <h4>Galgame</h4>
+      <div class="card card-pad reveal" style="margin-bottom:1rem">
+        <p style="color:var(--text-soft);margin-bottom:1rem">如果你也对编程、动漫、游戏或者 AI 感兴趣，欢迎随时找我聊聊。</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.55rem">
+          <a class="btn btn-primary" href="mailto:3356559040@qq.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+            发送邮件
+          </a>
+          <button class="btn" type="button" id="copyMail" data-mail="3356559040@qq.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/></svg>
+            复制邮箱
+          </button>
         </div>
-        <p class="game-desc">喜欢剧情向视觉小说，会为了一个结局反复走线。</p>
-        <div class="game-tags">
-          <span>Rewrite</span>
-          <span>樱之诗</span>
-          <span>樱之刻</span>
-          <span>夏日口袋</span>
-          <span>CLANNAD</span>
-          <span>命运石之门</span>
-          <span>Ever17</span>
+      </div>
+
+      <div class="contact-grid">
+        <a class="contact-item reveal" href="mailto:3356559040@qq.com">
+          <span class="contact-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/></svg></span>
+          <span class="contact-meta"><span class="contact-k">邮箱</span><span class="contact-v">3356559040@qq.com</span></span>
+        </a>
+        <div class="contact-item reveal">
+          <span class="contact-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 8 12 13l9.5-5z"/><path d="M6 10v5.5c0 1.5 2.7 3 6 3s6-1.5 6-3V10"/></svg></span>
+          <span class="contact-meta"><span class="contact-k">学校</span><span class="contact-v">沈阳理工大学 · 网络工程</span></span>
         </div>
-      </article>
-
-      <article class="game">
-        <div class="game-head">
-          <span class="game-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span>
-          <h4>沙盒 / Roguelike</h4>
-        </div>
-        <p class="game-desc">享受每一局都不一样的感觉，以及自由搭建的乐趣。</p>
-        <div class="game-tags">
-          <span>泰拉瑞亚</span>
-          <span>死亡细胞</span>
-          <span>杀戮尖塔</span>
-        </div>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- 常去的地方 -->
-  <section id="sites" class="section">
-    <div class="sec-head">
-      <h2>常去的地方</h2>
-      <p class="sec-sub">一些常用工具，和互联网上的好地方</p>
-    </div>
-    <div class="sites">
-      <a class="site site-me" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">
-        <span class="site-ico"><svg viewBox="0 0 16 16" width="21" height="21" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></span><div><b>我的 GitHub <em class="me-tag">本人</em></b><small>yuhanjiang518-coder</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-      <a class="site site-me" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">
-        <span class="site-ico"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg></span><div><b>我的 B 站 <em class="me-tag">本人</em></b><small>向きー · UID 627368437</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-      <a class="site" href="https://www.luogu.com.cn" target="_blank" rel="noopener"><span class="site-ico"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg></span>
-        <div><b>洛谷 Luogu</b><small>算法竞赛题目练习与题解</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-      <a class="site" href="https://www.sylu.edu.cn" target="_blank" rel="noopener"><span class="site-ico"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 8.5 12 13l9.5-4.5z"/><path d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5"/></svg></span>
-        <div><b>沈阳理工大学</b><small>学校官网</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-      <a class="site" href="https://chat.deepseek.com" target="_blank" rel="noopener">
-        <span class="site-ico"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.6 0 2.4 1.2 4.5 3.2 5.9v3l3-1.6c.7.1 1.5.2 2.3.2 4.7 0 8.5-3.4 8.5-7.5S16.7 3.5 12 3.5z"/></svg></span><div><b>DeepSeek</b><small>平时用得最多的 AI 助手</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-      <a class="site" href="https://developer.mozilla.org/zh-CN/" target="_blank" rel="noopener">
-        <span class="site-ico"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8.5H7.5A3.5 3.5 0 0 0 4 12a3.5 3.5 0 0 0 3.5 3.5H9M15 8.5h1.5A3.5 3.5 0 0 1 20 12a3.5 3.5 0 0 1-3.5 3.5H15M8 12h8"/></svg></span><div><b>MDN 文档</b><small>查前端 API 最靠谱的地方</small></div>
-        <span class="site-arrow">↗</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- 联系 -->
+        <a class="contact-item reveal" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">
+          <span class="contact-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></span>
+          <span class="contact-meta"><span class="contact-k">GitHub</span><span class="contact-v">yuhanjiang518-coder</span></span>
+        </a>
+        <a class="contact-item reveal" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">
+          <span class="contact-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg></span>
+          <span class="contact-meta"><span class="contact-k">B 站</span><span class="contact-v">向きー · UID 627368437</span></span>
+        </a>
+      </div>
+    </section>
   </div>
 
-  <footer class="footer">
-    <p>© <span id="year"></span> 向き · 沈阳理工大学 网络工程</p>
-    <p class="footer-sub">Built with care · Deployed on GitHub Pages</p>
-    <p class="footer-credit">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-  </footer>
+  <!-- ============ 视图 2：学习 / 工作 ============ -->
+  <div class="view" id="view-study" data-view="study" hidden>
+
+    <div class="sec-head reveal" style="margin-bottom:1.4rem">
+      <h2>学习 / 工作</h2>
+      <span class="sec-more">一边学，一边记</span>
+    </div>
+    <p class="reveal" style="color:var(--text-soft);max-width:42rem;margin:-.6rem 0 1.6rem">
+      这里放的是我正在学的技能、走过的路线、上过的课，以及动手做出来的东西。不求看起来厉害，只求每一条都拿得出手。
+    </p>
+
+    <!-- 技能 -->
+    <section class="sec" id="skills">
+      <div class="sec-head reveal"><h2>技能与近况</h2><span class="sec-more">会一点，还在学更多</span></div>
+
+      <div class="skill-grid">
+        <div class="card card-pad skill-card reveal">
+          <div class="skill-top">
+            <span class="skill-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span>
+            <div><div class="skill-name">常用技术栈</div><div class="skill-note">按熟练度排序</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.7rem">
+            <div><div class="bar-meta"><span>Python</span><span>熟练</span></div><div class="bar"><i data-w="88"></i></div></div>
+            <div><div class="bar-meta"><span>C 语言</span><span>熟练</span></div><div class="bar"><i data-w="85"></i></div></div>
+            <div><div class="bar-meta"><span>C++</span><span>掌握</span></div><div class="bar"><i data-w="72"></i></div></div>
+            <div><div class="bar-meta"><span>网络工程</span><span>掌握</span></div><div class="bar"><i data-w="68"></i></div></div>
+            <div><div class="bar-meta"><span>AI 应用</span><span>探索中</span></div><div class="bar"><i data-w="52"></i></div></div>
+            <div><div class="bar-meta"><span>Web 前端</span><span>入门</span></div><div class="bar"><i data-w="45"></i></div></div>
+          </div>
+        </div>
+
+        <div class="card card-pad reveal">
+          <h3 style="font-size:.88rem;margin-bottom:.75rem">最近在做</h3>
+          <div style="display:flex;flex-direction:column;gap:.85rem">
+            <div><div class="skill-name" style="font-size:.84rem">研究 AI 工具链</div><div class="skill-note" style="line-height:1.6">折腾各种大模型与 Agent 工具，试着把 AI 变成学习和开发的助力。</div></div>
+            <div><div class="skill-name" style="font-size:.84rem">算法练习</div><div class="skill-note" style="line-height:1.6">用 C / C++ 刷一些简单算法题，把基础打牢一点。</div></div>
+            <div><div class="skill-name" style="font-size:.84rem">写这个主页</div><div class="skill-note" style="line-height:1.6">纯静态三文件，手写 HTML / CSS / JS，顺便当成前端练手。</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 学习路线 -->
+    <section class="sec" id="roadmap">
+      <div class="sec-head reveal"><h2>学习路线</h2><span class="sec-more">从基础到方向，一步一个脚印</span></div>
+      <div class="card card-pad reveal">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-when">已掌握</div>
+            <div class="tl-t">编程基础</div>
+            <div class="tl-d">C / C++ / Python 语法、指针与内存、结构体、面向对象、STL 常用容器。</div>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">C</span><span class="tag">C++</span><span class="tag">Python</span></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-when">已掌握</div>
+            <div class="tl-t">计算机基础</div>
+            <div class="tl-d">数据结构与算法、计算机网络体系结构、操作系统基本概念。</div>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">数据结构</span><span class="tag">计算机网络</span><span class="tag">操作系统</span></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-when">进行中</div>
+            <div class="tl-t">网络工程方向</div>
+            <div class="tl-d">网络协议细节、组网与路由交换、网络安全基础。目标是把「会用」变成「懂原理」。</div>
+            <div class="tags" style="margin-top:.5rem"><span class="tag is-hot">TCP/IP</span><span class="tag">路由交换</span><span class="tag">网络安全</span></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-when">进行中</div>
+            <div class="tl-t">AI 工具与开发</div>
+            <div class="tl-d">折腾大模型与 Agent 工具链，试着把 AI 真正用进学习和开发流程里。</div>
+            <div class="tags" style="margin-top:.5rem"><span class="tag is-hot">大模型</span><span class="tag">Agent</span><span class="tag">提示工程</span></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-when">下一步</div>
+            <div class="tl-t">工程实践</div>
+            <div class="tl-d">把零散的知识做成完整项目：从需求、设计到部署上线，走通一次全流程。</div>
+            <div class="tags" style="margin-top:.5rem"><span class="tag">Git</span><span class="tag">项目实战</span><span class="tag">部署</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 课程矩阵 -->
+    <section class="sec" id="courses">
+      <div class="sec-head reveal"><h2>课程技能矩阵</h2><span class="sec-more">学过什么，心里有数</span></div>
+      <div class="card card-pad reveal">
+        <div class="mx">
+          <div class="mx-legend">
+            <span><i class="mx-key k-done"></i>已掌握</span>
+            <span><i class="mx-key k-doing"></i>在学</span>
+            <span><i class="mx-key k-todo"></i>待学习</span>
+            <span><i class="mx-key k-love"></i>喜欢</span>
+          </div>
+
+          <div class="mx-group">
+            <p class="mx-title">编程语言</p>
+            <div class="mx-items">
+              <span class="mx-item done">C</span>
+              <span class="mx-item done">C++</span>
+              <span class="mx-item love">Python</span>
+              <span class="mx-item doing">JavaScript</span>
+              <span class="mx-item">SQL</span>
+            </div>
+          </div>
+
+          <div class="mx-group">
+            <p class="mx-title">计算机基础</p>
+            <div class="mx-items">
+              <span class="mx-item done">数据结构</span>
+              <span class="mx-item doing">计算机网络</span>
+              <span class="mx-item doing">操作系统</span>
+              <span class="mx-item">计算机组成原理</span>
+              <span class="mx-item">编译原理</span>
+            </div>
+          </div>
+
+          <div class="mx-group">
+            <p class="mx-title">网络工程</p>
+            <div class="mx-items">
+              <span class="mx-item done">TCP/IP 协议</span>
+              <span class="mx-item doing">路由与交换</span>
+              <span class="mx-item love">网络安全基础</span>
+              <span class="mx-item">渗透测试</span>
+              <span class="mx-item">网络编程</span>
+            </div>
+          </div>
+
+          <div class="mx-group">
+            <p class="mx-title">工具与工程</p>
+            <div class="mx-items">
+              <span class="mx-item done">Git / GitHub</span>
+              <span class="mx-item done">VS Code</span>
+              <span class="mx-item doing">Linux 命令行</span>
+              <span class="mx-item doing">HTML / CSS</span>
+              <span class="mx-item">Docker</span>
+            </div>
+          </div>
+
+          <div class="mx-group">
+            <p class="mx-title">AI 与前沿</p>
+            <div class="mx-items">
+              <span class="mx-item love">大模型应用</span>
+              <span class="mx-item doing">提示工程</span>
+              <span class="mx-item doing">AI 编程助手</span>
+              <span class="mx-item">机器学习基础</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 学习方法 -->
+    <section class="sec" id="method">
+      <div class="sec-head reveal"><h2>我的学习法</h2><span class="sec-more">四条一直在用的原则</span></div>
+      <div class="grid g-2">
+        <div class="card card-pad reveal rv-pop"><h3 style="font-size:.9rem;margin-bottom:.4rem">先跑通，再深挖</h3><p style="font-size:.82rem;color:var(--text-soft)">拿到新东西先写个能跑的最小例子，有了感觉再回头看原理。卡住超过半小时就记下来，不硬耗。</p></div>
+        <div class="card card-pad reveal rv-pop"><h3 style="font-size:.9rem;margin-bottom:.4rem">用自己的话记一遍</h3><p style="font-size:.82rem;color:var(--text-soft)">笔记不抄课件。合上书，用自己理解的话重写一遍——写不出来，就是还没懂。</p></div>
+        <div class="card card-pad reveal rv-pop"><h3 style="font-size:.9rem;margin-bottom:.4rem">做成能给别人看的东西</h3><p style="font-size:.82rem;color:var(--text-soft)">小游戏、工具、这个网站。有成品才有压力把细节做对，也才知道自己哪块是虚的。</p></div>
+        <div class="card card-pad reveal rv-pop"><h3 style="font-size:.9rem;margin-bottom:.4rem">让 AI 当同学，不当答案</h3><p style="font-size:.82rem;color:var(--text-soft)">用它解释概念、查报错、提思路；但代码要自己敲一遍，不然下次还是不会。</p></div>
+      </div>
+    </section>
+
+    <!-- 我的专业 -->
+    <section class="sec" id="major">
+      <div class="sec-head reveal"><h2>我的专业</h2><span class="sec-more">沈阳理工大学 · 网络工程</span></div>
+      <div class="card card-pad reveal">
+        <div class="tags" style="margin-bottom:.9rem">
+          <span class="tag is-hot">网络安全特色</span>
+          <span class="tag">辽宁省一流专业建设点</span>
+        </div>
+        <p style="font-size:.86rem;color:var(--text-soft)">沈阳理工大学网络工程专业是 <strong style="color:var(--text)">辽宁省一流专业建设点</strong>，专业特色为 <strong style="color:var(--text)">网络安全</strong>。2024 年软科中国大学专业排名中，网络工程位列 <strong style="color:var(--text)">第 63 位</strong>（共 199 所高校参评），专业评价 <strong style="color:var(--text)">B+</strong>，辽宁省内第四。</p>
+        <p style="font-size:.86rem;color:var(--text-soft)">专业立足国防特色，注重夯实数学与自然科学基础，培养目标覆盖网络系统设计、开发、运维与安全保障，毕业去向包括网络通信运营企业、政府事业单位、大中型企业网络信息中心、互联网企业与网络设备研发制造企业等。网络工程也是 2015 年以来连续多年的 <strong style="color:var(--text)">「绿牌专业」</strong>。</p>
+
+        <div class="stat-row" style="margin-top:1.2rem">
+          <div class="stat"><div class="stat-n">63</div><div class="stat-l">软科专业排名</div></div>
+          <div class="stat"><div class="stat-n">B+</div><div class="stat-l">专业评价</div></div>
+          <div class="stat"><div class="stat-n">300<span style="font-size:.55em">万</span></div><div class="stat-l">实验室设备</div></div>
+          <div class="stat"><div class="stat-n">30<span style="font-size:.55em">+</span></div><div class="stat-l">近三年国家级奖项</div></div>
+        </div>
+
+        <h3 style="font-size:.88rem;margin:1.4rem 0 .6rem">校企合作培养</h3>
+        <p style="font-size:.83rem;color:var(--text-soft);margin-bottom:.7rem">专业与多家国内网络安全头部企业建立了深度合作，形成培训—实习—就业的闭环。</p>
+        <div class="tags">
+          <span class="tag">奇安信 · 沈理工工程师班</span>
+          <span class="tag">深信服 · 就业育人项目合作单位</span>
+          <span class="tag">绿盟 · 网络安全实战精英班</span>
+        </div>
+        <p style="font-size:.74rem;color:var(--text-faint);margin-top:1rem">资料来源：学院官网专业介绍</p>
+      </div>
+    </section>
+
+    <!-- 项目 -->
+    <section class="sec" id="projects">
+      <div class="sec-head reveal"><h2>项目与收藏</h2><span class="sec-more">正在做的项目，和一些好地方</span></div>
+      <div class="proj-grid">
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/cover-joy.webp" alt="猜数字小游戏" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
+            <h3 class="proj-t">猜数字小游戏</h3>
+            <p class="proj-d">电脑随机出 1–100 的数字，提示「大了 / 小了」，直到猜中并统计次数。单文件 Python 实现，用命令行运行。</p>
+            <div class="proj-foot"><span class="tag">Python</span><span class="tag">命令行</span></div>
+          </div>
+        </article>
+
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/wall-sakura.webp" alt="个人主页" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已上线</span></div>
+            <h3 class="proj-t">个人主页</h3>
+            <p class="proj-d">就是你正在看的这个页面。纯静态 HTML / CSS / JavaScript 手写，托管在 GitHub Pages 上。</p>
+            <div class="proj-foot"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span></div>
+          </div>
+        </article>
+
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/cover-travel.webp" alt="AI 工具折腾" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag">进行中</span></div>
+            <h3 class="proj-t">AI 工具折腾</h3>
+            <p class="proj-d">试用各种大模型与 Agent，记录哪些场景真的能把效率提上去，哪些只是噱头。</p>
+            <div class="proj-foot"><span class="tag">AI</span><span class="tag">Agent</span></div>
+          </div>
+        </article>
+
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/wall-ink.webp" alt="算法练习" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag">长期</span></div>
+            <h3 class="proj-t">算法练习</h3>
+            <p class="proj-d">用 C / C++ 刷简单算法题，重点是理解思路而不是背题解。</p>
+            <div class="proj-foot"><span class="tag">C</span><span class="tag">C++</span><span class="tag">算法</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ 视图 3：兴趣 / 日常 ============ -->
+  <div class="view" id="view-life" data-view="life" hidden>
+
+    <div class="sec-head reveal" style="margin-bottom:1.4rem">
+      <h2>兴趣 / 日常</h2>
+      <span class="sec-more">看什么动漫、玩什么游戏</span>
+    </div>
+
+    <!-- 日常 -->
+    <section class="sec" id="life">
+      <div class="feat reveal">
+        <div class="feat-media">
+          <img src="assets/muki-feature.webp" alt="向き的日常插画" width="640" height="360" loading="lazy" decoding="async">
+        </div>
+        <div class="feat-body">
+          <h3>这个小世界</h3>
+          <p>看动漫的时候喜欢沉浸在故事与画面里，从热血番到治愈番都看，也常常被一句台词戳中。玩游戏偏爱有设计感的单机与独立作品，会忍不住去研究它的玩法机制。</p>
+          <p>剩下两块时间给了 AI 和写代码：一边折腾大模型和各种工具，一边用 C / C++ / Python 把想法实现出来，享受「跑通了」那一刻的成就感。</p>
+          <div class="tags">
+            <span class="tag is-hot">看动漫</span>
+            <span class="tag">玩游戏</span>
+            <span class="tag">研究 AI</span>
+            <span class="tag">写代码</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 每日抽签 -->
+    <section class="sec" id="fortune">
+      <div class="sec-head reveal"><h2>今日抽签</h2><span class="sec-more">每日一签 · 旅人手记</span></div>
+
+      <div class="fortune reveal">
+        <div class="fortune-inner">
+          <button class="omikuji" id="omikuji" type="button" aria-label="摇一摇抽签">
+            <span class="omikuji-tube" aria-hidden="true"></span>
+            <span class="omikuji-label" aria-hidden="true">御 籤</span>
+            <span class="omikuji-hint" id="omikujiHint">点我抽签</span>
+          </button>
+
+          <div class="fortune-body">
+            <div class="fortune-tabs" id="fortuneTabs" role="group" aria-label="选择签种"></div>
+            <div class="fortune-result" id="fortuneResult" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 动漫 -->
+    <section class="sec" id="anime">
+      <div class="sec-head reveal"><h2>动漫口味</h2><span class="sec-more">偏爱的几部</span></div>
+      <div class="anime-grid">
+        <article class="anime reveal rv-lift">
+          <div class="anime-poster"><img src="assets/cover-elaina.webp" alt="魔女之旅" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 9.2</span></div>
+          <div class="anime-body"><p class="anime-t">魔女之旅</p><p class="anime-m">白石定规 · あずーる</p></div>
+        </article>
+        <article class="anime reveal rv-lift">
+          <div class="anime-poster"><img src="assets/cover-joy.webp" alt="我心里危险的东西" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.9</span></div>
+          <div class="anime-body"><p class="anime-t">我心里危险的东西</p><p class="anime-m">樱井纪雄</p></div>
+        </article>
+        <article class="anime reveal rv-lift">
+          <div class="anime-poster"><img src="assets/cover-travel.webp" alt="碧蓝之海" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.7</span></div>
+          <div class="anime-body"><p class="anime-t">碧蓝之海</p><p class="anime-m">井上坚二 · 吉冈公威</p></div>
+        </article>
+        <article class="anime reveal rv-lift">
+          <div class="anime-poster"><span class="anime-mark" aria-hidden="true">ジョ</span><span class="anime-score">★ 9.0</span></div>
+          <div class="anime-body"><p class="anime-t">JoJo 的奇妙冒险</p><p class="anime-m">荒木飞吕彦 · 全系列</p></div>
+        </article>
+      </div>
+      <p class="reveal" style="font-size:.8rem;color:var(--text-faint);margin-top:.9rem">
+        《魔女之旅》的伊蕾娜一个人旅行，边走边记录——本站的背景、配色和那句「写代码，也写点生活」都来自这部作品。
+      </p>
+    </section>
+
+    <!-- 游戏 -->
+    <section class="sec" id="games">
+      <div class="sec-head reveal"><h2>游戏口味</h2><span class="sec-more">常玩的几类</span></div>
+      <div class="game-grid">
+        <div class="game reveal">
+          <span class="game-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/></svg></span>
+          <div><p class="game-t">音游</p><p class="game-d">Phigros · Rizline · 世界计划</p></div>
+        </div>
+        <div class="game reveal">
+          <span class="game-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
+          <div><p class="game-t">类银河恶魔城</p><p class="game-d">空洞骑士 · 奥日 · 苍翼</p></div>
+        </div>
+        <div class="game reveal">
+          <span class="game-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H19v3H6.5"/></svg></span>
+          <div><p class="game-t">Galgame</p><p class="game-d">Rewrite · 樱之诗 · 命运石之门</p></div>
+        </div>
+        <div class="game reveal">
+          <span class="game-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg></span>
+          <div><p class="game-t">沙盒 / Roguelike</p><p class="game-d">泰拉瑞亚 · 死亡细胞 · 杀戮尖塔</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 常去的地方 -->
+    <section class="sec" id="sites">
+      <div class="sec-head reveal"><h2>常去的地方</h2><span class="sec-more">一些常用工具和好地方</span></div>
+      <div class="site-grid">
+        <a class="site reveal" href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></span>
+          <span class="site-t">我的 GitHub</span><span class="site-d">yuhanjiang518-coder</span>
+        </a>
+        <a class="site reveal" href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 9 7M18 3.5 15 7"/><rect x="2.5" y="7" width="19" height="13" rx="4"/><path d="M8 12v2M16 12v2"/></svg></span>
+          <span class="site-t">我的 B 站</span><span class="site-d">向きー · UID 627368437</span>
+        </a>
+        <a class="site reveal" href="https://www.luogu.com.cn/" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span>
+          <span class="site-t">洛谷 Luogu</span><span class="site-d">算法竞赛题目练习与题解</span>
+        </a>
+        <a class="site reveal" href="https://www.sylu.edu.cn/" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 8 12 13l9.5-5z"/><path d="M6 10v5.5c0 1.5 2.7 3 6 3s6-1.5 6-3V10"/></svg></span>
+          <span class="site-t">沈阳理工大学</span><span class="site-d">学校官网</span>
+        </a>
+        <a class="site reveal" href="https://www.deepseek.com/" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M3 12h3M18 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="3.2"/></svg></span>
+          <span class="site-t">DeepSeek</span><span class="site-d">平时用得最多的 AI 助手</span>
+        </a>
+        <a class="site reveal" href="https://developer.mozilla.org/zh-CN/" target="_blank" rel="noopener">
+          <span class="site-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H19v3H6.5"/></svg></span>
+          <span class="site-t">MDN 文档</span><span class="site-d">查前端 API 最靠谱的地方</span>
+        </a>
+      </div>
+    </section>
+  </div>
 </main>
 
-<div class="wall-panel" id="wallPanel">
-  <h4>背景壁纸</h4>
-  <div class="wall-opts">
-    <button class="wall-opt" data-wall="dark">暗色柔化</button>
-    <button class="wall-opt" data-wall="landscape">原图横版</button>
-    <button class="wall-opt" data-wall="portrait">原图竖版</button>
-    <button class="wall-opt" data-wall="blur">模糊背景</button>
-    <button class="wall-opt" data-wall="none" style="grid-column:span 2">纯色背景</button>
+<!-- ==================== 页脚 ==================== -->
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-links">
+      <a href="mailto:3356559040@qq.com">邮箱</a>
+      <a href="https://github.com/yuhanjiang518-coder" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">B 站</a>
+      <button class="nav-link" type="button" id="footWall" style="padding:0;font-size:.75rem">壁纸设置</button>
+    </div>
+    <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
+    <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
   </div>
-</div>
+</footer>
 
-<div class="toast" id="toast"></div>
-<script src="script.js?v=20261014b"></script>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js?v=20261015a"></script>
 </body>
 </html>

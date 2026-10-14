@@ -42,6 +42,15 @@
   --wash:      #fffdf8;
   --glow-warm: #ffe9c9;
   --glow-cool: #dfe9ff;
+  --hero-scrim: #fffdf8;
+  /* 英雄区压在图片上，文字必须用【实色】。
+     原来的 --text-soft 是 rgb(0 0 0 / 62%)，在浅底上对比度上限只有 2.63:1，
+     永远到不了 WCAG AA 的 4.5 —— 这是数学问题，不是调参能解决的。 */
+  /* 注意：浅底上要过 WCAG AA(4.5:1)，文字必须接近纯黑 ——
+     这是数学约束（对比度 = (L底+5)/(L字+5)），"柔和的灰字"不可能达标。
+     所以这里两层墨色都压得比较深，层级改用字重和字号表达。 */
+  --hero-ink:      oklch(.24 .03 var(--hue));
+  --hero-ink-soft: oklch(.28 .02 var(--hue));
   --wall-bright: 1.58;
   --wall-contrast: .86;
   --wall-satur: .88;
@@ -716,21 +725,23 @@ input[type="range"]::-moz-range-thumb {
 .g-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 /* ============================ 7. 英雄区 ============================ */
-/* 英雄区：不再是"浮在背景上的白板"，
-   而是把壁纸本身请进来做底 —— 柔焦 + 色调统一 + 边缘消融，
-   视觉上和页面背景连成一片，看不出这是一块独立图层。 */
+/* 英雄区：一张"照片卡" —— 壁纸清晰铺满整块，文字直接压在上面。
+   和页面背景的关系是「卡片浮在柔和底图上」，而不是把壁纸糊成一片。 */
 .hero {
   position: relative;
   overflow: hidden;
   border-radius: var(--r-2xl);
   margin-bottom: clamp(1.6rem, 4vw, 2.6rem);
-  border: 0;
-  box-shadow: none;
+  /* 卡片边界感：细边 + 大阴影 */
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--card-border));
+  box-shadow: var(--shadow-xl);
   isolation: isolate;
+  background: var(--card-solid);
 }
 
-/* ① 壁纸层：同一张壁纸，单独取景 + 柔焦 + 略微漂白，
-      让它和页面背景"同源同色"，只是更柔更亮一点。 */
+/* ① 壁纸层：清晰、cover、保留色彩。
+      只做极轻微的统一（不然整块会比周围页面跳太多），
+      不再 blur、不再整体漂白。 */
 .hero::before {
   content: "";
   position: absolute;
@@ -741,23 +752,17 @@ input[type="range"]::-moz-range-thumb {
   background-size: cover;
   background-position: var(--hero-pos, 50% 38%);
   background-repeat: no-repeat;
-  filter: blur(var(--hero-blur, 20px))
-          brightness(var(--hero-bright, 1.52))
-          contrast(.94) saturate(.92);
-  transform: scale(1.16);
+  filter: brightness(var(--hero-img-bright, 1.06))
+          saturate(var(--hero-img-satur, 1.03));
   pointer-events: none;
-  /* 中间不透明、四周一圈渐隐 —— 用 mask 而不是"盖一层颜色"，
-     这样壁纸本身的纹理能透出来，边缘又真正融入背景。 */
-  -webkit-mask-image: radial-gradient(118% 116% at 50% 46%,
-      #000 0%, #000 58%, rgb(0 0 0 / 62%) 74%,
-      rgb(0 0 0 / 22%) 87%, transparent 100%);
-  mask-image: radial-gradient(118% 116% at 50% 46%,
-      #000 0%, #000 58%, rgb(0 0 0 / 62%) 74%,
-      rgb(0 0 0 / 22%) 87%, transparent 100%);
 }
 
-/* ② 暖光晕＋极淡水洗：把冷色壁纸（雨夜 / 夜窗）拉回暖调，
-      同时让上半部分更接近纸白，和参考图的"亮色梦幻"一致。 */
+/* ② 可读性蒙版（用户选了"加一层柔和蒙版"）。
+      文字集中在左侧偏下，所以：
+        · 左侧横向压一层，往右逐渐放开，把右半边画面留给插画
+        · 底部再压一层，托住 CTA 按钮和数字行
+        · 最上面一条很淡，让头像和 kicker 不糊在花色上
+      --hero-scrim 在浅色主题是纸白、深色主题是深底，两边都能读。 */
 .hero::after {
   content: "";
   position: absolute;
@@ -766,45 +771,62 @@ input[type="range"]::-moz-range-thumb {
   border-radius: inherit;
   pointer-events: none;
   background:
-    radial-gradient(90% 80% at 18% 6%,
-      color-mix(in oklab, var(--glow-warm) 62%, transparent) 0%,
-      transparent 62%),
-    radial-gradient(80% 70% at 92% 92%,
-      color-mix(in oklab, var(--glow-cool) 34%, transparent) 0%,
-      transparent 60%),
+    linear-gradient(102deg,
+      color-mix(in oklab, var(--hero-scrim) 90%) 0%,
+      color-mix(in oklab, var(--hero-scrim) 80%) 30%,
+      color-mix(in oklab, var(--hero-scrim) 46%) 56%,
+      color-mix(in oklab, var(--hero-scrim) 12%) 80%,
+      transparent 100%),
     linear-gradient(to bottom,
-      color-mix(in oklab, var(--wash) 30%) 0%,
-      color-mix(in oklab, var(--wash) 4%) 34%,
-      color-mix(in oklab, var(--wash) 10%) 100%);
+      color-mix(in oklab, var(--hero-scrim) 30%) 0%,
+      transparent 22%,
+      transparent 52%,
+      color-mix(in oklab, var(--hero-scrim) 52%) 100%);
 }
 
-/* ③ 壁纸取景位：每张壁纸的"脸"不在正中间，逐张微调。
-   同时给出 --hero-img 的默认值 —— 这样在 JS 跑起来之前
-   英雄区就已经有底了，不会闪一下白板。 */
-body[data-wallpaper="desert"] .hero { --hero-pos: 50% 30%; --hero-blur: 20px; --hero-img: url("assets/wall-desert.webp"); }
-body[data-wallpaper="lemon"]  .hero { --hero-pos: 52% 40%; --hero-blur: 18px; --hero-img: url("assets/wall-lemon.webp"); }
-body[data-wallpaper="bed"]    .hero { --hero-pos: 50% 28%; --hero-blur: 22px; --hero-img: url("assets/wall-bed.webp"); }
-body[data-wallpaper="rain"]   .hero { --hero-pos: 50% 32%; --hero-blur: 20px; --hero-img: url("assets/wall-rain.webp"); }
-body[data-wallpaper="window"] .hero { --hero-pos: 50% 40%; --hero-blur: 20px; --hero-img: url("assets/wall-window.webp"); }
-body[data-wallpaper="tree"]   .hero { --hero-pos: 50% 34%; --hero-blur: 20px; --hero-img: url("assets/wall-tree.webp"); }
+/* ③ 壁纸取景位：每张壁纸的主体不在正中间，逐张微调。
+      同时给出 --hero-img 的默认值 —— JS 跑起来之前英雄区就有底，
+      不会先闪一下白板。 */
+body[data-wallpaper="desert"] .hero { --hero-pos: 50% 30%; --hero-img: url("assets/wall-desert.webp"); }
+body[data-wallpaper="lemon"]  .hero { --hero-pos: 52% 40%; --hero-img: url("assets/wall-lemon.webp"); }
+body[data-wallpaper="bed"]    .hero { --hero-pos: 50% 28%; --hero-img: url("assets/wall-bed.webp"); }
+body[data-wallpaper="rain"]   .hero { --hero-pos: 50% 32%; --hero-img: url("assets/wall-rain.webp"); }
+body[data-wallpaper="window"] .hero { --hero-pos: 50% 40%; --hero-img: url("assets/wall-window.webp"); }
+body[data-wallpaper="tree"]   .hero { --hero-pos: 50% 34%; --hero-img: url("assets/wall-tree.webp"); }
 
-/* 冷色壁纸额外补一点暖光，避免英雄区发蓝、和暖白页面打架 */
-body[data-wallpaper="rain"]   .hero::after,
-body[data-wallpaper="window"] .hero::after {
+/* 暗色壁纸（雨夜 / 夜窗）本身很暗，蒙版再压白就会发灰，
+   改成压深色的比例更高一点，保持对比。 */
+body[data-wallpaper="rain"]   .hero { --hero-img-bright: 1.30; --hero-img-satur: 1.02; }
+body[data-wallpaper="window"] .hero { --hero-img-bright: 1.22; --hero-img-satur: 1.02; }
+
+/* 夜窗蓝调 / 卧床读书 这两张整体最暗，文字区再补一点蒙版。
+   （先把亮度提上去试过：1.30 → 1.58 只把文字区从 213 抬到 216，
+     瓶颈在蒙版不在图，所以只能从蒙版侧补。） */
+body[data-wallpaper="rain"] .hero::after,
+body[data-wallpaper="bed"]  .hero::after {
   background:
-    radial-gradient(96% 86% at 20% 8%,
-      color-mix(in oklab, var(--glow-warm) 82%, transparent) 0%,
-      transparent 66%),
-    radial-gradient(80% 70% at 92% 92%,
-      color-mix(in oklab, var(--glow-cool) 26%, transparent) 0%,
-      transparent 58%),
+    linear-gradient(102deg,
+      color-mix(in oklab, var(--hero-scrim) 95%) 0%,
+      color-mix(in oklab, var(--hero-scrim) 88%) 30%,
+      color-mix(in oklab, var(--hero-scrim) 56%) 56%,
+      color-mix(in oklab, var(--hero-scrim) 16%) 80%,
+      transparent 100%),
     linear-gradient(to bottom,
-      color-mix(in oklab, var(--wash) 36%) 0%,
-      color-mix(in oklab, var(--wash) 6%) 32%,
-      color-mix(in oklab, var(--wash) 12%) 100%);
+      color-mix(in oklab, var(--hero-scrim) 34%) 0%,
+      transparent 22%,
+      transparent 50%,
+      color-mix(in oklab, var(--hero-scrim) 56%) 100%);
 }
 
-/* 纯色模式：没有壁纸可取，退回原来的渐变色卡 */
+/* 深色主题下蒙版换成深底，否则白蒙版会把整块冲成灰 */
+:root[data-theme="dark"] { --hero-scrim: #1a1720; }
+:root[data-theme="dark"] {
+  /* 深色主题反过来：实色浅字压在深蒙版上 */
+  --hero-ink:      oklch(.95 .015 var(--hue));
+  --hero-ink-soft: oklch(.84 .02 var(--hue));
+}
+
+/* 纯色模式：没有壁纸可取，退回渐变卡 */
 body[data-wall-mode="none"] .hero::before,
 body[data-wall-mode="none"] .hero::after { background-image: none; background: none; }
 body[data-wall-mode="none"] .hero {
@@ -857,7 +879,7 @@ body[data-wall-mode="none"] .hero {
 }
 .hero-lead {
   max-width: 34rem;
-  color: var(--text-soft);
+  color: var(--hero-ink-soft);
   font-size: clamp(.88rem, 2.7vw, .96rem);
   margin-bottom: var(--s-4);
 }
@@ -935,6 +957,10 @@ body[data-wall-mode="none"] .hero {
   font-variant-numeric: tabular-nums;
 }
 .stat-l { font-size: .7rem; font-weight: 600; color: var(--text-faint); margin-top: .15rem; }
+/* 英雄区里的数字与标签同样用实色，否则压在图片上读不清 */
+.hero .stat-n { color: var(--primary-deep); }
+.hero .stat-l { color: var(--hero-ink-soft); }
+.hero h1 { color: var(--hero-ink); }
 
 /* ============================ 8. 关于 / 现在 ============================ */
 .about-grid {

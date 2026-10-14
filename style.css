@@ -732,11 +732,13 @@ input[type="range"]::-moz-range-thumb {
   overflow: hidden;
   border-radius: var(--r-2xl);
   margin-bottom: clamp(1.6rem, 4vw, 2.6rem);
-  /* 卡片边界感：细边 + 大阴影 */
-  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--card-border));
-  box-shadow: var(--shadow-xl);
+  /* 卡片本身全透明 —— 没有底色、没有描边、没有阴影。
+     壁纸层是唯一可见的东西，所以看起来是"图直接贴在页面上"，
+     而不是一块有边界的卡片。 */
+  border: 0;
+  box-shadow: none;
+  background: transparent;
   isolation: isolate;
-  background: var(--card-solid);
 }
 
 /* ① 壁纸层：清晰、cover、保留色彩。

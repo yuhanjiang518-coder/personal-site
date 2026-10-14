@@ -1809,6 +1809,189 @@ body[data-wall-mode="none"] .hero {
   .tw-star { animation: none; opacity: .5; }
 }
 
+/* ============================ 14.6 排版与入场（借鉴 JIEJOE） ============================ */
+/* 参考 www.jiejoe.com（Awwwards 收录）：
+   ① 用 clip-path 做「擦除式」入场，而不是只靠位移 + 淡入
+   ② 超大描边字（-webkit-text-stroke + 透明填充）压场
+   ③ 区块编号 + 竖排标签，给长页面做定位感
+   全部按本站在意的方式重写：柔和、低对比，不照搬他的黑底荧光绿。 */
+
+/* --- 视图容器要能作为水印的定位参照 --- */
+.view-rel { position: relative; }
+
+/* --- 区块标题：加编号与描边副标 --- */
+.sec-head { position: relative; }
+.sec-head h2 {
+  font-size: clamp(1.12rem, 3.8vw, 1.42rem);
+  letter-spacing: -.01em;
+}
+/* 编号：01 / 02 … 由 JS 按区块顺序写入 */
+.sec-idx {
+  font-family: var(--font-sans);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: color-mix(in oklab, var(--primary) 62%, var(--text-faint));
+  font-variant-numeric: tabular-nums;
+  padding: .12rem .4rem;
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  flex: 0 0 auto;
+  margin-right: -.1rem;
+}
+
+/* --- 巨型描边字：放在各视图顶部当"水印"，不参与阅读 --- */
+.ghost-title {
+  position: absolute;
+  /* 自身已有 scaleY 变换，这里覆盖 .reveal 的位移，只保留淡入 */
+  --rv-y: 0px;
+  top: -.35em;
+  right: 0;
+  z-index: -1;
+  font-size: clamp(2.6rem, 11vw, 5.6rem);
+  font-weight: 900;
+  line-height: .82;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--primary) 30%, transparent);
+  transform: scaleY(.88);
+  transform-origin: right top;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  opacity: .85;
+}
+
+/* 描边字"填充"：一层同字形的实心拷贝自下而上盖上来。
+   借鉴参考站的两段式做法 —— 描边先到位，填充稍后跟上（重叠级联），
+   比"一次性淡入"更有层次。 */
+.ghost-fill {
+  position: absolute;
+  inset: 0;
+  color: color-mix(in oklab, var(--primary) 22%, transparent);
+  -webkit-text-stroke: 0;
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 900ms var(--ease-out);
+}
+html.js .ghost-title.show .ghost-fill { clip-path: inset(0 0 0 0); }
+/* 无 JS 时直接显示填充，不留半成品 */
+html:not(.js) .ghost-fill { clip-path: inset(0 0 0 0); }
+@supports not (-webkit-text-stroke: 1px red) {
+  .ghost-title {
+    -webkit-text-stroke: 0;
+    color: color-mix(in oklab, var(--primary) 13%, transparent);
+  }
+}
+
+/* --- 擦除式入场：从左到右掀开 --- */
+html.js .reveal.rv-wipe {
+  opacity: 1;
+  transform: none;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  transition: clip-path var(--d-reveal) var(--ease-out);
+}
+html.js .reveal.rv-wipe.show {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+/* 自下而上掀开（用于图片 / 封面） */
+html.js .reveal.rv-wipe-up {
+  opacity: 1;
+  transform: none;
+  clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+  transition: clip-path var(--d-reveal) var(--ease-out);
+}
+html.js .reveal.rv-wipe-up.show {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+/* 文字逐行下沉（配合 .rv-drop 的父容器） */
+html.js .reveal.rv-drop {
+  opacity: 0;
+  transform: translateY(-.5em);
+  transition: opacity 420ms var(--ease-out), transform 480ms var(--ease-out);
+}
+html.js .reveal.rv-drop.show { opacity: 1; transform: none; }
+
+/* 擦除入场时不要同时缩放，免得看起来在抖 */
+html.js .reveal.rv-wipe,
+html.js .reveal.rv-wipe-up { will-change: clip-path; }
+
+/* 水印只淡入 + 填充，不做位移（位移会让 scaleY 一起被覆盖） */
+html.js .ghost-title.reveal { transform: scaleY(.88); }
+html.js .ghost-title.reveal.show { transform: scaleY(.88); }
+
+/* --- 横向无缝跑马灯 ---
+   两条内容完全相同的轨道并排，各自左移 100% 后瞬间回到 0。
+   因为第二条正好补上第一条腾出的位置，视觉上永远填满、不会露空。 */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  user-select: none;
+  gap: 0;
+  padding-block: .55rem;
+  margin-bottom: clamp(1.6rem, 4vw, 2.4rem);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.marquee-track {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 100%;
+  justify-content: space-around;
+  gap: 2.2rem;
+  padding-right: 2.2rem;
+  animation: marquee-x 34s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track { animation-play-state: paused; }
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+.marquee-item {
+  font-size: .78rem;
+  font-weight: 650;
+  color: var(--text-faint);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+}
+.marquee-item::after {
+  content: "";
+  width: .22rem; height: .22rem;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--primary) 52%, transparent);
+}
+
+/* --- 悬停下划线的导航/链接（参考站里大量使用） --- */
+.link-wipe {
+  position: relative;
+  display: inline-block;
+}
+.link-wipe::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -.12em;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--d-ui) var(--ease-out);
+}
+.link-wipe:hover::after { transform: scaleX(1); }
+
+@media (max-width: 640px) {
+  .ghost-title { font-size: clamp(2.2rem, 13vw, 3.4rem); opacity: .62; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  html.js .reveal.rv-wipe,
+  html.js .reveal.rv-wipe-up { clip-path: none !important; opacity: 1 !important; }
+}
+
 /* ============================ 15. 揭示动画 ============================ */
 /* 隐藏态一律带 html.js，特异性 (0,2,x)；
    .show 规则写成 html.js ...show 达到 (0,3,x)，必定覆盖。 */

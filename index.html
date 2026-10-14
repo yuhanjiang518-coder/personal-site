@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261018e">
+<link rel="stylesheet" href="style.css?v=20261018f">
 <link rel="stylesheet" href="aw.css?v=20261018a">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -675,6 +675,11 @@
 
     <!-- 舞台 -->
     <div class="tw-stage reveal" id="tagStage">
+      <!-- 舞台插画：垫在星空与标签之下，靠遮罩融进背景；标签落下时稍微显影 -->
+      <div class="tw-art" aria-hidden="true">
+        <img class="tw-art__back" src="assets/elaina/tw-a.webp" alt="" width="900" height="1280" loading="lazy" decoding="async">
+        <img class="tw-art__accent" src="assets/elaina/tw-b.webp" alt="" width="620" height="1102" loading="lazy" decoding="async">
+      </div>
       <div class="tw-sky" aria-hidden="true">
         <span class="tw-star"></span><span class="tw-star"></span><span class="tw-star"></span>
         <span class="tw-star"></span><span class="tw-star"></span><span class="tw-star"></span>
@@ -911,7 +916,7 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-18e · 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-18f · 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
   </div>
 </footer>
 
@@ -926,9 +931,9 @@
   <button class="artbox-btn" type="button" data-dir="next" aria-label="下一张">▶</button>
 </div>
 
-<script src="script.js?v=20261018e"></script>
+<script src="script.js?v=20261018f"></script>
 <script src="aw.js?v=20261018c" defer></script>
 <!-- 液态玻璃顶栏（组件来自 elaina1017.com 的 web-liquid-glass，已就近搬入 js/liquid-glass/） -->
-<script type="module" src="js/liquid-glass-boot.js?v=20261018e"></script>
+<script type="module" src="js/liquid-glass-boot.js?v=20261018f"></script>
 </body>
 </html>

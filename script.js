@@ -1443,6 +1443,7 @@
       var st = settleCheck();
       if (st.done || simSteps > MAX_STEPS) {
         running = false;
+        stage.classList.remove('is-dropping');   /* 落定后背景插画收回低调 */
         chips.forEach(function (el) { el.classList.remove('is-falling'); });
         say('共 ' + st.total + ' 枚标签 · 已经全部落定');
         return;
@@ -1464,6 +1465,7 @@
       if (running) return;
       measure();
       running = true;
+      stage.classList.add('is-dropping');   /* 背景插画此时稍微显影 */
       steps = 0; simSteps = 0; acc = 0; lastT = 0;
       chips.forEach(function (el) { el.classList.add('is-falling'); });
       say('下落中…');
@@ -1474,6 +1476,7 @@
     function tidy() {
       running = false;
       if (raf) cancelAnimationFrame(raf);
+      stage.classList.remove('is-dropping');
       if (!bodies.length) measure();
       var pad = 10, availW = W - pad * 2;
       layoutRows(availW, pad);
@@ -1485,6 +1488,7 @@
     function reset() {
       running = false;
       if (raf) cancelAnimationFrame(raf);
+      stage.classList.remove('is-dropping');
       measure();          /* 内部会调用 layoutRows，回到顶部 */
       chips.forEach(function (el) { el.classList.remove('is-falling'); });
       var n = bodies.filter(function (b) { return b.active; }).length;

@@ -1919,6 +1919,45 @@ body[data-wall-mode="none"] .hero {
   box-shadow: var(--shadow-md);
   margin-bottom: 1rem;
 }
+/* 舞台插画：垫在最底层（DOM 在 .tw-sky 之前），用遮罩融进背景，
+   而不是贴一张图上去 —— 标签落下时才稍微显影，免得平时抢注意力。 */
+.tw-art { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.tw-art img { position: absolute; display: block; }
+.tw-art__back {
+  right: -3%;
+  bottom: 0;
+  width: min(58%, 32rem);
+  height: 94%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  opacity: .22;
+  filter: saturate(.9);
+  mask-image: linear-gradient(to top, #000 12%, rgb(0 0 0 / 62%) 62%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 12%, rgb(0 0 0 / 62%) 62%, transparent 100%);
+  transition: opacity .9s var(--ease-out), transform 1.2s var(--ease-out);
+}
+.tw-art__accent {
+  left: 1.5%;
+  top: 3%;
+  width: min(26%, 13rem);
+  opacity: .15;
+  filter: saturate(.85);
+  mask-image: radial-gradient(72% 72% at 50% 45%, #000 24%, transparent 82%);
+  -webkit-mask-image: radial-gradient(72% 72% at 50% 45%, #000 24%, transparent 82%);
+  transition: opacity .9s var(--ease-out);
+}
+/* 标签下落期间：背景稍微亮一点、轻轻上浮，等整理/复位后收回 */
+.tw-stage.is-dropping .tw-art__back { opacity: .33; transform: translateY(-1.4%); }
+.tw-stage.is-dropping .tw-art__accent { opacity: .22; }
+@media (prefers-reduced-motion: reduce) {
+  .tw-art__back,
+  .tw-art__accent { transition: none; }
+}
+@media (max-width: 640px) {
+  .tw-art__back { width: 74%; opacity: .12; }
+  .tw-art__accent { display: none; }
+}
+
 /* 天空里几点微光，别让上半部分太空 */
 .tw-sky { position: absolute; inset: 0; pointer-events: none; }
 .tw-star {

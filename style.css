@@ -2423,16 +2423,44 @@ html.js #loader:not(.is-gone) {
   visibility: hidden;
 }
 #curtain.is-sweeping { visibility: visible; }
-#curtain > span { flex: 1; transform: translateY(-101%); }
-#curtain > span:nth-child(1) { background: var(--curtain-1, var(--primary)); }
-#curtain > span:nth-child(2) { background: var(--curtain-2, var(--card-solid)); }
+/* 三层都是【满屏高】的整片，而不是 flex 均分的三条。
+   原因：translateY(%) 是相对元素【自身高度】的。
+   均分成 1/3 屏时，translateY(101%) 只能让每条移动 1/3 屏，
+   动画结束时前两层仍盖在屏幕上，只能靠移除 class 硬切消失。
+   改成满屏高之后，±101% 才真正等于「完全移出上/下边界」。 */
+#curtain > span {
+  position: absolute;
+  inset: 0;
+  transform: translateY(-101%);
+  will-change: transform;
+}
+#curtain > span:nth-child(1) {
+  background: linear-gradient(180deg,
+      var(--curtain-1, var(--primary)),
+      color-mix(in oklab, var(--curtain-1, var(--primary)) 78%, var(--page-bg)));
+}
+#curtain > span:nth-child(2) {
+  background: linear-gradient(180deg,
+      var(--curtain-2, var(--card-solid)),
+      color-mix(in oklab, var(--curtain-2, var(--card-solid)) 84%, var(--primary)));
+}
+/* 第三层用纯页面底色，它收尾时和真实背景无缝衔接 */
 #curtain > span:nth-child(3) { background: var(--curtain-3, var(--page-bg)); }
-#curtain.is-sweeping > span { animation: curtain-sweep var(--d-scene) var(--ease-in-out) both; }
+
+/* 三层像三张纸依次落下，越靠后越在上层（DOM 顺序即 z 序）。
+   进入时能看到三层叠出的"纸边"，退出时只剩最上面那层在收，
+   所以收得干净、不会露接缝。 */
+#curtain.is-sweeping > span {
+  animation: curtain-sweep var(--d-scene) var(--ease-in-out) both;
+}
 #curtain.is-sweeping > span:nth-child(2) { animation-delay: 70ms; }
 #curtain.is-sweeping > span:nth-child(3) { animation-delay: 140ms; }
 @keyframes curtain-sweep {
   0%   { transform: translateY(-101%); }
-  42%  { transform: translateY(0); }
+  45%  { transform: translateY(0); }
+  /* 盖满后停一拍：一是给 DOM 换视图留足余量，
+     二是"关—停—开"比一路扫过更有节奏，不会一闪而过。 */
+  58%  { transform: translateY(0); }
   100% { transform: translateY(101%); }
 }
 
@@ -2440,24 +2468,37 @@ html.js #loader:not(.is-gone) {
 #jump-figure {
   position: fixed;
   z-index: calc(var(--z-curtain) + 1);
-  left: 50%;
-  bottom: 0;
-  /* 这张是横躺构图（约 1.6:1），比原来的竖版需要更大宽度才不显小 */
+  /* 用 left:0 + 纯 translate 定位。
+     之前的写法是 left:50% + translateX(-50%) 居中，再叠加百分比位移 ——
+     但 translate 的百分比是相对【自身宽度】的，大屏上她比手机宽得多，
+     -215% 就不够把她推出屏幕了。改用 vw 计算后，任何宽度都推得出去。 */
+  left: 0;
+  bottom: 2vh;
   width: clamp(10rem, 38vw, 17rem);
-  max-width: 94vw;
+  max-width: 92vw;
   height: auto;
-  transform: translate(-50%, 112%);
+  translate: calc(-100% - 6vw) 0;
   pointer-events: none;
   opacity: 0;
-  filter: drop-shadow(0 10px 24px rgb(0 0 0 / 34%));
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 30%));
 }
-#jump-figure.is-jumping { animation: figure-jump var(--d-scene) var(--ease-in-out) both; }
-@keyframes figure-jump {
-  0%   { transform: translate(-50%, 112%); opacity: 0; }
-  16%  { opacity: 1; }
-  46%  { transform: translate(-50%, 4%); opacity: 1; }
-  64%  { transform: translate(-50%, 4%); opacity: 1; }
-  100% { transform: translate(-50%, -118%); opacity: 0; }
+
+/* 她是【横躺】的，所以不再上下跳，而是沿着底边横向滑过 ——
+   像被谁拖着走。和幕布的上下运动正好垂直，画面更有层次。
+   轨道时间 960ms 与幕布最后一层（820ms + 140ms 延迟）对齐。 */
+#jump-figure.is-sliding {
+  animation: figure-slide 960ms var(--ease-in-out) both;
+}
+/* 位移全部用 vw 表达：50vw - 50% 正好是"居中"，
+   所以 0% 和 100% 在任何屏幕宽度下都确实在画面之外。 */
+@keyframes figure-slide {
+  0%   { translate: calc(-100% - 6vw) 0;   opacity: 0; }
+  7%   { opacity: 1; }
+  26%  { translate: calc(26vw - 50%) -3%; }   /* 路上轻轻颠一下 */
+  38%  { translate: calc(43vw - 50%) 0; }
+  46%  { translate: calc(50vw - 50%) 0; }     /* 居中 */
+  72%  { translate: calc(50vw - 50%) 0; }     /* 与幕布停顿对齐，多停一会儿 */
+  100% { translate: calc(100vw + 6vw) 0;   opacity: 0; }
 }
 
 /* ============================ 17. 响应式 ============================ */

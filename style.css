@@ -11,10 +11,10 @@
   --hue: 340;
 
   /* --- 浅色 --- */
-  --page-bg:      #f7f5f8;
-  --card-bg:      #ffffff;
-  --card-solid:   #ffffff;
-  --card-border:  rgb(0 0 0 / 7%);
+  --page-bg:      #fdfaf4;
+  --card-bg:      rgb(255 255 255 / 72%);
+  --card-solid:   #fffdf9;
+  --card-border:  rgb(255 255 255 / 78%);
   --text:         oklch(.28 .02 var(--hue));
   --text-soft:    rgb(0 0 0 / 62%);
   --text-faint:   rgb(0 0 0 / 42%);
@@ -38,7 +38,13 @@
   --glass-border: rgb(255 255 255 / 55%);
   --scrim:        rgb(0 0 0 / 45%);
 
-  --img-scrim: 0.30;
+  /* --- 背景漂白层与光晕（浅色 = 暖纸白） --- */
+  --wash:      #fffdf8;
+  --glow-warm: #ffe9c9;
+  --glow-cool: #dfe9ff;
+  --wall-bright: 1.58;
+  --wall-contrast: .86;
+  --wall-satur: .88;
 
   /* --- 圆角 --- */
   --r-xs: .375rem;
@@ -86,9 +92,9 @@
 /* --- 深色 --- */
 :root[data-theme="dark"] {
   --page-bg:      #16141a;
-  --card-bg:      #201d26;
+  --card-bg:      rgb(38 34 46 / 76%);
   --card-solid:   #201d26;
-  --card-border:  rgb(255 255 255 / 8%);
+  --card-border:  rgb(255 255 255 / 10%);
   --text:         oklch(.93 .015 var(--hue));
   --text-soft:    rgb(255 255 255 / 66%);
   --text-faint:   rgb(255 255 255 / 42%);
@@ -112,7 +118,13 @@
   --glass-border: rgb(255 255 255 / 10%);
   --scrim:        rgb(0 0 0 / 62%);
 
-  --img-scrim: 0.46;
+  /* --- 背景（深色 = 冷调压暗） --- */
+  --wash:      #1b1820;
+  --glow-warm: #3a2f3f;
+  --glow-cool: #262b3d;
+  --wall-bright: .78;
+  --wall-contrast: 1.02;
+  --wall-satur: .82;
 }
 
 /* ============================ 2. 基础重置 ============================ */
@@ -202,6 +214,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
               transform 1.4s var(--ease-soft);
   transform: scale(1.04);
   will-change: opacity, transform;
+  /* 梦幻感：壁纸提亮、降对比、略降饱和 —— 保留约 6 成细节 */
+  filter: brightness(var(--wall-bright, 1.62))
+          contrast(var(--wall-contrast, .82))
+          saturate(var(--wall-satur, .86));
 }
 
 #bg-layer .bg-img.is-active {
@@ -209,24 +225,34 @@ button { font: inherit; color: inherit; cursor: pointer; }
   transform: scale(1);
 }
 
-/* 图片上方的可读性遮罩 */
+/* 图片上方的可读性遮罩 + 暖光晕
+   目标：背景亮度 ~210，像被阳光晒白的画纸，文字浮在上面 */
 #bg-veil {
   position: fixed;
   inset: 0;
   z-index: calc(var(--z-bg) + 1);
   pointer-events: none;
-  --veil-top: 42; --veil-mid: 62; --veil-bot: 88;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--page-bg) calc(var(--veil-top) * 1%), transparent) 0%,
-    color-mix(in oklab, var(--page-bg) calc(var(--veil-mid) * 1%), transparent) 40%,
-    color-mix(in oklab, var(--page-bg) calc(var(--veil-bot) * 1%), transparent) 100%
-  );
+  --veil-top: 60; --veil-mid: 46; --veil-bot: 22;
+  background:
+    /* 左上暖光 + 右下冷光，制造"光从窗外来"的空气感 */
+    radial-gradient(120% 90% at 12% 4%,
+      color-mix(in oklab, var(--glow-warm) calc(var(--veil-glow, 74) * 1%), transparent), transparent 62%),
+    radial-gradient(110% 80% at 92% 88%,
+      color-mix(in oklab, var(--glow-cool) calc(var(--veil-glow, 74) * 0.5%), transparent), transparent 66%),
+    /* 主体漂白层：上重下轻，让顶部更接近纸白 */
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--wash) calc(var(--veil-top) * 1%), transparent) 0%,
+      color-mix(in oklab, var(--wash) calc(var(--veil-mid) * 1%), transparent) 42%,
+      color-mix(in oklab, var(--wash) calc(var(--veil-bot) * 1%), transparent) 100%
+    );
   transition: background var(--d-ui) ease;
 }
 
 body[data-wallpaper="none"] #bg-layer { display: none; }
 body[data-wallpaper="none"] #bg-veil  { display: none; }
+/* 纯色模式：不需要漂白，直接用页面底色 */
+body[data-wall-mode="none"] #bg-veil { background: transparent; }
 
 #stars {
   position: fixed;
@@ -664,6 +690,8 @@ input[type="range"]::-moz-range-thumb {
 .card {
   position: relative;
   background: var(--card-bg);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
   border: 1px solid var(--card-border);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-sm);

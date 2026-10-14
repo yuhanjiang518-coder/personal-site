@@ -2757,6 +2757,182 @@ html[data-curtain="life"] {
    位移同样交给 JS 时间轴（含方向：去后面的页面从左往右，回前面的从右往左）。 */
 #jump-figure.is-sliding { visibility: visible; }
 
+/* ============================ 16.4 伊蕾娜插画 ============================ */
+/* 图取自同人画廊（页脚已注明版权归原作者），统一压成 webp。
+   三态：.art-band 横幅 / .art-split 图文并排 / .art-strip 缩略图组。
+   全部用 aspect-ratio + object-fit 裁切，所以竖图横图都不会撑坏版面。 */
+.art {
+  margin: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--card-solid);
+  box-shadow: var(--shadow-sm);
+}
+.art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; }
+.art figcaption {
+  padding: .45rem .8rem;
+  font-size: .66rem;
+  letter-spacing: .04em;
+  color: var(--text-faint);
+  border-top: 1px solid var(--card-border);
+}
+
+/* 图文并排：默认字左图右，--flip 反转 */
+.art-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+  gap: var(--s-4);
+  align-items: center;
+  margin: 0 0 var(--s-4);
+}
+.art-split--flip { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); }
+.art-split--flip .art { order: -1; }
+.art-split .art { aspect-ratio: 4 / 5; }
+.art-split h3 { font-size: .92rem; margin-bottom: .5rem; }
+.art-split p { color: var(--text-soft); font-size: .84rem; line-height: 1.8; }
+
+/* 横幅 */
+.art-band { margin: 0 0 var(--s-4); }
+.art-band .art { aspect-ratio: 16 / 7; }
+.art-band .art img { object-position: 50% 35%; }
+
+/* 缩略图组（点开看大图） */
+.art-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: .55rem;
+  margin-bottom: var(--s-4);
+}
+.art-strip .art { aspect-ratio: 1; cursor: zoom-in; }
+.art-strip .art img { object-position: 50% 26%; transition: transform .6s var(--ease-out); }
+.art-strip .art:hover img { transform: scale(1.06); }
+.art-strip .art:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+@media (max-width: 720px) {
+  .art-split,
+  .art-split--flip { grid-template-columns: 1fr; }
+  .art-split--flip .art { order: 0; }
+  .art-split .art { aspect-ratio: 16 / 10; }
+  .art-band .art { aspect-ratio: 4 / 3; }
+}
+
+/* 灯箱：点缩略图看大图 */
+.artbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+  background: rgb(10 8 12 / 90%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .28s var(--ease-out), visibility 0s linear .28s;
+}
+.artbox.is-open { opacity: 1; visibility: visible; transition: opacity .28s var(--ease-out), visibility 0s linear 0s; }
+.artbox img { max-width: min(92vw, 56rem); max-height: 80vh; border-radius: var(--r-lg); box-shadow: 0 30px 80px -24px rgb(0 0 0 / 75%); }
+.artbox-cap { margin-top: .8rem; font-size: .72rem; color: rgb(255 255 255 / 78%); text-align: center; }
+.artbox-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.6rem; height: 2.6rem;
+  display: grid; place-items: center;
+  border: 1px solid rgb(255 255 255 / 26%);
+  border-radius: var(--r-full);
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font-size: 1rem;
+  transition: background-color var(--d-fast) ease;
+}
+.artbox-btn:hover { background: rgb(255 255 255 / 22%); }
+.artbox-btn[data-dir="prev"] { left: clamp(.5rem, 3vw, 2rem); }
+.artbox-btn[data-dir="next"] { right: clamp(.5rem, 3vw, 2rem); }
+.artbox-close { position: absolute; top: clamp(.8rem, 3vh, 1.6rem); right: clamp(.8rem, 3vw, 1.6rem); transform: none; }
+
+/* 联系面板里的立绘：垫在波浪与文字之下，加一层底使文字仍清晰 */
+.cta-portrait { position: absolute; inset: 0; z-index: 0; opacity: .45; transition: opacity .8s var(--ease-out) .3s; }
+.cta-stage.is-open .cta-portrait { opacity: .6; }
+.cta-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.cta-portrait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in oklab, var(--card-solid) 76%, transparent) 0%,
+    color-mix(in oklab, var(--card-solid) 90%, transparent) 55%,
+    var(--card-solid) 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .art-strip .art img { transition: none; }
+  .cta-portrait { transition: none; }
+}
+
+/* ============================ 16.5 液态玻璃顶栏 ============================ */
+/* 组件来自 https://elaina1017.com/ 的 web-liquid-glass：把玻璃背后的页面手绘进
+   2D 画布，再用 WebGL2 做折射/色散/磨砂。这里只负责"玻璃怎么摆、文字怎么读"，
+   组件内部实现未改动。启动失败时一律回落到原来的 backdrop-filter 外观。 */
+.liquid-glass-canvas {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 140%;              /* 比顶栏高，给圆角边与高光留出余量 */
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+  contain: strict;
+}
+.topbar > :not(.liquid-glass-canvas) { position: relative; z-index: 6; }
+
+/* 玻璃接管后，顶栏自己那层毛玻璃与描边退场（否则会叠在玻璃上面） */
+html.lg-on .topbar {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+/* 下滑隐藏的位移要保留 */
+html.lg-on body.nav-hidden .topbar { transform: translateY(-102%); }
+
+/* 标签对比度：组件按玻璃后的亮度给出 tone，我们把它落成颜色 */
+html.lg-on .topbar [data-liquid-glass-tone="light"],
+html.lg-on .topbar [data-liquid-glass-tone="light"] * { color: rgb(255 255 255 / 97%); }
+html.lg-on .topbar [data-liquid-glass-tone="dark"],
+html.lg-on .topbar [data-liquid-glass-tone="dark"] * { color: rgb(16 18 24 / 95%); }
+html.lg-on .topbar [data-liquid-glass-tone="light"] { text-shadow: 0 1px 6px rgb(0 0 0 / 45%); }
+html.lg-on .topbar [data-liquid-glass-tone="dark"] { text-shadow: 0 1px 2px rgb(255 255 255 / 30%); }
+
+/* 当前页/悬停的实心胶囊压在玻璃上会显脏，改成半透明 */
+html.lg-on .topbar .nav-link[aria-current="page"] {
+  background: color-mix(in oklab, var(--primary) 26%, transparent);
+}
+html.lg-on .topbar .nav-link:hover,
+html.lg-on .topbar .icon-btn:hover {
+  background: color-mix(in oklab, var(--text) 12%, transparent);
+}
+html.lg-on .topbar .icon-btn[aria-expanded="true"] {
+  background: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+/* 不支持 WebGL2 时：画布收掉，顶栏回到原来的样子 */
+.liquid-glass--unsupported .liquid-glass-canvas { display: none; }
+
+/* 减弱动效：组件不启动；这条兜底保证顶栏依然是可读的毛玻璃 */
+@media (prefers-reduced-motion: reduce) {
+  html.lg-on .topbar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px) saturate(1.6);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    border-bottom-color: var(--card-border);
+  }
+}
+
 /* ============================ 17. 响应式 ============================ */
 @media (max-width: 1024px) {
   .about-grid { grid-template-columns: 1fr; }

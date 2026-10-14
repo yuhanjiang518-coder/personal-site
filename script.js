@@ -2020,7 +2020,90 @@
   })();
 
   /* ==================================================================
-     15. 杂项
+     15. 同人画廊灯箱
+     ------------------------------------------------------------------
+     缩略图 → 大图：点开、左右切换、Esc 关闭；键盘可操作（Enter/Space 打开，
+     ← → 翻页）。打开时锁滚动，关闭后把焦点还回原来那张缩略图。
+     ================================================================== */
+  (function initArtbox() {
+    var strip = $('#artStrip');
+    var box = $('#artbox');
+    if (!strip || !box) return;
+
+    var imgEl = $('#artboxImg');
+    var capEl = $('#artboxCap');
+    var items = $$('#artStrip [data-full]');
+    var index = -1;
+    var lastFocus = null;
+
+    function cue(i) {
+      var el = items[i];
+      var inner = el.querySelector('img');
+      imgEl.src = el.dataset.full;
+      imgEl.alt = inner ? inner.alt : '';
+      capEl.textContent = (el.dataset.cap || '') + '　' + (i + 1) + ' / ' + items.length;
+    }
+
+    function open(i) {
+      if (!items.length) return;
+      index = (i + items.length) % items.length;
+      cue(index);
+      box.classList.add('is-open');
+      box.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      box.classList.remove('is-open');
+      box.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function step(delta) {
+      if (index < 0) return;
+      index = (index + delta + items.length) % items.length;
+      cue(index);
+    }
+
+    strip.addEventListener('click', function (e) {
+      var el = e.target.closest ? e.target.closest('[data-full]') : null;
+      if (!el) return;
+      lastFocus = el;
+      open(items.indexOf(el));
+    });
+
+    strip.addEventListener('keydown', function (e) {
+      var el = e.target.closest ? e.target.closest('[data-full]') : null;
+      if (!el) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        lastFocus = el;
+        open(items.indexOf(el));
+      }
+    });
+
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-dir]') : null;
+      if (btn) {
+        var d = btn.dataset.dir;
+        if (d === 'close') close();
+        else step(d === 'next' ? 1 : -1);
+        return;
+      }
+      if (e.target === box) close();   /* 点背景也关 */
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!box.classList.contains('is-open')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowRight') step(1);
+      else if (e.key === 'ArrowLeft') step(-1);
+    });
+  })();
+
+  /* ==================================================================
+     16. 杂项
      ================================================================== */
   var yearEl = $('#year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());

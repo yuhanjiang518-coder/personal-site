@@ -1,806 +1,1033 @@
-/* ==========================================================
-   向き · 个人主页 v2  |  script.js
-   ========================================================== */
+/* =====================================================================
+   向き · MUKI — script.js
+   加载屏 / 壁纸切换 / 视图路由 / 揭示动画 / 每日抽签 / 主题
+   纯原生，无依赖。
+   ===================================================================== */
 (function () {
   'use strict';
+
   var $  = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var doc = document.documentElement;
+  var LS = {
+    get: function (k, d) {
+      try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; }
+    },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* ==================================================================
+     1. 壁纸库
+     ================================================================== */
+  var WALLS = [
+    { id: 'dusk',   name: '黄昏' },
+    { id: 'mist',   name: '薄雾' },
+    { id: 'sakura', name: '樱色' },
+    { id: 'night',  name: '夜色' },
+    { id: 'dawn',   name: '晨光' },
+    { id: 'ink',    name: '水墨' },
+    { id: 'warm',   name: '暖阳' },
+    { id: 'star',   name: '星野' },
+    { id: 'mint',   name: '薄荷' },
+    { id: 'cream',  name: '奶油' }
+  ];
+  var MODES = ['full', 'soft', 'none'];
 
-  /* ---------- 0. 加载动画 ---------- */
-  (function initLoader() {
-    var loader = $('#loader');
-    if (!loader) return;
+  /* 每种模式下的遮罩基准（上 / 中 / 下），再乘用户浓度 */
+  var VEIL_BY_MODE = {
+    full: [46, 66, 92],
+    soft: [24, 40, 66],
+    none: [0, 0, 0]
+  };
 
-    var bar   = $('#loaderBar');
-    var msgEl = $('#loaderMsg');
-    var pctEl = $('#loaderPct');
-    var arc    = $('.le-arc');
-    var emblem = $('.loader-emblem');
-    var RING   = 128.8;           // 2 * PI * r(20.5)
-    var lastRipple = 0;           // 每推进 20% 荡开一圈脉冲
+  function wallSrc(id) {
+    var portrait = window.matchMedia('(max-width: 720px)').matches;
+    return 'assets/wall-' + id + (portrait ? '-p' : '') + '.webp';
+  }
 
-    var reduce = window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* ==================================================================
+     2. 状态
+     ================================================================== */
+  var state = {
+    wall:  LS.get('jyh-wall', 'dusk'),
+    mode:  LS.get('jyh-wall-mode', 'full'),
+    veil:  parseInt(LS.get('jyh-veil', '62'), 10),
+    hue:   LS.get('jyh-hue', '340'),
+    theme: LS.get('jyh-theme', 'dark')
+  };
+  if (MODES.indexOf(state.mode) < 0) state.mode = 'full';
+  if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'dusk';
+  if (isNaN(state.veil)) state.veil = 62;
+  state.veil = Math.max(0, Math.min(96, state.veil));
 
-    var seen = false;
-    try { seen = sessionStorage.getItem('jyh-booted') === '1'; } catch (e) {}
+  /* ==================================================================
+     3. 提示条
+     ================================================================== */
+  var toastEl = $('#toast'), toastTimer = null;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-on'); }, 2100);
+  }
 
-    // skip=true 表示不做开屏动画（无障碍 / 二次访问），直接让位
-    function finish(skip) {
-      if (arc) arc.style.strokeDashoffset = '0';
-      if (bar) bar.style.width = '100%';
-      if (pctEl) pctEl.textContent = '100';
+  /* ==================================================================
+     4. 主题 / 色相
+     ================================================================== */
+  function applyTheme(t) {
+    state.theme = t;
+    doc.setAttribute('data-theme', t);
+    LS.set('jyh-theme', t);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#16141a' : '#f7f5f8');
+  }
+  applyTheme(state.theme);
 
-      var riseDelay = skip ? 0 : 240;
+  function applyHue(h) {
+    state.hue = String(h);
+    doc.style.setProperty('--hue', state.hue);
+    LS.set('jyh-hue', state.hue);
+  }
+  applyHue(state.hue);
 
-      // 起幕；幕布 0.9s + 最后一层错峰 0.22s + 余量
-      setTimeout(function () {
-        loader.classList.add('done');
-        document.body.classList.add('loaded');
-      }, riseDelay);
+  var themeToggle = $('#themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+      applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+      toast(state.theme === 'dark' ? '已切换到深色' : '已切换到浅色');
+    });
+  }
 
-      try { sessionStorage.setItem('jyh-booted', '1'); } catch (e) {}
+  /* ==================================================================
+     5. 壁纸
+     ================================================================== */
+  var bgLayer = $('#bg-layer');
+  var wallGrid = $('#wallGrid');
+  var veilRange = $('#veilRange');
+  var veilVal = $('#veilVal');
+  var veilEl = $('#bg-veil');
 
-      setTimeout(function () {
-        if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
-      }, riseDelay + (skip ? 0 : 900 + 220 + 260));
+  /* 预建两层，做交叉淡入 */
+  var layers = [];
+  for (var li = 0; li < 2; li++) {
+    var dv = document.createElement('div');
+    dv.className = 'bg-img';
+    bgLayer.appendChild(dv);
+    layers.push(dv);
+  }
+  var front = 0;
 
-      // 让首屏动画从头播放
-      window.dispatchEvent(new Event('resize'));
-    }
+  function applyVeil() {
+    var base = VEIL_BY_MODE[state.mode] || VEIL_BY_MODE.full;
+    var k = state.veil / 100;
+    if (!veilEl) return;
+    veilEl.style.setProperty('--veil-top', String(Math.round(base[0] * k)));
+    veilEl.style.setProperty('--veil-mid', String(Math.round(base[1] * k)));
+    veilEl.style.setProperty('--veil-bot', String(Math.round(base[2] * k)));
+  }
 
-    // 无障碍 / 重复访问 / 无 JS 动画能力 → 直接跳过
-    if (reduce || seen) { finish(true); return; }
+  function setWallpaper(id, opts) {
+    opts = opts || {};
+    var item = WALLS.filter(function (w) { return w.id === id; })[0] || WALLS[0];
+    var changed = state.wall !== item.id;
 
-    // 锁定滚动，避免加载时背景滑动
-    document.documentElement.style.overflow = 'hidden';
+    state.wall = item.id;
+    document.body.setAttribute('data-wallpaper', item.id);
+    LS.set('jyh-wall', item.id);
 
-    var MESSAGES = [
-      [0,  '初始化环境…'],
-      [18, '加载背景插画…'],
-      [42, '解析样式表…'],
-      [62, '启动交互脚本…'],
-      [80, '渲染页面结构…'],
-      [93, '准备就绪']
-    ];
-
-    var progress = 0;
-    var target   = 0;
-    var done     = false;
-
-    function label(p) {
-      var out = MESSAGES[0][1];
-      for (var i = 0; i < MESSAGES.length; i++) {
-        if (p >= MESSAGES[i][0]) out = MESSAGES[i][1];
-      }
-      return out;
-    }
-
-    function paint(p) {
-      var v = Math.max(0, Math.min(100, Math.round(p)));
-      if (bar)   bar.style.width = v + '%';
-      if (pctEl) pctEl.textContent = v;
-      if (arc)   arc.style.strokeDashoffset = (RING * (1 - v / 100)).toFixed(2);
-
-      // 每跨过 20% 让徽记荡一圈涟漪（只在跨档时触发一次）
-      if (emblem) {
-        var mark = Math.floor(v / 20) * 20;
-        if (mark > lastRipple && v < 100) {
-          lastRipple = mark;
-          emblem.classList.remove('tick');
-          void emblem.offsetWidth;      // 强制回流，让动画能重播
-          emblem.classList.add('tick');
-        }
-      }
-      if (msgEl) {
-        var t = label(v);
-        if (msgEl.textContent !== t) msgEl.textContent = t;
-      }
-    }
-
-    // 真实进度：统计已完成的加载项
-    var assets = [];
-    var imgs = document.querySelectorAll('img');
-    for (var i = 0; i < imgs.length; i++) assets.push(imgs[i]);
-
-    // 背景图（CSS 里的）+ 主资源
-    ['assets/bg-dark.webp', 'assets/bg-rail.webp'].forEach(function (src) {
+    if (state.mode !== 'none') {
+      var back = 1 - front;
+      var el = layers[back];
+      var src = wallSrc(item.id);
+      var paint = function () {
+        el.style.backgroundImage = 'url("' + src + '")';
+        el.classList.add('is-active');
+        layers[front].classList.remove('is-active');
+        front = back;
+      };
       var im = new Image();
+      im.onload = paint;
+      im.onerror = paint;
       im.src = src;
-      assets.push(im);
-    });
-
-    var total = assets.length || 1;
-    var loadedCount = 0;
-
-    function onAsset() {
-      loadedCount++;
-      target = Math.min(88, (loadedCount / total) * 88);
     }
-    assets.forEach(function (im) {
-      if (im.complete) { onAsset(); return; }
-      im.addEventListener('load',  onAsset, { once: true });
-      im.addEventListener('error', onAsset, { once: true });
-    });
 
-    // 页面本身 ready 后推进到 95
-    if (document.readyState === 'complete') {
-      target = Math.max(target, 95);
+    if (wallGrid) {
+      $$('.wall-item', wallGrid).forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.wall === item.id));
+      });
+    }
+    if (changed && opts.announce !== false) toast('壁纸：' + item.name);
+  }
+
+  function setMode(mode) {
+    if (MODES.indexOf(mode) < 0) mode = 'full';
+    state.mode = mode;
+    LS.set('jyh-wall-mode', mode);
+    document.body.setAttribute('data-wall-mode', mode);
+    $$('#wallMode .seg-btn').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    });
+    applyVeil();
+    if (mode === 'none') {
+      layers.forEach(function (l) { l.classList.remove('is-active'); });
     } else {
-      window.addEventListener('load', function () {
-        target = Math.max(target, 95);
-      }, { once: true });
+      layers[front].style.backgroundImage = 'url("' + wallSrc(state.wall) + '")';
+      layers[front].classList.add('is-active');
     }
+  }
 
-    var t0 = Date.now();
-    var MIN_MS = 900;    // 最短展示时间，避免闪一下就没了
-    var MAX_MS = 2800;   // 硬上限，卡住也一定能进
-    var EASE   = 0.22;
-
-    var timer = setInterval(function () {
-      var elapsed = Date.now() - t0;
-
-      // 缓和跟随目标
-      var ceiling = elapsed >= MIN_MS ? 100 : 94;
-      var goal = Math.min(target, ceiling);
-
-      // 时间兜底：真卡住时才强行推进
-      if (elapsed > MAX_MS * 0.55) {
-        goal = Math.max(goal, Math.min(100, 55 + (elapsed / MAX_MS) * 60));
-      }
-
-      progress += (goal - progress) * EASE;
-
-      // 临近 MAX_MS 时线性补足，避免指数收敛拖尾
-      if (elapsed >= MAX_MS * 0.7) {
-        var forced = 100 * Math.min(1, (elapsed - MAX_MS * 0.7) / (MAX_MS * 0.3));
-        if (forced > progress) progress += (forced - progress) * 0.4;
-      }
-
-      if (goal >= 100 && progress > 99.4) progress = 100;
-      paint(progress);
-
-      if (!done && elapsed >= MIN_MS && progress >= 99.9) {
-        done = true;
-        clearInterval(timer);
-        paint(100);
-        document.documentElement.style.overflow = '';
-        setTimeout(finish, 300);
-      }
-      if (!done && elapsed >= MAX_MS) {
-        done = true;
-        clearInterval(timer);
-        paint(100);
-        document.documentElement.style.overflow = '';
-        setTimeout(finish, 200);
-      }
-    }, 40);
-
-    // 万一用户切走了页面，回来立即收尾
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden || done) return;
-      var el = Date.now() - t0;
-      if (el > MIN_MS) {
-        target = 100;
-      }
+  /* 缩略图网格 */
+  if (wallGrid) {
+    WALLS.forEach(function (w) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wall-item';
+      b.dataset.wall = w.id;
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', '壁纸：' + w.name);
+      b.title = w.name;
+      b.innerHTML = '<img src="assets/wall-' + w.id + '-thumb.webp" alt="" width="160" height="100" loading="lazy" decoding="async">' +
+                    '<span class="wall-name">' + w.name + '</span>';
+      b.addEventListener('click', function () { setWallpaper(w.id); });
+      wallGrid.appendChild(b);
     });
-  })();
+  }
 
-  /* ---------- 0a. 转场幕布节点 ---------- */
-  var curtain2 = (function () {
-    if (!$('#loader')) return null;
-    if (window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
-    var el = document.createElement('div');
-    el.id = 'curtain2';
-    el.setAttribute('aria-hidden', 'true');
-    // 三层幕布 + 中间一个「休息一下」的伊蕾娜（转场时短暂出现）
-    el.innerHTML =
-      '<i></i>' +
-      '<div class="c2-figure">' +
-        '<img src="assets/muki-art-tired.webp" alt="" width="512" height="512" decoding="async">' +
-        '<span class="c2-text">ちょっと待って…</span>' +
-      '</div>';
-    document.body.appendChild(el);
-    return el;
-  })();
+  $$('#wallMode .seg-btn').forEach(function (b) {
+    b.addEventListener('click', function () { setMode(b.dataset.mode); });
+  });
 
-  /* ---------- 0b. 粒子星空背景 ---------- */
-  (function starField() {
-    var cv = $('#stars');
-    if (!cv) return;
-    var reduce = window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return;
+  var randBtn = $('#wallRandom');
+  if (randBtn) {
+    randBtn.addEventListener('click', function () {
+      var others = WALLS.filter(function (w) { return w.id !== state.wall; });
+      setWallpaper(others[Math.floor(Math.random() * others.length)].id);
+    });
+  }
 
-    var ctx = cv.getContext && cv.getContext('2d');
-    if (!ctx) return;
+  if (veilRange) {
+    veilRange.value = String(state.veil);
+    if (veilVal) veilVal.textContent = state.veil + '%';
+    veilRange.addEventListener('input', function () {
+      state.veil = parseInt(veilRange.value, 10);
+      LS.set('jyh-veil', String(state.veil));
+      if (veilVal) veilVal.textContent = state.veil + '%';
+      applyVeil();
+    });
+  }
 
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = 0, h = 0, pts = [];
-    var mouse = { x: -9999, y: -9999, active: false };
+  /* 色相圆点 */
+  var HUES = [340, 275, 210, 160, 30, 0, 95];
+  var hueRow = $('#hueRow');
+  if (hueRow) {
+    HUES.forEach(function (h) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'hue-dot';
+      b.dataset.hue = String(h);
+      b.setAttribute('aria-label', '主题色 ' + h);
+      b.setAttribute('aria-pressed', String(String(h) === state.hue));
+      b.style.background = 'oklch(.68 .15 ' + h + ')';
+      b.addEventListener('click', function () {
+        applyHue(h);
+        $$('.hue-dot', hueRow).forEach(function (x) {
+          x.setAttribute('aria-pressed', String(x.dataset.hue === String(h)));
+        });
+      });
+      hueRow.appendChild(b);
+    });
+  }
 
-    // 从主题色板取色：蝶粉 / 暖金 / 草绿
-    var DOT   = 'rgba(240, 166, 192, ';   // --accent 蝶粉
-    var LINE  = 'rgba(232, 200, 106, ';   // --accent-2 暖金
-    var LINK  = 'rgba(240, 166, 192, ';
-    var isLight = function () {
-      return document.documentElement.getAttribute('data-theme') === 'light';
-    };
-
-    function build() {
-      var vw = window.innerWidth, vh = window.innerHeight;
-      w = cv.width  = Math.floor(vw * dpr);
-      h = cv.height = Math.floor(vh * dpr);
-      cv.style.width  = vw + 'px';
-      cv.style.height = vh + 'px';
-
-      // 密度：每 11000 平方 CSS 像素一颗，上限 150
-      var n = Math.min(150, Math.round((vw * vh) / 11000));
-      if (vw < 600) n = Math.min(n, 70);        // 手机上收一点，省电
-
-      pts = [];
-      for (var i = 0; i < n; i++) {
-        pts.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.20 * dpr,
-          vy: (Math.random() - 0.5) * 0.20 * dpr,
-          r: (Math.random() * 1.5 + 0.5) * dpr,
-          a: Math.random() * 0.45 + 0.22,
-          gold: Math.random() < 0.3          // 三成粒子用暖金色
+  /* 恢复默认外观 */
+  var resetBtn = $('#resetLook');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      state.veil = 62;
+      if (veilRange) veilRange.value = '62';
+      if (veilVal) veilVal.textContent = '62%';
+      LS.set('jyh-veil', '62');
+      applyHue('340');
+      if (hueRow) {
+        $$('.hue-dot', hueRow).forEach(function (x) {
+          x.setAttribute('aria-pressed', String(x.dataset.hue === '340'));
         });
       }
-    }
-
-    window.addEventListener('mousemove', function (e) {
-      mouse.x = e.clientX * dpr;
-      mouse.y = e.clientY * dpr;
-      mouse.active = true;
-    }, { passive: true });
-    window.addEventListener('mouseleave', function () {
-      mouse.active = false;
-      mouse.x = mouse.y = -9999;
-    }, { passive: true });
-
-    var running = true;
-    var raf = 0;
-
-    function frame() {
-      if (!running) return;
-      ctx.clearRect(0, 0, w, h);
-
-      var link   = 130 * dpr;
-      var reach  = 150 * dpr;
-      var light  = isLight();
-      var dim    = light ? 1.35 : 1;   // 浅色主题下加深一点
-
-      for (var i = 0; i < pts.length; i++) {
-        var p = pts[i];
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-
-        // 圆点
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = (p.gold ? LINE : DOT) + (p.a * dim).toFixed(3) + ')';
-        ctx.fill();
-
-        // 粒子之间连线
-        for (var j = i + 1; j < pts.length; j++) {
-          var q = pts[j];
-          var dx = p.x - q.x, dy = p.y - q.y;
-          var d2 = dx * dx + dy * dy;
-          if (d2 < link * link) {
-            var d = Math.sqrt(d2);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = LINK + (0.15 * (1 - d / link) * dim).toFixed(3) + ')';
-            ctx.lineWidth = dpr * 0.6;
-            ctx.stroke();
-          }
-        }
-
-        // 鼠标附近的粒子与指针连线
-        if (mouse.active) {
-          var mdx = p.x - mouse.x, mdy = p.y - mouse.y;
-          var md2 = mdx * mdx + mdy * mdy;
-          if (md2 < reach * reach) {
-            var md = Math.sqrt(md2);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.strokeStyle = DOT + (0.30 * (1 - md / reach) * dim).toFixed(3) + ')';
-            ctx.lineWidth = dpr * 0.7;
-            ctx.stroke();
-          }
-        }
-      }
-      raf = requestAnimationFrame(frame);
-    }
-
-    build();
-    window.addEventListener('resize', build);
-
-    // 切到后台就暂停，省电
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { running = false; cancelAnimationFrame(raf); }
-      else if (!running) { running = true; raf = requestAnimationFrame(frame); }
+      setMode('full');
+      applyTheme('dark');
+      setWallpaper('dusk', { announce: false });
+      toast('已恢复默认外观');
     });
-
-    raf = requestAnimationFrame(frame);
-  })();
-
-  /* ---------- 1. 打字机 ---------- */
-  var phrases = [
-    '网络工程 · 本科生',
-    'C / C++ / Python 开发者',
-    '动漫爱好者',
-    '游戏玩家',
-    'AI 探索者'
-  ];
-  var typedEl = $('#typed'), pi = 0, ci = 0, deleting = false;
-  function type() {
-    if (!typedEl) return;
-    var w = phrases[pi];
-    typedEl.textContent = deleting ? w.slice(0, --ci) : w.slice(0, ++ci);
-    var d = deleting ? 55 : 105;
-    if (!deleting && ci === w.length) { deleting = true; d = 1600; }
-    else if (deleting && ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; d = 360; }
-    setTimeout(type, d);
   }
-  if (typedEl) setTimeout(type, 600);
 
-  /* ---------- 1c. 旅人手记抽签（one live thing） ---------- */
-  (function travelDraw() {
-    var btn  = $('#tdBtn');
-    var card = $('#tdCard');
-    var txt  = $('#tdText');
-    var from = $('#tdFrom');
-    var art  = $('#tdArt');
-    if (!btn || !card || !txt) return;
+  /* 初次应用 */
+  setMode(state.mode);
+  setWallpaper(state.wall, { announce: false });
 
-    // 内容是「旅途」这个主题自己的东西，不是通用鸡汤
-    var NOTES = [
-      ['旅途中遇到的人，多半只陪你走一段路。也正因为只走一段，才记得清楚。', '魔女之旅 · 旅途随笔', 'muki-art-cake.webp'],
-      ['想去的地方不用一次走完。留一点没去过的，下次才有理由出发。',        '魔女之旅 · 旅途随笔', 'muki-art-icecream.webp'],
-      ['地图上最短的那条线，往往不是最好走的那条。',                    '魔女之旅 · 旅途随笔', 'muki-art-happy.webp'],
-      ['写代码和旅行有点像：走错了就退回来，重走一遍也不丢人。',          '写给自己',            'muki-art-cake.webp'],
-      ['看过很多风景以后，最想念的还是出发那天的心情。',                 '魔女之旅 · 旅途随笔', 'muki-art-happy.webp'],
-      ['一个人上路没什么不好，安静的时候思路最清楚。',                   '写给自己',            'muki-art-icecream.webp'],
-      ['遇到不会的东西，先记下来。等哪天回头，会发现早就懂了。',          '写给自己',            'muki-art-cake.webp']
-    ];
+  /* ==================================================================
+     6. 面板开关
+     ================================================================== */
+  var panel = $('#wallPanel'), scrim = $('#wallScrim');
+  var wallBtns = [$('#wallBtn'), $('#footWall')].filter(Boolean);
 
-    var last = -1;
-    btn.addEventListener('click', function () {
-      var i;
-      do { i = Math.floor(Math.random() * NOTES.length); }
-      while (NOTES.length > 1 && i === last);
-      last = i;
+  function openPanel() {
+    panel.classList.add('is-open');
+    scrim.classList.add('is-open');
+    wallBtns.forEach(function (b) { b.setAttribute('aria-expanded', 'true'); });
+    var first = $('.seg-btn', panel);
+    if (first) first.focus({ preventScroll: true });
+  }
+  function closePanel() {
+    panel.classList.remove('is-open');
+    scrim.classList.remove('is-open');
+    wallBtns.forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+  }
+  function panelOpen() { return panel.classList.contains('is-open'); }
 
-      var n = NOTES[i];
-      txt.textContent  = n[0];
-      from.textContent = '— ' + n[1];
-      if (art) art.src = 'assets/' + n[2];
+  wallBtns.forEach(function (b) {
+    b.addEventListener('click', function () { panelOpen() ? closePanel() : openPanel(); });
+  });
+  var wallClose = $('#wallClose');
+  if (wallClose) wallClose.addEventListener('click', closePanel);
+  if (scrim) scrim.addEventListener('click', closePanel);
 
-      // 重放动画：先摘类，强制回流，再加回
-      card.classList.remove('swap');
-      void card.offsetWidth;
-      card.classList.add('swap');
+  /* ==================================================================
+     7. 视图路由
+     ================================================================== */
+  var views = $$('.view');
+  var nav = $('#nav');
+  var navToggle = $('#navToggle');
+  var currentView = 'home';
+
+  function setNavCurrent(view) {
+    $$('.nav-link', nav).forEach(function (b) {
+      var a = b.dataset.anchor;
+      var on = (b.dataset.view === view) &&
+               a !== 'about' && a !== 'contact' && a !== 'home';
+      if (view === 'home' && a === 'home') on = true;
+      b.setAttribute('aria-current', on ? 'page' : 'false');
     });
-  })();
+  }
+  setNavCurrent('home');
 
-  /* ---------- 2. 滚动显现（隐藏视图内的元素暂不观察） ----------
-     错峰由 CSS 的 --stagger-i × 45ms 承担，这里只负责标序号和触发，
-     避免 setTimeout 排队导致长列表越来越慢。 */
-  var revealSel = '.section > *, .panel, .card, .hobby, .site, .game, .anime-card, .rm-item, .mx-group, .page-head';
-  var revealTargets = $$(revealSel);
-  revealTargets.forEach(function (el) { el.classList.add('reveal'); });
+  function showView(name) {
+    if (name === currentView) return false;
+    var target = $('#view-' + name);
+    if (!target) return false;
+    views.forEach(function (v) { v.hidden = v.dataset.view !== name; });
+    currentView = name;
+    setNavCurrent(name);
+    return true;
+  }
 
-  // 同一组（同一个父元素）内的兄弟依次错峰，跨组重置
-  var STAGGER_STEP = 45;   // ms，落在规范建议的 30–80ms
-  var STAGGER_MAX  = 8;    // 最多叠 8 档（360ms），再长就一起出来
-  function assignStagger(scope) {
-    var groups = {};
-    Array.prototype.forEach.call(scope.querySelectorAll('.reveal'), function (el) {
-      var key = el.parentNode;
-      groups[key] = groups[key] || [];
-      groups[key].push(el);
-    });
-    Object.keys(groups).forEach(function (k) {
-      groups[k].forEach(function (el, i) {
-        el.style.setProperty('--stagger-i', Math.min(i, STAGGER_MAX));
+  /* 幕布扫过 */
+  var curtain = $('#curtain'), figure = $('#jump-figure');
+  var sweeping = false;
+
+  function sweep(done) {
+    if (reduceMotion || sweeping) { done(); return; }
+    sweeping = true;
+    curtain.classList.add('is-sweeping');
+    if (figure) { figure.hidden = false; figure.classList.add('is-jumping'); }
+    setTimeout(done, 380);                 /* 幕布盖满的瞬间换内容 */
+    setTimeout(function () {
+      curtain.classList.remove('is-sweeping');
+      if (figure) { figure.classList.remove('is-jumping'); figure.hidden = true; }
+      sweeping = false;
+    }, 900);
+  }
+
+  function navH() {
+    var v = parseInt(getComputedStyle(doc).getPropertyValue('--nav-h'), 10);
+    return isNaN(v) ? 60 : v;
+  }
+  function scrollToAnchor(anchor) {
+    if (!anchor) return;
+    var el = document.getElementById(anchor);
+    if (!el) return;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - navH() - 14;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+
+  function go(view, anchor) {
+    closeNav();
+    if (view && view !== currentView) {
+      sweep(function () {
+        showView(view);
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        armReveal($('#view-' + view));
+        if (anchor) requestAnimationFrame(function () { scrollToAnchor(anchor); });
       });
+    } else {
+      if (view) setNavCurrent(view);
+      scrollToAnchor(anchor);
+    }
+  }
+
+  /* 只绑定「触发器」，排除视图容器本身
+     （.view 上也带 data-view，绑定它会导致视图内任意点击都触发跳转） */
+  $$('[data-view]').forEach(function (el) {
+    if (el.classList.contains('view')) return;
+    el.addEventListener('click', function (e) {
+      var view = el.dataset.view, anchor = el.dataset.anchor;
+      if (!view && !anchor) return;
+      if (el.tagName === 'A') e.preventDefault();
+      go(view, anchor);
+    });
+  });
+
+  /* 抽屉导航 */
+  function closeNav() {
+    if (!nav) return;
+    nav.classList.remove('is-open');
+    if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      var open = nav.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', String(open));
     });
   }
 
+  /* ==================================================================
+     8. 揭示动画
+     ================================================================== */
+  var revealSel = '.reveal';
   var io = null;
-  if ('IntersectionObserver' in window) {
-    io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('show');
-        io.unobserve(e.target);   // 只播一次，不在每次滚动时重放
-      });
-    }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+
+  function assignStagger(scope) {
+    var groups = [];
+    $$(revealSel, scope || document).forEach(function (el) {
+      var parent = el.parentElement;
+      if (!parent) return;
+      var idx = groups.indexOf(parent);
+      if (idx < 0) { groups.push(parent); idx = groups.length - 1; }
+      /* 每个父容器各自计数 → 同组错峰 */
+      var count = parent.__rvCount || 0;
+      parent.__rvCount = count + 1;
+      el.style.setProperty('--stagger-i', String(Math.min(count, 7)));
+    });
   }
 
-  // 切换视图时调用：把该视图内还没显现的元素重新纳入观察
   function armReveal(scope) {
-    var nodes = scope ? scope.querySelectorAll(revealSel) : [];
-    if (!nodes.length && scope) nodes = scope.querySelectorAll('.reveal');
-
-    // 错峰序号先标好，无 IO 的分支也要有（否则 CSS 拿到默认值 0，全挤在一起）
-    assignStagger(scope || document);
-
-    if (!io) {
-      Array.prototype.forEach.call(nodes, function (el) { el.classList.add('show'); });
+    if (!('IntersectionObserver' in window)) {
+      $$(revealSel, scope || document).forEach(function (el) { el.classList.add('show'); });
       return;
     }
-    Array.prototype.forEach.call(nodes, function (el) {
-      if (el.classList.contains('show')) return;
+    $$(revealSel, scope || document).forEach(function (el) {
+      if (el.dataset.revealBound === '1') return;
+      el.dataset.revealBound = '1';
       io.observe(el);
     });
   }
 
-  /* ---------- 3. 技能条 ---------- */
-  var bars = $$('.bar i');
   if ('IntersectionObserver' in window) {
-    var bo = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        setTimeout(function () { e.target.classList.add('fill'); }, 160);
-        bo.unobserve(e.target);
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        setTimeout(function () { el.classList.add('show'); }, reduceMotion ? 0 : 40);
+        io.unobserve(el);
       });
-    }, { threshold: .35 });
-    bars.forEach(function (b) { bo.observe(b); });
-  } else {
-    bars.forEach(function (b) { b.classList.add('fill'); });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
   }
 
-  /* ---------- 4. 数字增长 ---------- */
-  var nums = $$('[data-count]');
-  if ('IntersectionObserver' in window) {
-    var no = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var el = e.target, t = parseInt(el.getAttribute('data-count'), 10) || 0, c = 0;
-        var step = Math.max(1, Math.ceil(t / 16));
-        var iv = setInterval(function () {
-          c += step;
-          if (c >= t) { c = t; clearInterval(iv); }
-          el.textContent = c;
-        }, 55);
-        no.unobserve(el);
-      });
-    }, { threshold: .5 });
-    nums.forEach(function (n) { no.observe(n); });
-  } else {
-    nums.forEach(function (n) { n.textContent = n.getAttribute('data-count'); });
-  }
+  assignStagger();
+  armReveal();
 
-  /* ---------- 5. 滚动进度条 ---------- */
-  var prog = $('#progress');
-  function onScroll() {
-    if (!prog) return;
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(window.scrollY / h, 1) : 0) + ')';
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  onScroll();
-
-  /* ---------- 6. 视图切换（不刷新、不改 URL） ---------- */
-  var views    = $$('.view');
-  var links    = $$('.rail-link');
-
-  function currentView() {
-    for (var i = 0; i < views.length; i++) {
-      if (!views[i].hidden) return views[i];
-    }
-    return views[0];
-  }
-
-  // 找出每个 section 属于哪个视图
-  function viewOf(el) {
-    var n = el;
-    while (n && n !== document.body) {
-      if (n.classList && n.classList.contains('view')) return n;
-      n = n.parentNode;
-    }
-    return null;
-  }
-
-  // 真正切换 DOM。转场幕布会在这之前盖住整屏。
-  function swapView(name, anchorId) {
-    var target = null;
-    Array.prototype.forEach.call(views, function (v) {
-      if (v.getAttribute('data-view') === name) target = v;
-    });
-    if (!target) target = views[0];
-
-    var changed = target.hidden;
-    Array.prototype.forEach.call(views, function (v) { v.hidden = (v !== target); });
-
-    if (changed) {
-      // 重新触发该视图内的入场动画
-      Array.prototype.forEach.call(target.querySelectorAll('.reveal'), function (el) {
-        el.classList.remove('show');
-      });
-      refillBars(target);
-      armReveal(target);
-    }
-
-    // 定位（幕布盖着，用 auto 避免看到滚动过程）
-    var el = anchorId ? document.getElementById(anchorId) : null;
-    if (el && viewOf(el) === target) {
-      window.scrollTo({ top: el.offsetTop - 22, behavior: 'auto' });
-    } else if (changed) {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-    updateActive(name, anchorId);
-    onScroll();
-    return changed;
-  }
-
-  var transitioning = false;
-
-  // 切到指定视图；带幕布转场
-  function showView(name, anchorId, instant) {
-    // 同视图内跳锚点：不盖幕布，平滑滚过去就行
-    var sameView = false;
-    var probe = anchorId ? document.getElementById(anchorId) : null;
-    if (probe) {
-      var pv = viewOf(probe);
-      sameView = pv && pv.getAttribute('data-view') === name &&
-                 !pv.hidden;
-    }
-
-    var wantCurtain = curtain2 && !instant && !sameView && !transitioning;
-
-    if (wantCurtain) {
-      transitioning = true;
-      curtain2.classList.remove('off');
-      curtain2.classList.add('on');
-
-      // 等幕布落下（0.3s + 0.1s 错峰）
-      var tDrop = 420;
-      setTimeout(function () {
-        swapView(name, anchorId);
-        // 让浏览器先把新视图画出来，再揭开
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () {
-            curtain2.classList.add('off');
-            setTimeout(function () {
-              curtain2.classList.remove('on');
-              curtain2.classList.remove('off');
-              transitioning = false;
-            }, 720);
-          });
+  /* 进度条 */
+  var bars = $$('.bar > i');
+  if (bars.length) {
+    if ('IntersectionObserver' in window) {
+      var barIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var el = en.target;
+          setTimeout(function () { el.style.width = (el.dataset.w || 0) + '%'; }, reduceMotion ? 0 : 180);
+          barIO.unobserve(el);
         });
-      }, tDrop);
-      return;
-    }
-
-    swapView(name, anchorId);
-  }
-
-  function updateActive(viewName, anchorId) {
-    links.forEach(function (a) {
-      var linkView = a.getAttribute('data-view');
-      var linkAnchor = a.getAttribute('data-anchor');
-      var on = false;
-      if (anchorId && linkAnchor === anchorId) on = true;
-      else if (!anchorId && linkView === viewName) on = true;
-      a.classList.toggle('active', on);
-    });
-  }
-
-  // 点击导航
-  links.forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      e.preventDefault();
-      var anchor = a.getAttribute('data-anchor');
-      var el = anchor ? document.getElementById(anchor) : null;
-      var v = el ? viewOf(el) : null;
-      var name = v ? v.getAttribute('data-view') : (a.getAttribute('data-view') || 'home');
-      showView(name, anchor, false);
-      closeRail();
-    });
-  });
-
-  // 页内其他 # 链接（hero 按钮、卡片里的锚点）
-  $$('a[href^="#"]').forEach(function (a) {
-    if (a.classList.contains('rail-link')) return;
-    a.addEventListener('click', function (e) {
-      var id = (a.getAttribute('href') || '').slice(1);
-      if (!id) return;
-      var el = document.getElementById(id);
-      if (!el) return;
-      e.preventDefault();
-      var v = viewOf(el);
-      var name = v ? v.getAttribute('data-view') : 'home';
-      showView(name, id, false);
-    });
-  });
-
-  /* ---------- 6b. 首个视图：若带 hash 则定位 ---------- */
-  (function initView() {
-    var hash = location.hash ? location.hash.slice(1) : '';
-    var el = hash ? document.getElementById(hash) : null;
-    if (el) {
-      var v = viewOf(el);
-      showView(v ? v.getAttribute('data-view') : 'home', hash, true);
+      }, { threshold: 0.35 });
+      bars.forEach(function (b) { barIO.observe(b); });
     } else {
-      showView('home', null, true);
+      bars.forEach(function (b) { b.style.width = (b.dataset.w || 0) + '%'; });
     }
-    // 当前可见视图立即纳入观察，其余视图等切换时再说
-    armReveal(currentView());
+  }
+
+  /* 数字滚动 */
+  var counters = $$('.stat-n[data-count]');
+  if (counters.length && 'IntersectionObserver' in window && !reduceMotion) {
+    var cIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        var goal = parseInt(el.dataset.count, 10) || 0;
+        var t0 = performance.now(), dur = 900;
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / dur);
+          el.textContent = String(Math.round(goal * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) requestAnimationFrame(step);
+        })(t0);
+        cIO.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (c) { cIO.observe(c); });
+  }
+
+  /* 打字机 */
+  var typedEl = $('#typed');
+  if (typedEl) {
+    var PHRASES = ['网络工程学生', 'C / C++ / Python 爱好者', '二次元 + 游戏玩家', '正在研究 AI'];
+    if (reduceMotion) {
+      typedEl.textContent = PHRASES[0];
+    } else {
+      var pi = 0, ci = 0, deleting = false;
+      (function tick() {
+        var p = PHRASES[pi];
+        if (!deleting) {
+          ci++;
+          typedEl.textContent = p.slice(0, ci);
+          if (ci >= p.length) { deleting = true; return setTimeout(tick, 1700); }
+          return setTimeout(tick, 78);
+        }
+        ci--;
+        typedEl.textContent = p.slice(0, ci);
+        if (ci <= 0) { deleting = false; pi = (pi + 1) % PHRASES.length; return setTimeout(tick, 320); }
+        setTimeout(tick, 34);
+      })();
+    }
+  }
+
+  /* ==================================================================
+     9. 星野壁纸的星空
+     ================================================================== */
+  var cvs = $('#stars');
+  var ctx = cvs ? cvs.getContext('2d') : null;
+  var stars = [], rafId = null, running = false;
+
+  function sizeCanvas() {
+    if (!cvs || !ctx) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = window.innerWidth, h = window.innerHeight;
+    cvs.width = Math.floor(w * dpr);
+    cvs.height = Math.floor(h * dpr);
+    cvs.style.width = w + 'px';
+    cvs.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var n = Math.max(40, Math.round((w * h) / 16000));
+    stars = [];
+    for (var i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * w, y: Math.random() * h,
+        r: Math.random() * 1.3 + 0.3,
+        a: Math.random() * 0.6 + 0.25,
+        s: Math.random() * 0.022 + 0.005
+      });
+    }
+  }
+
+  function drawStars() {
+    if (!ctx) return;
+    var w = window.innerWidth, h = window.innerHeight;
+    ctx.clearRect(0, 0, w, h);
+    for (var i = 0; i < stars.length; i++) {
+      var st = stars[i];
+      st.a += st.s;
+      if (st.a > 0.92 || st.a < 0.16) st.s *= -1;
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,' + st.a.toFixed(3) + ')';
+      ctx.fill();
+    }
+    rafId = requestAnimationFrame(drawStars);
+  }
+
+  function startStars() {
+    if (!cvs || running || reduceMotion) return;
+    running = true;
+    drawStars();
+  }
+  function stopStars() {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  if (cvs) {
+    sizeCanvas();
+    var resizeT = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(function () {
+        sizeCanvas();
+        if (state.mode !== 'none') {
+          layers[front].style.backgroundImage = 'url("' + wallSrc(state.wall) + '")';
+        }
+      }, 220);
+    });
+    if (state.wall === 'star') startStars();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) stopStars();
+      else if (state.wall === 'star') startStars();
+    });
+  }
+
+  /* ==================================================================
+     10. 每日抽签
+     ================================================================== */
+  var FORTUNES = {
+    witch: {
+      label: '旅人之签',
+      ranks: [
+        { k: '大吉', w: 6,  grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+        { k: '中吉', w: 14, grad: 'linear-gradient(135deg,#f472b6,#a855f7)' },
+        { k: '小吉', w: 22, grad: 'linear-gradient(135deg,#60a5fa,#34d399)' },
+        { k: '吉',   w: 26, grad: 'linear-gradient(135deg,#34d399,#14b8a6)' },
+        { k: '末吉', w: 20, grad: 'linear-gradient(135deg,#a78bfa,#818cf8)' },
+        { k: '凶',   w: 12, grad: 'linear-gradient(135deg,#94a3b8,#64748b)' }
+      ],
+      poems: [
+        '路远不见尽，一步是一步。',
+        '风起于青萍，浪成于微澜。',
+        '行到水穷处，坐看云起时。',
+        '别怕走得慢，怕的是站着不动。',
+        '翻开的一页，就是新的国家。',
+        '旅人没有地图，只有方向。',
+        '今日的雨，是明日花开的理由。',
+        '背包里装的不是行李，是想去的地方。',
+        '有些答案，要走出去才会遇见。',
+        '把钱花在书和路上，别的都会贬值。'
+      ],
+      descs: [
+        '今天适合开一段新的旅程：把那个一直搁着的想法，写成第一行代码。',
+        '状态正好，适合啃硬骨头。挑最难的那门课，先啃二十分钟。',
+        '会有一个小惊喜，多半藏在你随手点开的链接里。',
+        '别急着下结论。今天多看一点，答案明天自己会浮出来。',
+        '适合整理。把桌面、笔记、收藏夹清一遍，思路会跟着清爽。',
+        '有人会来找你聊天，耐心听完，里面可能有你需要的信息。',
+        '今天学新东西的性价比很高，趁手感在，多跑通一个小例子。',
+        '慢一点没关系。你现在走的每一步，以后都会算数。'
+      ],
+      dims: [
+        { k: '学习运', lo: 45, hi: 99 },
+        { k: '代码运', lo: 40, hi: 98 },
+        { k: '心情',   lo: 50, hi: 99 },
+        { k: '财运',   lo: 30, hi: 92 }
+      ],
+      lucky: {
+        color: ['蝶粉', '雾蓝', '草绿', '暖金', '墨黑', '月光白'],
+        item:  ['一支笔', '一杯热茶', '一副耳机', '一本没读完的书', '一颗糖', '一张车票'],
+        time:  ['清晨', '上午十点', '午后三点', '黄昏', '深夜'],
+        num:   ['3', '7', '11', '17', '23', '42', '63']
+      }
+    },
+    code: {
+      label: '代码之签',
+      ranks: [
+        { k: '一次过',   w: 8,  grad: 'linear-gradient(135deg,#22c55e,#16a34a)' },
+        { k: 'AC',       w: 20, grad: 'linear-gradient(135deg,#34d399,#14b8a6)' },
+        { k: '小 WA',    w: 24, grad: 'linear-gradient(135deg,#60a5fa,#818cf8)' },
+        { k: '需要调试', w: 22, grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+        { k: '段错误',   w: 16, grad: 'linear-gradient(135deg,#fb7185,#e11d48)' },
+        { k: '重写吧',   w: 10, grad: 'linear-gradient(135deg,#94a3b8,#475569)' }
+      ],
+      poems: [
+        '先让它跑起来，再让它跑得快。',
+        '看不懂就打印出来，答案在输出里。',
+        'Bug 不可怕，可怕的是不知道为什么好了。',
+        '今天写的每一行，都是明天的脚手架。',
+        '复制来的代码，迟早会还给你。',
+        '边界情况，才是真正考功力的地方。',
+        '删掉一百行，比写一百行更需要勇气。',
+        '想不明白就画图，画完就明白了。'
+      ],
+      descs: [
+        '状态在线，适合写点有挑战的东西。今天写的代码多半不用大改。',
+        '大概率会遇到一个卡住你的报错。别硬刚，先搜一遍，多半有人踩过。',
+        '适合重构。把手头那段「能跑但很丑」的代码收拾一下，收获比写新的还大。',
+        '小心边界。今天特别容易在数组下标和空值上翻车，多测两组用例。',
+        '适合读代码。找个开源项目看看别人怎么组织的，比写一天更有用。',
+        '犯困就去睡。硬撑着调的 bug，醒来往往五分钟就解决了。',
+        '今天适合把零散笔记整理成文档，以后会感谢现在的自己。',
+        '别人的方案可以借鉴，但一定要自己敲一遍——不然下次还是不会。'
+      ],
+      dims: [
+        { k: '编译通过',   lo: 50, hi: 99 },
+        { k: 'Debug 速度', lo: 35, hi: 96 },
+        { k: '专注度',     lo: 45, hi: 99 },
+        { k: '摸鱼指数',   lo: 5,  hi: 88 }
+      ],
+      lucky: {
+        color: ['终端绿', '夜蓝', '警告黄', '报错红'],
+        item:  ['第二杯咖啡', '机械键盘', '双显示器', '一份好文档', '橡皮鸭'],
+        time:  ['凌晨', '上午', '下午茶时间', '睡前'],
+        num:   ['0', '1', '8', '64', '128', '404', '500']
+      }
+    },
+    anime: {
+      label: '番剧之签',
+      ranks: [
+        { k: '神作',     w: 10, grad: 'linear-gradient(135deg,#f472b6,#a855f7)' },
+        { k: '霸权',     w: 18, grad: 'linear-gradient(135deg,#fb7185,#f43f5e)' },
+        { k: '佳作',     w: 26, grad: 'linear-gradient(135deg,#60a5fa,#3b82f6)' },
+        { k: '值得一看', w: 24, grad: 'linear-gradient(135deg,#34d399,#10b981)' },
+        { k: '还行',     w: 14, grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+        { k: '弃了',     w: 8,  grad: 'linear-gradient(135deg,#94a3b8,#64748b)' }
+      ],
+      poems: [
+        '一个人上路，也能遇到很好的风景。',
+        '故事结束的地方，是想象的开始。',
+        '治愈你的从来不是结局，是那段路。',
+        '再看一集就睡——你每次都这么说。',
+        '台词会过时，被戳中的感觉不会。',
+        '有些番要等长大一点才看得懂。',
+        '弹幕里也藏着很好的人。',
+        '喜欢就多看几遍，不用觉得不好意思。'
+      ],
+      descs: [
+        '今天适合开新番。随便点一部，第一集不喜欢就换，别硬看。',
+        '适合重温。找那部你看过三遍的，再看一遍还是会有新发现。',
+        '可能会被一句台词戳中，记得截图存下来。',
+        '适合看剧场版。两小时一口气讲完，比追番过瘾。',
+        '今天容易一口气刷到天亮，记得先定个闹钟。',
+        '适合去找 OST 听。有些曲子单拎出来比片子还耐听。',
+        '别只看评分，冷门里也有很对胃口的。',
+        '适合和别人一起看。有人一起吐槽，观感翻倍。'
+      ],
+      dims: [
+        { k: '催泪指数', lo: 20, hi: 99 },
+        { k: '燃度',     lo: 25, hi: 99 },
+        { k: '治愈度',   lo: 30, hi: 99 },
+        { k: '想二刷',   lo: 15, hi: 97 }
+      ],
+      lucky: {
+        color: ['樱粉', '夜空蓝', '夕阳橘', '雪白'],
+        item:  ['一包薯片', '毛毯', '耳机', '一盒纸巾', '冰可乐'],
+        time:  ['午饭后', '傍晚', '深夜', '周末下午'],
+        num:   ['1', '2', '12', '24', '25']
+      }
+    }
+  };
+
+  var activeKind = LS.get('jyh-fortune-kind', 'witch');
+  if (!FORTUNES[activeKind]) activeKind = 'witch';
+
+  var resultEl = $('#fortuneResult');
+  var omikujiEl = $('#omikuji');
+  var hintEl = $('#omikujiHint');
+
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  /* 同一天 + 同一签种 → 同一结果（稳定伪随机） */
+  function seededRandom(seed) {
+    var h = 2166136261;
+    for (var i = 0; i < seed.length; i++) {
+      h ^= seed.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 15), h | 1);
+      h ^= h + Math.imul(h ^ (h >>> 7), h | 61);
+      return ((h ^ (h >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function pickWeighted(list, rnd) {
+    var total = 0, i;
+    for (i = 0; i < list.length; i++) total += list[i].w;
+    var r = rnd() * total;
+    for (i = 0; i < list.length; i++) {
+      r -= list[i].w;
+      if (r <= 0) return list[i];
+    }
+    return list[list.length - 1];
+  }
+  function pick(arr, rnd) { return arr[Math.floor(rnd() * arr.length) % arr.length]; }
+
+  function makeFortune(kind, dateKey) {
+    var F = FORTUNES[kind];
+    var rnd = seededRandom(kind + '|' + dateKey);
+    var rank = pickWeighted(F.ranks, rnd);
+    var rankIdx = F.ranks.indexOf(rank);
+    var quality = 1 - rankIdx / (F.ranks.length - 1);
+    var dims = F.dims.map(function (d) {
+      var base = d.lo + (d.hi - d.lo) * quality;
+      var jitter = (rnd() - 0.5) * (d.hi - d.lo) * 0.36;
+      return { k: d.k, v: Math.max(2, Math.min(99, Math.round(base + jitter))) };
+    });
+    return {
+      kind: kind, label: F.label, date: dateKey,
+      rank: rank.k, grad: rank.grad,
+      poem: pick(F.poems, rnd),
+      desc: pick(F.descs, rnd),
+      dims: dims,
+      lucky: {
+        color: pick(F.lucky.color, rnd),
+        item:  pick(F.lucky.item, rnd),
+        time:  pick(F.lucky.time, rnd),
+        num:   pick(F.lucky.num, rnd)
+      },
+      no: Math.floor(rnd() * 60) + 1
+    };
+  }
+
+  function readLog() {
+    try { return JSON.parse(LS.get('jyh-fortune-log', '{}')) || {}; } catch (e) { return {}; }
+  }
+  function getResult(kind) {
+    var s = readLog();
+    return (s[kind] && s[kind].date === todayKey()) ? s[kind] : null;
+  }
+  function putResult(res) {
+    var s = readLog();
+    s[res.kind] = res;
+    /* 只保留最近三种签，避免无限增长 */
+    var keys = Object.keys(s);
+    if (keys.length > 3) keys.slice(0, keys.length - 3).forEach(function (k) { delete s[k]; });
+    LS.set('jyh-fortune-log', JSON.stringify(s));
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function renderEmpty(kind) {
+    var F = FORTUNES[kind];
+    var tail = kind === 'code' ? '看看今天的代码运势'
+             : kind === 'anime' ? '看看今天适合看什么'
+             : '看看今天落在哪一句上';
+    resultEl.innerHTML =
+      '<div class="fr-empty">' +
+        '<h3>' + esc(F.label) + '</h3>' +
+        '<p>今天还没抽。点左边的签筒摇一摇，' + tail + '。</p>' +
+        '<div><span class="fr-no">共 ' + F.ranks.length + ' 种签 · 每天一签</span></div>' +
+      '</div>';
+    if (hintEl) hintEl.textContent = '点我抽签';
+  }
+
+  function renderResult(res) {
+    var bars = res.dims.map(function (d) {
+      return '<div class="fr-luck-row">' +
+        '<span class="fr-luck-k">' + esc(d.k) + '</span>' +
+        '<span class="fr-luck-bar"><i data-w="' + d.v + '"></i></span>' +
+        '<span class="fr-luck-v">' + d.v + '</span>' +
+      '</div>';
+    }).join('');
+
+    resultEl.innerHTML =
+      '<div class="fr-done">' +
+        '<div class="fr-rank-row">' +
+          '<span class="fr-rank" style="--grad:' + res.grad + '">' + esc(res.rank) +
+            '<small>第 ' + res.no + ' 签</small></span>' +
+          '<span class="fr-date">' + esc(res.date) + ' · ' + esc(res.label) + '</span>' +
+        '</div>' +
+        '<p class="fr-poem">' + esc(res.poem) + '</p>' +
+        '<p class="fr-desc">' + esc(res.desc) + '</p>' +
+        '<div class="fr-luck">' + bars + '</div>' +
+        '<div class="fr-lucky">' +
+          '<span>幸运色 <b>' + esc(res.lucky.color) + '</b></span>' +
+          '<span>幸运物 <b>' + esc(res.lucky.item) + '</b></span>' +
+          '<span>吉时 <b>' + esc(res.lucky.time) + '</b></span>' +
+          '<span>幸运数 <b>' + esc(res.lucky.num) + '</b></span>' +
+        '</div>' +
+      '</div>';
+
+    if (hintEl) hintEl.textContent = '已成签 · 明日再来';
+
+    requestAnimationFrame(function () {
+      $$('.fr-luck-bar > i', resultEl).forEach(function (b, i) {
+        setTimeout(function () { b.style.width = (b.dataset.w || 0) + '%'; }, 90 + i * 95);
+      });
+    });
+  }
+
+  function renderFortune(kind) {
+    if (!resultEl) return;
+    var res = getResult(kind);
+    if (res) renderResult(res); else renderEmpty(kind);
+    if (omikujiEl) omikujiEl.classList.toggle('is-done', !!res);
+  }
+
+  var tabsEl = $('#fortuneTabs');
+  if (tabsEl) {
+    Object.keys(FORTUNES).forEach(function (k) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'fortune-tab';
+      b.dataset.kind = k;
+      b.setAttribute('aria-pressed', String(k === activeKind));
+      b.textContent = FORTUNES[k].label;
+      b.addEventListener('click', function () {
+        activeKind = k;
+        LS.set('jyh-fortune-kind', k);
+        $$('.fortune-tab', tabsEl).forEach(function (x) {
+          x.setAttribute('aria-pressed', String(x.dataset.kind === k));
+        });
+        renderFortune(k);
+      });
+      tabsEl.appendChild(b);
+    });
+  }
+  renderFortune(activeKind);
+
+  var drawing = false;
+  function draw() {
+    if (!omikujiEl || drawing) return;
+    if (getResult(activeKind)) { toast('今天已经抽过了，明天再来'); return; }
+    drawing = true;
+    omikujiEl.classList.add('is-shaking');
+    if (hintEl) hintEl.textContent = '摇一摇…';
+
+    setTimeout(function () {
+      omikujiEl.classList.remove('is-shaking');
+      var res = makeFortune(activeKind, todayKey());
+      putResult(res);
+      renderResult(res);
+      omikujiEl.classList.add('is-done');
+      if (hintEl) hintEl.textContent = '已成签 · 明日再来';
+      drawing = false;
+      toast('抽到了「' + res.rank + '」');
+    }, reduceMotion ? 60 : 1150);
+  }
+  if (omikujiEl) omikujiEl.addEventListener('click', draw);
+
+  /* ==================================================================
+     11. 复制邮箱
+     ================================================================== */
+  $$('[data-mail]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var mail = b.dataset.mail;
+      var ok = function () { toast('邮箱已复制：' + mail); };
+      var fallback = function () {
+        var ta = document.createElement('textarea');
+        ta.value = mail;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); ok(); } catch (e) { toast(mail); }
+        document.body.removeChild(ta);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(mail).then(ok, fallback);
+      } else { fallback(); }
+    });
+  });
+
+  /* ==================================================================
+     12. 加载屏
+     ================================================================== */
+  var loaderEl = $('#loader');
+  var loadBar = $('#loadBar');
+  var loadArc = $('#loadArc');
+  var loadPct = $('#loadPct');
+  var loadMsg = $('#loadMsg');
+
+  var CRITICAL = [
+    'assets/avatar.webp',
+    'assets/avatar@2x.webp',
+    'assets/wall-' + state.wall + '.webp',
+    'assets/wall-' + state.wall + '-p.webp',
+    'assets/wall-' + state.wall + '-thumb.webp',
+    'assets/muki-feature.webp',
+    'assets/cover-elaina.webp'
+  ];
+  var MSGS = ['正在展开地图…', '正在整理行囊…', '正在点亮灯火…', '马上出发…'];
+
+  function finishLoad() {
+    if (loadBar) loadBar.style.width = '100%';
+    if (loadArc) loadArc.style.strokeDashoffset = '0';
+    if (loadPct) loadPct.textContent = '100';
+    document.body.classList.add('loaded');
+
+    if (!reduceMotion) {
+      curtain.classList.add('is-sweeping');
+      setTimeout(function () { curtain.classList.remove('is-sweeping'); }, 900);
+    }
+    setTimeout(function () {
+      if (loaderEl) loaderEl.classList.add('is-gone');
+      armReveal($('#view-' + currentView));
+    }, reduceMotion ? 0 : 300);
+    setTimeout(function () { if (loaderEl) loaderEl.style.display = 'none'; }, 1200);
+  }
+
+  (function runLoader() {
+    var total = CRITICAL.length;
+    var shown = -1;
+
+    function setProgress(p) {
+      if (p <= shown) return;
+      shown = p;
+      if (loadBar) loadBar.style.width = p + '%';
+      if (loadArc) loadArc.style.strokeDashoffset = String(201 - (201 * p) / 100);
+      if (loadPct) loadPct.textContent = String(p);
+      if (loadMsg) loadMsg.textContent = MSGS[Math.min(MSGS.length - 1, Math.floor((p / 100) * MSGS.length))];
+    }
+
+    var seen = false;
+    try { seen = sessionStorage.getItem('jyh-booted') === '1'; } catch (e) {}
+
+    if (seen) { setProgress(100); setTimeout(finishLoad, 60); return; }
+
+    var done = 0;
+    function bump() {
+      done++;
+      setProgress(Math.round((done / total) * 100));
+    }
+    CRITICAL.forEach(function (src) {
+      var im = new Image();
+      im.onload = im.onerror = bump;
+      im.src = src;
+    });
+
+    /* 兜底：最少展示 900ms，最多 4s */
+    var t0 = Date.now();
+    var MIN_MS = reduceMotion ? 0 : 900;
+    setTimeout(function () {
+      var wait = Math.max(0, MIN_MS - (Date.now() - t0));
+      setTimeout(function () {
+        try { sessionStorage.setItem('jyh-booted', '1'); } catch (e) {}
+        setProgress(100);
+        finishLoad();
+      }, wait);
+    }, 0);
   })();
 
-  /* ---------- 6c. 滚动时的高亮（视图内 spy） ---------- */
-  function spy() {
-    var v = currentView();
-    if (!v) return;
-    var vName = v.getAttribute('data-view');
-    // 当前视图内的锚点链接
-    var inner = links.filter(function (a) {
-      var el = document.getElementById(a.getAttribute('data-anchor') || '');
-      return el && viewOf(el) === v;
+  /* ==================================================================
+     13. 顶栏自动隐藏
+     ================================================================== */
+  var lastY = window.pageYOffset, ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      var y = window.pageYOffset;
+      if (y > 220 && y > lastY + 6) document.body.classList.add('nav-hidden');
+      else if (y < lastY - 6 || y < 120) document.body.classList.remove('nav-hidden');
+      lastY = y;
+      ticking = false;
     });
-    if (!inner.length) { updateActive(vName, null); return; }
+  }, { passive: true });
 
-    var pos = window.scrollY + window.innerHeight * 0.3;
-    var best = inner[0];
-    inner.forEach(function (a) {
-      var el = document.getElementById(a.getAttribute('data-anchor'));
-      if (el && el.offsetTop <= pos) best = a;
-    });
-    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 60) {
-      best = inner[inner.length - 1];
-    }
-    // 只高亮最靠下的匹配项，但主链接（data-view）保持分组感
-    Array.prototype.forEach.call(links, function (a) { a.classList.remove('active'); });
-    best.classList.add('active');
-  }
-  window.addEventListener('scroll', spy, { passive: true });
-  window.addEventListener('resize', spy);
+  /* ==================================================================
+     14. 杂项
+     ================================================================== */
+  var yearEl = $('#year');
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  function refillBars(scope) {
-    (scope || document).querySelectorAll('.bar i').forEach(function (b) {
-      b.classList.remove('fill');
-      setTimeout(function () { b.classList.add('fill'); }, 160);
-    });
-  }
-
-  /* ---------- 8. 移动端抽屉 ---------- */
-  var rail = $('#rail'), toggle = $('#railToggle'), backdrop = null;
-  if (rail) {
-    backdrop = document.createElement('div');
-    backdrop.className = 'rail-backdrop';
-    document.body.appendChild(backdrop);
-    backdrop.addEventListener('click', closeRail);
-  }
-  function closeRail() {
-    if (rail) rail.classList.remove('open');
-    if (backdrop) backdrop.classList.remove('show');
-  }
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      rail.classList.toggle('open');
-      backdrop.classList.toggle('show', rail.classList.contains('open'));
-    });
-  }
-
-  /* ---------- 9. 复制邮箱 ---------- */
-  function legacyCopy(text, ok) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); ok(); } catch (err) { toast('复制失败，请手动复制'); }
-    document.body.removeChild(ta);
-  }
-  $$('[data-mail]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var mail = btn.getAttribute('data-mail');
-      var done = function () { toast('邮箱已复制：' + mail); };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(mail).then(done, function () { legacyCopy(mail, done); });
-      } else { legacyCopy(mail, done); }
-    });
-  });
-
-  /* ---------- 10. Toast ---------- */
-  var toastEl = $('#toast'), timer = null;
-  function toast(msg) {
-    if (!toastEl) return;
-    toastEl.textContent = msg;
-    requestAnimationFrame(function () { toastEl.classList.add('show'); });
-    clearTimeout(timer);
-    timer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
-  }
-
-  /* ---------- 11. 邮件按钮 ---------- */
-  var mailBtn = $('#mailBtn');
-  if (mailBtn) {
-    mailBtn.setAttribute('href',
-      'mailto:3356559040@qq.com?subject=' + encodeURIComponent('你好，向き！'));
-  }
-
-  /* ---------- 12. 主题切换 ---------- */
-  var root = document.documentElement, tt = $('#themeToggle');
-  var saved = null;
-  try { saved = localStorage.getItem('jyh-theme'); } catch (e) {}
-  var prefersLight = window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: light)').matches;
-  setTheme(saved || (prefersLight ? 'light' : 'dark'));
-
-  if (tt) {
-    tt.addEventListener('click', function () {
-      var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      setTheme(next);
-      try { localStorage.setItem('jyh-theme', next); } catch (e) {}
-      toast(next === 'light' ? '已切换到浅色' : '已切换到深色');
-    });
-  }
-  function setTheme(t) {
-    root.setAttribute('data-theme', t);
-    if (tt) tt.textContent = t === 'light' ? '☀️' : '🌙';
-  }
-
-
-  /* ---------- 14. 壁纸切换 ---------- */
-  var WALLS = ['landscape', 'portrait', 'blur', 'dark', 'none'];
-  var DEFAULT_WALL = 'dark';
-  var wallPanel = $('#wallPanel');
-  var wallBtn = $('#wallBtn');
-  var wallSaved = null;
-  try { wallSaved = localStorage.getItem('jyh-wall'); } catch (e) {}
-
-  function setWall(w, save) {
-    if (WALLS.indexOf(w) === -1) w = DEFAULT_WALL;
-    document.body.setAttribute('data-wall', w);
-    $$('.wall-opt').forEach(function (b) {
-      b.classList.toggle('active', b.getAttribute('data-wall') === w);
-    });
-    if (wallBtn) wallBtn.classList.toggle('on', w !== DEFAULT_WALL);
-    if (save !== false) {
-      try { localStorage.setItem('jyh-wall', w); } catch (e) {}
-    }
-  }
-  setWall(wallSaved || DEFAULT_WALL, false);
-
-  if (wallBtn && wallPanel) {
-    wallBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      wallPanel.classList.toggle('show');
-    });
-    document.addEventListener('click', function (e) {
-      if (!wallPanel.contains(e.target) && e.target !== wallBtn) {
-        wallPanel.classList.remove('show');
-      }
-    });
-  }
-  $$('.wall-opt').forEach(function (b) {
-    b.addEventListener('click', function () {
-      setWall(b.getAttribute('data-wall'));
-      toast('背景已切换');
-    });
-  });
-
-  /* ---------- 15. 键盘快捷键 ---------- */
   document.addEventListener('keydown', function (e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === 't' || e.key === 'T') { tt && tt.click(); }
-    if (e.key === 'w' || e.key === 'W') { wallPanel && wallPanel.classList.toggle('show'); }
+    if (e.key !== 'Escape') return;
+    if (panelOpen()) closePanel(); else closeNav();
   });
 
-  /* ---------- 13. 页脚年份 ---------- */
-  var y = $('#year');
-  if (y) y.textContent = new Date().getFullYear();
+  /* 回到前台若已跨天，刷新签面 */
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) renderFortune(activeKind);
+  });
 })();

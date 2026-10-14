@@ -157,6 +157,7 @@
     /* 纯色：全部撤掉；其它模式：交给 setWallpaper 重新贴上当前壁纸 */
     if (mode === 'none') {
       layers.forEach(function (l) { l.classList.remove('is-active'); });
+      document.documentElement.style.removeProperty('--hero-img');
     } else {
       paintWall(state.wall, true);
     }
@@ -173,6 +174,9 @@
       el.classList.add('is-active');
       layers[other].classList.remove('is-active');
       front = 1 - other;
+      /* 英雄区复用同一张壁纸（CSS 负责柔焦 + 边缘消融），
+         让它和页面背景同源同色，不再像一块贴上去的白板 */
+      document.documentElement.style.setProperty('--hero-img', 'url("' + src + '")');
     };
     if (immediate) {
       /* 立刻贴上，不做等待 */

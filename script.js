@@ -1931,7 +1931,96 @@
   })();
 
   /* ==================================================================
-     14. 杂项
+     14. 联系板块：点一下放大展开
+     ------------------------------------------------------------------
+     与参考站 SCTA 一致的三件事：
+       · 展开是 clip-path 圆形扩张（直径按舞台短边算，圈不够大就会出现"露边"）；
+       · 展开瞬间给面板里的波浪发一次冲击波（aw-waves.shock）；
+       · 悬停能开、点一下能开，点面板任意处或按 Esc 收起。
+     细腻处：鼠标悬停打开是"临时"的，离开舞台自动收；点击打开是"常驻"的，
+     不会被鼠标移开弄没 —— 触摸设备上没有悬停，全靠点击这条路。
+     ================================================================== */
+  (function initCta() {
+    var stage = $('#ctaStage');
+    if (!stage) return;
+    var veil = $('#ctaVeil');
+    var go = $('#ctaGo');
+    var finePointer = window.matchMedia
+      ? window.matchMedia('(hover: hover) and (pointer: fine)').matches
+      : false;
+
+    var isOpen = false;
+    var sticky = false;
+
+    function sizeVeil() {
+      if (!veil) return;
+      var r = stage.getBoundingClientRect();
+      var size = Math.max(200, Math.min(r.width || 320, r.height || 320) - 24);
+      veil.style.setProperty('--cta-size', Math.round(size) + 'px');
+    }
+
+    /* 冲击波：面板里的波浪从中心荡开一圈 */
+    function shock() {
+      var w = stage.querySelector('aw-waves');
+      if (w && typeof w.shock === 'function') w.shock(1);
+    }
+
+    function setOpen(v, byClick) {
+      if (v === isOpen) return;
+      isOpen = v;
+      if (byClick !== undefined) sticky = byClick;
+      if (v) sizeVeil();
+      stage.classList.toggle('is-open', v);
+      if (go) go.setAttribute('aria-expanded', v ? 'true' : 'false');
+      if (v) shock();
+    }
+
+    /* 舞台尺寸变化时重算圆直径；视图切换后它可能是刚显示的 */
+    sizeVeil();
+    window.addEventListener('resize', function () {
+      if (isOpen) sizeVeil(); else sizeVeil();
+    }, { passive: true });
+    window.addEventListener('orientationchange', sizeVeil);
+
+    if (go) {
+      go.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setOpen(!isOpen, true);
+      });
+      /* 悬停打开（仅精确指针），离开舞台时若只是悬停打开的，就自动收起 */
+      if (finePointer) {
+        go.addEventListener('pointerenter', function () { if (!isOpen) setOpen(true, false); });
+        stage.addEventListener('pointerleave', function () {
+          if (isOpen && !sticky) setOpen(false, false);
+        });
+      }
+    }
+
+    /* 点面板任意处收起，但点链接不拦 */
+    if (veil) {
+      veil.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t && t.closest && t.closest('a')) return;
+        setOpen(false, false);
+      });
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen) setOpen(false, false);
+    });
+
+    /* 切到别的视图再回来时，圆直径要重算 */
+    if (typeof window.__afterView === 'function') {
+      var prevAfter = window.__afterView;
+      window.__afterView = function (name) {
+        prevAfter(name);
+        if (isOpen) sizeVeil();
+      };
+    }
+  })();
+
+  /* ==================================================================
+     15. 杂项
      ================================================================== */
   var yearEl = $('#year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());

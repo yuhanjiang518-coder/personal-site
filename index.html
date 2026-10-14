@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261018b">
+<link rel="stylesheet" href="style.css?v=20261018c">
 <link rel="stylesheet" href="aw.css?v=20261018a">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -326,6 +326,23 @@
       <div class="sec-head reveal">
         <span class="sec-idx" data-idx aria-hidden="true"></span><h2>联系我</h2>
         <span class="sec-more">等你回来</span>
+      </div>
+
+      <!-- 联系板块：点一下从中心放大展开（展开方式参考 wodniack.dev 的 CTA 板块） -->
+      <div class="cta-stage reveal" id="ctaStage">
+        <button class="cta-go" type="button" id="ctaGo" aria-expanded="false" aria-controls="ctaVeil">
+          <span class="cta-go__inner"><span class="cta-go__text">联系</span></span>
+        </button>
+
+        <div class="cta-veil" id="ctaVeil">
+          <aw-waves class="aw-waves cta-waves" data-gap="13" aria-hidden="true"></aw-waves>
+          <div class="cta-body">
+            <p class="cta-line cta-line--top">欢迎随时</p>
+            <p class="cta-line cta-line--bottom">来聊两句</p>
+            <a class="cta-mail" href="mailto:3356559040@qq.com">3356559040@qq.com</a>
+            <p class="cta-hint">点任意处收起</p>
+          </div>
+        </div>
       </div>
 
       <div class="card card-pad reveal" style="margin-bottom:1rem">
@@ -757,7 +774,7 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="script.js?v=20261018b"></script>
-<script src="aw.js?v=20261018a" defer></script>
+<script src="script.js?v=20261018c"></script>
+<script src="aw.js?v=20261018c" defer></script>
 </body>
 </html>

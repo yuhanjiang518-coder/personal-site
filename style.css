@@ -1063,6 +1063,213 @@ body[data-wall-mode="none"] .hero {
   white-space: nowrap;
 }
 
+/* --- 联系板块 · 点一下放大的圆形展开 ---
+   展开机制来自 wodniack.dev 的 SCTA（CC BY-NC 4.0，只借编排思路）：
+   一块巨大的圆形面板用 clip-path 从 0 涨到 50%（in-out-expo、延迟 .2s），
+   面板里的内容按 .6s~1s 的节奏错峰入场；中间那颗按钮常驻脉冲
+   （.85 → 1.05 power2.in，再 .15s 回弹，停半拍）。 */
+.cta-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(19rem, 50vh, 27rem);
+  margin-bottom: var(--s-4);
+  isolation: isolate;
+}
+
+/* 常驻脉冲的圆按钮 */
+.cta-go {
+  position: relative;
+  z-index: 1;
+  width: 6rem;
+  height: 6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--primary-deep);
+}
+.cta-go__inner {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 999rem;
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in oklab, var(--primary) 34%, transparent);
+  transition: scale 1s var(--ease-out) .2s;
+}
+.cta-go__text {
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  animation: cta-pulse 3.35s infinite;
+}
+@keyframes cta-pulse {
+  0%    { scale: .85; animation-timing-function: cubic-bezier(.55, .085, .68, .53); }
+  80.6% { scale: 1.05; animation-timing-function: cubic-bezier(.165, .84, .44, 1); }
+  85.1% { scale: .85; }
+  100%  { scale: .85; }
+}
+.cta-go:focus-visible { outline: 2px solid var(--primary); outline-offset: 6px; }
+
+/* 圆形展开面板：--cta-size 由 JS 按舞台短边算出 */
+.cta-veil {
+  --cta-size: 22rem;
+  position: absolute;
+  top: calc(50% - var(--cta-size) / 2);
+  left: calc(50% - var(--cta-size) / 2);
+  z-index: 2;
+  width: var(--cta-size);
+  height: var(--cta-size);
+  border-radius: 999rem;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 50% 0%,
+      color-mix(in oklab, var(--primary) 16%, var(--card-solid)) 0%,
+      var(--card-solid) 62%);
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--card-border));
+  clip-path: circle(0 at 50% 50%);
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(.98);
+  transition:
+    clip-path 1s var(--ease-expo-in-out) .2s,
+    transform .6s var(--ease-out) .2s,
+    visibility 0s linear 1.2s;
+}
+.cta-stage.is-open .cta-veil {
+  clip-path: circle(50% at 50% 50%);
+  transform: scale(1);
+  visibility: visible;
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    clip-path 1s var(--ease-expo-in-out) .2s,
+    transform .6s var(--ease-out),
+    visibility 0s linear 0s;
+}
+.cta-stage.is-open .cta-go__inner {
+  scale: 1.5;
+  transition: scale .6s cubic-bezier(.755, .05, .855, .06);
+}
+.cta-stage.is-open .cta-go__text {
+  animation-play-state: paused;
+  scale: 2;
+  transition: scale .6s cubic-bezier(.645, .045, .355, 1);
+}
+
+/* 面板里的波浪：平时压暗，展开时提亮并吃一发冲击波。
+   ⚠️ 元素必须同时带 aw-waves 这个类 —— 站点里 `.aw-waves .aw-line { fill:none }`
+   是按类名匹配的，只写自己的类会让每条竖线退回 SVG 默认的**黑色填充**，
+   被圆的 overflow 裁出来就是一整块黑盘（这个坑已经踩过一次，留个记号）。 */
+.cta-waves {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: .3;
+  transition: opacity .8s var(--ease-expo-out) .3s;
+}
+.cta-stage.is-open .cta-waves { opacity: .85; }
+.cta-waves svg { width: 100%; height: 100%; }
+.cta-waves svg,
+.cta-waves svg * { fill: none; }            /* 兜底：子元素不许有实心填充 */
+.cta-waves .aw-line {
+  stroke: var(--primary-deep);
+  stroke-width: 1px;
+  opacity: .45;
+}
+
+.cta-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  width: 100%;
+  height: 100%;
+  padding: 12%;
+  text-align: center;
+}
+.cta-line {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 6.2vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.01em;
+  color: var(--text);
+  scale: .5;
+  opacity: .0;
+  transition: scale 1.8s var(--ease-out) .6s, opacity .5s ease .6s;
+}
+.cta-line--bottom { color: var(--primary-deep); }
+.cta-stage.is-open .cta-line { scale: 1; opacity: 1; }
+
+.cta-mail {
+  margin-top: var(--s-4);
+  font-size: .88rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  opacity: 0;
+  transform: translate3d(0, 120%, 0);
+  transition: transform .6s var(--ease-expo-out) 1s, opacity .3s var(--ease-expo-out) 1s;
+}
+.cta-stage.is-open .cta-mail { opacity: 1; transform: translate3d(0, 0, 0); }
+
+.cta-hint {
+  margin-top: var(--s-5);
+  font-size: .68rem;
+  letter-spacing: .18em;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity .4s ease 1.3s;
+}
+.cta-stage.is-open .cta-hint { opacity: 1; }
+
+/* 减弱动效：不做圆形扩张与缩放，只留一次很短的淡入。
+   注意 visibility 不参与过渡 —— 它必须在类变化的瞬间就切过去，
+   否则一旦过渡没跑（低端机、后台标签页、无头环境）面板会一直不可见。 */
+@media (prefers-reduced-motion: reduce) {
+  .cta-go__text { animation: none; }
+  .cta-veil {
+    clip-path: none;
+    transform: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease;
+  }
+  .cta-stage.is-open .cta-veil {
+    clip-path: none;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .2s ease;
+  }
+  .cta-go__inner,
+  .cta-stage.is-open .cta-go__inner,
+  .cta-go__text,
+  .cta-stage.is-open .cta-go__text { scale: 1; }
+  .cta-line,
+  .cta-mail,
+  .cta-hint,
+  .cta-stage.is-open .cta-line,
+  .cta-stage.is-open .cta-mail,
+  .cta-stage.is-open .cta-hint {
+    scale: 1;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .cta-waves { display: none; }
+}
+
 /* ============================ 10. 技能 / 路线 ============================ */
 .skill-grid {
   display: grid;

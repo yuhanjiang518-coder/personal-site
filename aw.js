@@ -237,8 +237,10 @@
     while (this.svg.firstChild) this.svg.removeChild(this.svg.firstChild);
 
     // 手机上把网格放粗一档，点数少一半，肉眼几乎看不出差别
+    // 容器也可以自己指定行距（小面板里希望线更密时用 data-gap="13"）
     var narrow = b.width < 700;
-    var xGap = narrow ? 18 : 10;
+    var gapAttr = parseFloat(this.getAttribute('data-gap'));
+    var xGap = !isNaN(gapAttr) && gapAttr >= 6 ? gapAttr : (narrow ? 18 : 10);
     var yGap = narrow ? 40 : 32;
 
     var oWidth = b.width + 200;
@@ -312,8 +314,48 @@
     }
   };
 
-  AWaves.prototype.moved = function (point, withCursorForce) {
-    var x = point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0);
+  /* 冲击波：点一下，从中心荡开一圈。
+     不新增状态机、不新建动画循环 —— 脉冲直接注入每个点【已有】的光标弹簧上，
+     之后由弹簧自己的张力与阻尼把它衰减掉（参考站 SCTA 的 waveShock 是同一思路）。 */
+  AWaves.prototype.shock = function (strength) {
+    this.shockState = { front: 0, strength: strength === undefined ? 1 : strength };
+  };
+
+  AWaves.prototype.applyShock = function (dt) {
+    var s = this.shockState;
+    if (!s) return;
+
+    var b = this.bounding;
+    if (!b || !b.width || !b.height) return;
+
+    var cx = b.width / 2;
+    var cy = b.height / 2;
+    var speed = 1.15;                                   // 波前速度 px/ms
+    var band = Math.max(80, Math.min(b.width, b.height) * 0.24);
+    var maxD = Math.sqrt(cx * cx + cy * cy);
+
+    s.front += dt * speed;
+
+    for (var a = 0; a < this.lines.length; a++) {
+      var points = this.lines[a];
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        var dx = p.x - cx;
+        var dy = p.y - cy;
+        var d = Math.sqrt(dx * dx + dy * dy) || 1;
+        var k = 1 - Math.abs(d - s.front) / band;       // 只推波前附近的一圈
+        if (k > 0) {
+          var f = k * k * s.strength * 22;
+          p.cursor.vx += (dx / d) * f;
+          p.cursor.vy += (dy / d) * f;
+        }
+      }
+    }
+
+    if (s.front > maxD + band) this.shockState = null;  // 荡到边角就收工
+  };
+
+  AWaves.prototype.moved = function (point, withCursorForce) {    var x = point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0);
     var y = point.y + point.wave.y + (withCursorForce ? point.cursor.y : 0);
     return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
   };
@@ -352,6 +394,11 @@
 
     this.style.setProperty('--x', m.sx + 'px');
     this.style.setProperty('--y', m.sy + 'px');
+
+    /* 冲击波按真实帧间隔推进（限幅，避免切回标签页时一帧跳出大位移） */
+    var dt = this._lastTick ? Math.min(48, time - this._lastTick) : 16.7;
+    this._lastTick = time;
+    this.applyShock(dt);
 
     this.movePoints(time);
     this.drawLines();

@@ -50,7 +50,7 @@
     mode:  LS.get('jyh-wall-mode', 'full'),
     veil:  parseInt(LS.get('jyh-veil', '62'), 10),
     hue:   LS.get('jyh-hue', '340'),
-    theme: LS.get('jyh-theme', 'dark')
+    theme: LS.get('jyh-theme', 'light')
   };
   if (MODES.indexOf(state.mode) < 0) state.mode = 'full';
   if (!WALLS.some(function (w) { return w.id === state.wall; })) state.wall = 'bed';

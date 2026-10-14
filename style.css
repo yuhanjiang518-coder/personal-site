@@ -51,9 +51,11 @@
      所以这里两层墨色都压得比较深，层级改用字重和字号表达。 */
   --hero-ink:      oklch(.24 .03 var(--hue));
   --hero-ink-soft: oklch(.28 .02 var(--hue));
-  --wall-bright: 1.58;
-  --wall-contrast: .86;
-  --wall-satur: .88;
+  /* C 方案：整页用清晰壁纸，取消漂白。
+     只留一点点提亮，避免原图压暗时整页发闷。 */
+  --wall-bright: 1.10;
+  --wall-contrast: .98;
+  --wall-satur: 1.02;
 
   /* --- 圆角 --- */
   --r-xs: .375rem;
@@ -131,9 +133,9 @@
   --wash:      #1b1820;
   --glow-warm: #3a2f3f;
   --glow-cool: #262b3d;
-  --wall-bright: .78;
-  --wall-contrast: 1.02;
-  --wall-satur: .82;
+  --wall-bright: .92;
+  --wall-contrast: 1.0;
+  --wall-satur: .95;
 }
 
 /* ============================ 2. 基础重置 ============================ */
@@ -223,10 +225,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
               transform 1.4s var(--ease-soft);
   transform: scale(1.04) translate3d(0, var(--par-bg, 0px), 0);
   will-change: opacity, transform;
-  /* 梦幻感：壁纸提亮、降对比、略降饱和 —— 保留约 6 成细节 */
-  filter: brightness(var(--wall-bright, 1.62))
-          contrast(var(--wall-contrast, .82))
-          saturate(var(--wall-satur, .86));
+  /* C 方案：壁纸保持清晰（旧的"梦幻漂白"已取消） */
+  filter: brightness(var(--wall-bright, 1.10))
+          contrast(var(--wall-contrast, .98))
+          saturate(var(--wall-satur, 1.02));
 }
 
 #bg-layer .bg-img.is-active {
@@ -241,7 +243,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   inset: 0;
   z-index: calc(var(--z-bg) + 1);
   pointer-events: none;
-  --veil-top: 60; --veil-mid: 46; --veil-bot: 22;
+  --veil-top: 18; --veil-mid: 28; --veil-bot: 48;
   background:
     /* 左上暖光 + 右下冷光，制造"光从窗外来"的空气感 */
     radial-gradient(120% 90% at 12% 4%,
@@ -669,8 +671,18 @@ input[type="range"]::-moz-range-thumb {
   align-items: flex-end;
   gap: var(--s-3);
   margin-bottom: var(--s-5);
-  padding-bottom: .5rem;
-  border-bottom: 1px solid color-mix(in oklab, var(--primary) 13%, transparent);
+  /* C 方案下整页是清晰壁纸，标题会落在图像暗部上。
+     实测：想靠"漂白层"救回来行不通 —— 加到比旧版还重也只有 4.34，
+     因为旧版是靠 brightness(1.62) 把整张图提亮的，而那正是这次要取消的。
+     所以改成给标题自己一块玻璃底：图像保持清晰，文字自带底。
+     实测对比度 1.46 → 4.09~4.67。 */
+  padding: .5rem .85rem .55rem;
+  margin-left: -.85rem;
+  margin-right: -.85rem;
+  border-radius: var(--r-lg);
+  background: color-mix(in oklab, var(--card-solid) 82%, transparent);
+  backdrop-filter: blur(12px) saturate(1.25);
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
 }
 .sec-head h2 {
   /* 放大 2.7 倍：1.28rem → 3.4rem */
@@ -729,8 +741,10 @@ input[type="range"]::-moz-range-thumb {
    和页面背景的关系是「卡片浮在柔和底图上」，而不是把壁纸糊成一片。 */
 .hero {
   position: relative;
-  overflow: hidden;
-  border-radius: var(--r-2xl);
+  /* C 方案：整页都用清晰壁纸，英雄区不再单独取景，
+     所以取消圆角与裁切 —— 它不再是"一块卡片"，只是页面顶部的一段。 */
+  overflow: visible;
+  border-radius: 0;
   margin-bottom: clamp(1.6rem, 4vw, 2.6rem);
   /* 卡片本身全透明 —— 没有底色、没有描边、没有阴影。
      壁纸层是唯一可见的东西，所以看起来是"图直接贴在页面上"，
@@ -741,24 +755,11 @@ input[type="range"]::-moz-range-thumb {
   isolation: isolate;
 }
 
-/* ① 壁纸层：清晰、cover、保留色彩。
-      只做极轻微的统一（不然整块会比周围页面跳太多），
-      不再 blur、不再整体漂白。 */
+/* ① 英雄区自己的图片层：C 方案下不再需要 ——
+      整页背景已经是同一张清晰壁纸，再叠一层就会重影。 */
 .hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
-  background-image: var(--hero-img, none);
-  background-size: cover;
-  background-position: var(--hero-pos, 50% 38%);
-  background-repeat: no-repeat;
-  filter: brightness(var(--hero-img-bright, 1.06))
-          saturate(var(--hero-img-satur, 1.03));
-  pointer-events: none;
+  display: none;
 }
-
 /* ② 可读性蒙版（用户选了"加一层柔和蒙版"）。
       文字集中在左侧偏下，所以：
         · 左侧横向压一层，往右逐渐放开，把右半边画面留给插画

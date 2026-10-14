@@ -338,6 +338,11 @@
     setNavCurrent(name);
     /* 新视图内容分段淡入（函数在后面的交互模块里定义，这里做存在性判断） */
     if (typeof window.__afterView === 'function') window.__afterView(name);
+    /* 换视图后兜底揭示，避免新视图里的内容一直停在隐藏态 */
+    if (typeof window.__revealGuard === 'function') {
+      setTimeout(window.__revealGuard, 60);
+      setTimeout(window.__revealGuard, 620);
+    }
     return true;
   }
 
@@ -440,15 +445,43 @@
 
   function armReveal(scope) {
     if (!('IntersectionObserver' in window)) {
+      /* 没有 IO：不加 .armed，元素保持默认可见 */
       $$(revealSel, scope || document).forEach(function (el) { el.classList.add('show'); });
       return;
     }
     $$(revealSel, scope || document).forEach(function (el) {
       if (el.dataset.revealBound === '1') return;
       el.dataset.revealBound = '1';
+      /* 先加 .armed（进入隐藏态），再交给 IO —— 顺序反了会闪一下 */
+      el.classList.add('armed');
       io.observe(el);
     });
   }
+
+  /* 兜底揭示：只要元素进了视口就一定显示，不依赖 IO 是否如期触发。
+     移动端上 IO 偶发不回调（尤其 display:none 的视图被切换出来时），
+     这是保证"内容绝不丢失"的最后一道闸。 */
+  var revealGuardT = 0;
+  function revealGuard() {
+    var vh = window.innerHeight || 800;
+    $$(revealSel).forEach(function (el) {
+      if (!el.classList.contains('armed')) return;
+      if (el.classList.contains('show')) return;
+      /* 隐藏视图里的先不动 —— 等真的切过去再由 showView 触发，
+         这样每个视图进来时都还保留入场动画。 */
+      if (el.closest('[hidden]')) return;
+      var r = el.getBoundingClientRect();
+      if (r.top < vh - 40 && r.bottom > -80) el.classList.add('show');
+    });
+  }
+  function scheduleGuard() {
+    clearTimeout(revealGuardT);
+    revealGuardT = setTimeout(revealGuard, 120);
+  }
+  window.addEventListener('scroll', scheduleGuard, { passive: true });
+  window.addEventListener('resize', scheduleGuard, { passive: true });
+  window.__revealGuard = revealGuard;
+
 
   if ('IntersectionObserver' in window) {
     io = new IntersectionObserver(function (entries) {
@@ -507,6 +540,15 @@
 
   assignStagger();
   armReveal();
+
+  /* 兜底必须放在 armReveal 之后：
+     早于它调用时还没有元素带 .armed，等于空跑一遍。
+     并且不能挂在加载屏上 —— 某张图卡住时 finishLoad 不执行，
+     兜底就永远不会跑。所以这里立刻跑一次 + 三道独立定时。 */
+  revealGuard();
+  setTimeout(revealGuard, 900);
+  setTimeout(revealGuard, 2000);
+  setTimeout(revealGuard, 4200);
 
   /* 进度条 */
   var bars = $$('.bar > i');
@@ -1383,7 +1425,11 @@
     setTimeout(function () {
       if (loaderEl) loaderEl.classList.add('is-gone');
       armReveal($('#view-' + currentView));
+      if (typeof window.__revealGuard === 'function') window.__revealGuard();
     }, reduceMotion ? 0 : 300);
+    /* 两道延时兜底：慢设备上 IO 可能晚到 */
+    setTimeout(function () { if (window.__revealGuard) window.__revealGuard(); }, 1600);
+    setTimeout(function () { if (window.__revealGuard) window.__revealGuard(); }, 3200);
     setTimeout(function () { if (loaderEl) loaderEl.style.display = 'none'; }, 1200);
   }
 
@@ -1454,8 +1500,11 @@
   (function () {
     if (reduceMotion) return;
     var bgImgs = $$('#bg-layer .bg-img');
-    var mids = $$('.ghost-title, .marquee');
-    var nears = $$('.sec-head, .card, .proj, .anime, .feat');
+    /* 只取真正挂了类、会被 CSS 消费的元素 ——
+       之前对全部 .card/.proj/.anime 每帧读 getBoundingClientRect，
+       既强制重排又完全没效果（那些元素根本没有 .par-* 类）。 */
+    var mids = $$('.par-mid');
+    var nears = $$('.par-near');
     if (!bgImgs.length && !mids.length && !nears.length) return;
 
     var ticking = false;
@@ -1507,6 +1556,13 @@
      ================================================================== */
   (function () {
     var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    /* 低端机保护：核心数少 / 内存小 → 关掉一切"持续运行"的效果。
+       这些特效是锦上添花，卡顿才是真问题。 */
+    var cores = navigator.hardwareConcurrency || 4;
+    var mem = navigator.deviceMemory || 4;
+    var lowEnd = cores <= 4 || mem <= 4;
+    /* 省电模式（部分安卓会开）也一并让路 */
+    var saveData = !!(navigator.connection && navigator.connection.saveData);
 
     /* ---------- ① 滚动进度条 ---------- */
     var sp = $('#scrollProgress');
@@ -1534,17 +1590,20 @@
       $$('[data-count]').forEach(function (el) { countIO.observe(el); });
     }
 
-    /* ---------- ② 卡片浮动：依次错峰，幅度很小 ---------- */
-    if (!reduceMotion) {
-      $$('.card, .now-item, .hslide').forEach(function (el, i) {
+    /* ---------- ② 图片卡浮动：只给 5 张图片卡，低端机不做 ---------- */
+    if (!reduceMotion && !lowEnd && !saveData) {
+      var floats = $$('.hslide');
+      floats.forEach(function (el, i) {
         el.classList.add('float');
         el.style.setProperty('--float-dur', (6.5 + (i % 3) * 0.9).toFixed(1) + 's');
         el.style.setProperty('--float-delay', (-(i % 7) * 0.7).toFixed(2) + 's');
       });
     }
 
-    /* ---------- ③ 水波纹 ---------- */
-    $$('.btn, .tw-chip, .hslide, .site, .wall-item, .nav-link').forEach(function (el) {
+    /* ---------- ③ 水波纹 ----------
+       只给按钮和图片卡。每加一个 overflow:hidden 就多一个裁切上下文，
+       之前加到 60 个元素（含 24 枚标签），手机上直接拖垮渲染。 */
+    $$('.btn, .hslide').forEach(function (el) {
       el.classList.add('rip-host');
     });
     document.addEventListener('pointerdown', function (e) {

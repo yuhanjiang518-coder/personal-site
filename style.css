@@ -76,6 +76,10 @@
   --ease-in-out:cubic-bezier(.65, 0, .35, 1);
   --ease-soft:  cubic-bezier(.22, 1, .36, 1);
   --ease-back:  cubic-bezier(.34, 1.56, .64, 1);
+  /* 场景转场专用（参考 wodniack.dev 的 _easing.scss：in-out-expo / out-expo）。
+     起步与收尾都极慢、中段极快 —— 整屏位移用它会显得"有重量"而不是匀速平移。 */
+  --ease-expo-in-out: cubic-bezier(1, 0, 0, 1);
+  --ease-expo-out:    cubic-bezier(.19, 1, .22, 1);
 
   --d-instant: 90ms;
   --d-fast:   140ms;
@@ -2451,7 +2455,8 @@ html.js #loader:not(.is-gone) {
   flex-direction: column;
   visibility: hidden;
 }
-#curtain.is-sweeping { visibility: visible; }
+/* 显隐由 JS 控制（Web Animations API 驱动 transform，见 script.js 的场景转场模块） */
+#curtain.is-active { visibility: visible; }
 /* 三层都是【满屏高】的整片，而不是 flex 均分的三条。
    原因：translateY(%) 是相对元素【自身高度】的。
    均分成 1/3 屏时，translateY(101%) 只能让每条移动 1/3 屏，
@@ -2461,8 +2466,10 @@ html.js #loader:not(.is-gone) {
   position: absolute;
   inset: 0;
   transform: translateY(-101%);
-  will-change: transform;
 }
+/* will-change 只在该层真的要动的时候加（转场期间），而不是常驻 —— 
+   三个满屏图层常驻 will-change 会让浏览器一直保持三张大合成层的显存占用。 */
+#curtain.is-active > span { will-change: transform; }
 #curtain > span:nth-child(1) {
   background: linear-gradient(180deg,
       var(--curtain-1, var(--primary)),
@@ -2477,20 +2484,46 @@ html.js #loader:not(.is-gone) {
 #curtain > span:nth-child(3) { background: var(--curtain-3, var(--page-bg)); }
 
 /* 三层像三张纸依次落下，越靠后越在上层（DOM 顺序即 z 序）。
-   进入时能看到三层叠出的"纸边"，退出时只剩最上面那层在收，
-   所以收得干净、不会露接缝。 */
-#curtain.is-sweeping > span {
-  animation: curtain-sweep var(--d-scene) var(--ease-in-out) both;
+   移位、停拍、退场全部由 JS 的时间轴统一编排（不再有 CSS 关键帧的"第二份真相"）。 */
+
+/* 每个视图一组幕布色：让"要去哪一页"在转场里就能看出来。
+   颜色写在 CSS，JS 只负责把 data-curtain 换掉。 */
+html { --curtain-1: var(--primary); --curtain-2: var(--card-solid); }
+html[data-curtain="study"] {
+  --curtain-1: #2f6f7a;
+  --curtain-2: color-mix(in oklab, #2f6f7a 62%, var(--page-bg));
 }
-#curtain.is-sweeping > span:nth-child(2) { animation-delay: 70ms; }
-#curtain.is-sweeping > span:nth-child(3) { animation-delay: 140ms; }
-@keyframes curtain-sweep {
-  0%   { transform: translateY(-101%); }
-  45%  { transform: translateY(0); }
-  /* 盖满后停一拍：一是给 DOM 换视图留足余量，
-     二是"关—停—开"比一路扫过更有节奏，不会一闪而过。 */
-  58%  { transform: translateY(0); }
-  100% { transform: translateY(101%); }
+html[data-curtain="tags"] {
+  --curtain-1: #b04a86;
+  --curtain-2: color-mix(in oklab, #b04a86 62%, var(--page-bg));
+}
+html[data-curtain="life"] {
+  --curtain-1: #c07a3e;
+  --curtain-2: color-mix(in oklab, #c07a3e 62%, var(--page-bg));
+}
+
+/* 幕布上的"章节牌"：盖满那一刻报出目标视图，收尾时跟着幕布退走。
+   借的是参考站把控制台文字当读数的做法 —— 转场不只遮黑，还告诉你去哪。 */
+#curtain-label {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  z-index: 2;                 /* 盖在三层幕布之上 */
+  translate: 0 -50%;
+  padding: 0 1.25rem;
+  text-align: center;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: clamp(.68rem, 2.6vw, .82rem);
+  font-weight: 700;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--curtain-ink, #fff);
+  text-shadow: 0 1px 10px rgb(0 0 0 / 35%);
+  opacity: 0;                 /* JS 负责淡入淡出 */
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #curtain-label { display: none; }
 }
 
 /* 切页时的角色剪影 */
@@ -2514,21 +2547,8 @@ html.js #loader:not(.is-gone) {
 
 /* 她是【横躺】的，所以不再上下跳，而是沿着底边横向滑过 ——
    像被谁拖着走。和幕布的上下运动正好垂直，画面更有层次。
-   轨道时间 960ms 与幕布最后一层（820ms + 140ms 延迟）对齐。 */
-#jump-figure.is-sliding {
-  animation: figure-slide 960ms var(--ease-in-out) both;
-}
-/* 位移全部用 vw 表达：50vw - 50% 正好是"居中"，
-   所以 0% 和 100% 在任何屏幕宽度下都确实在画面之外。 */
-@keyframes figure-slide {
-  0%   { translate: calc(-100% - 6vw) 0;   opacity: 0; }
-  7%   { opacity: 1; }
-  26%  { translate: calc(26vw - 50%) -3%; }   /* 路上轻轻颠一下 */
-  38%  { translate: calc(43vw - 50%) 0; }
-  46%  { translate: calc(50vw - 50%) 0; }     /* 居中 */
-  72%  { translate: calc(50vw - 50%) 0; }     /* 与幕布停顿对齐，多停一会儿 */
-  100% { translate: calc(100vw + 6vw) 0;   opacity: 0; }
-}
+   位移同样交给 JS 时间轴（含方向：去后面的页面从左往右，回前面的从右往左）。 */
+#jump-figure.is-sliding { visibility: visible; }
 
 /* ============================ 17. 响应式 ============================ */
 @media (max-width: 1024px) {

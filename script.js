@@ -348,26 +348,175 @@
     return true;
   }
 
-  /* 幕布扫过 */
-  var curtain = $('#curtain'), figure = $('#jump-figure');
+  /* ==================================================================
+     场景转场：三层幕布 + 横滑角色 + 章节牌
+     ------------------------------------------------------------------
+     编排全部收在 JS（Web Animations API），CSS 只留基础位移与配色：
+       · 数值只有一份真相（TRANS 表），不必再和 CSS 关键帧手工对齐；
+       · 有方向：去导航里靠后的视图自上而下，回靠前的自下而上（整体镜像）；
+       · 幕布盖满那一刻换内容，之后新视图内容入场与幕布退场重叠；
+       · 每个视图一组幕布色（html[data-curtain]），章节牌报出目标页。
+     参考 https://wodniack.dev 的转场手法：位移遮罩 + 状态在遮罩峰值切换 +
+     时间轴重叠 + 成套缓动。（其源码 CC BY-NC 4.0，此处只借鉴编排思路）
+     ================================================================== */
+  var curtain = $('#curtain'), figure = $('#jump-figure'), curtainLabel = $('#curtain-label');
+  var curtainLayers = curtain ? $$('#curtain > span') : [];
   var sweeping = false;
 
-  /* 转场编排（与 CSS 关键帧对齐，改任一处记得同步另一处）：
-      幕布 3 层从上方落下，45% 时盖满 → 此时换内容；
-      角色沿底边横向滑过，48%~66% 停在中央（正好覆盖幕布盖满那段）；
-      幕布最后 100% + 140ms 延迟 = 960ms 收完，角色也是 960ms。
-     所以「换内容」放在 420ms，「收尾」放在 1000ms。 */
-  function sweep(done) {
-    if (reduceMotion || sweeping) { done(); return; }
+  var TRANS = {
+    cover: 320,          /* 单层从画外移到盖满 */
+    hold: 130,           /* 盖满后停一拍（换内容的窗口） */
+    exit: 380,           /* 单层从盖满移到另一侧画外 */
+    layerStep: 60,       /* 三层错峰，叠出"纸边" */
+    figure: 780          /* 角色横滑总时长 */
+  };
+  TRANS.span = TRANS.cover + TRANS.hold + TRANS.exit;
+  TRANS.coverAll = TRANS.cover + TRANS.layerStep * (Math.max(curtainLayers.length, 3) - 1);
+  TRANS.total = TRANS.coverAll + TRANS.hold + TRANS.exit;
+
+  var VIEW_ORDER = ['home', 'study', 'tags', 'life'];
+  var navHappened = false;
+  var VIEW_LABEL = {
+    home:  '01 / HOME · 首页',
+    study: '02 / STUDY · 学习工作',
+    tags:  '03 / SKILLS · 技能墙',
+    life:  '04 / LIFE · 兴趣日常'
+  };
+  function viewIndex(name) {
+    var i = VIEW_ORDER.indexOf(name);
+    return i < 0 ? 0 : i;
+  }
+
+  var EASE_EXPO_IN_OUT = 'cubic-bezier(1, 0, 0, 1)';
+
+  /* 一层幕布：进 → 停 → 出。dir = 1 自上而下，dir = -1 自下而上 */
+  function sweepLayer(layer, i) {
+    var dir = sweepLayer.dir || 1;
+    var from = -101 * dir, to = 101 * dir;
+    return layer.animate(
+      [
+        { transform: 'translateY(' + from + '%)', offset: 0 },
+        { transform: 'translateY(0%)', offset: TRANS.cover / TRANS.span },
+        { transform: 'translateY(0%)', offset: (TRANS.cover + TRANS.hold) / TRANS.span },
+        { transform: 'translateY(' + to + '%)', offset: 1 }
+      ],
+      {
+        duration: TRANS.span,
+        delay: i * TRANS.layerStep,
+        easing: EASE_EXPO_IN_OUT,
+        fill: 'both'
+      }
+    );
+  }
+
+  /* 横躺角色沿底边滑过：位移按像素实算，不依赖 calc 百分比插值 */
+  function sweepFigure(dir) {
+    if (!figure) return null;
+    var vw = window.innerWidth || 375;
+    var w = figure.offsetWidth || 220;
+    var off = vw * 0.06;
+    var left = -w - off, right = vw + off, center = vw / 2 - w / 2;
+    var mid = dir > 0 ? left + (center - left) * 0.42 : right - (right - center) * 0.42;
+    var path = dir > 0 ? [left, center, center, right] : [right, center, center, left];
+    figure.hidden = false;
+    figure.classList.add('is-sliding');
+    return figure.animate(
+      [
+        { transform: 'translate3d(' + path[0] + 'px,0,0)', opacity: 0, offset: 0 },
+        { transform: 'translate3d(' + mid + 'px,-3%,0)', opacity: 1, offset: 0.16 },
+        { transform: 'translate3d(' + path[1] + 'px,0,0)', opacity: 1, offset: 0.34 },
+        { transform: 'translate3d(' + path[2] + 'px,0,0)', opacity: 1, offset: 0.72 },
+        { transform: 'translate3d(' + path[3] + 'px,0,0)', opacity: 0, offset: 1 }
+      ],
+      { duration: TRANS.figure, easing: EASE_EXPO_IN_OUT, fill: 'both' }
+    );
+  }
+
+  /* 章节牌：盖满前淡入，退场时随幕布淡出 */
+  function sweepLabel(text) {
+    if (!curtainLabel || !text) return null;
+    curtainLabel.textContent = text;
+    return curtainLabel.animate(
+      [
+        { opacity: 0, offset: 0 },
+        { opacity: 0, offset: 0.34 },
+        { opacity: 1, offset: 0.5 },
+        { opacity: 1, offset: 0.7 },
+        { opacity: 0, offset: 1 }
+      ],
+      { duration: TRANS.total, easing: 'linear', fill: 'both' }
+    );
+  }
+
+  /* 场景转场主入口：sweep({ dir, view, label, figure, onCover, onDone })
+     onCover 在幕布盖满时触发一次（换内容），onDone 在幕布收干净后触发。 */
+  function sweep(opts) {
+    var o = opts || {};
+    var onCover = o.onCover || function () {};
+    var onDone = o.onDone || function () {};
+    var coverFired = false;
+    function cover() {
+      if (coverFired) return;
+      coverFired = true;
+      onCover();
+    }
+
+    /* 已在转场中：不叠加、不排队，直接把内容切过去（绝不吞掉用户的点击） */
+    if (sweeping) { cover(); onDone(); return; }
     sweeping = true;
-    curtain.classList.add('is-sweeping');
-    if (figure) { figure.hidden = false; figure.classList.add('is-sliding'); }
-    setTimeout(done, 420);                 /* 幕布盖满、角色停在中央时换内容 */
-    setTimeout(function () {
-      curtain.classList.remove('is-sweeping');
-      if (figure) { figure.classList.remove('is-sliding'); figure.hidden = true; }
+
+    if (o.view) doc.setAttribute('data-curtain', o.view);
+    /* 属性刚落、动画就起：强制一次样式重算，确保幕布第一帧用的就是新配色 */
+    if (curtain) void curtain.offsetWidth;
+    if (!curtain || !curtainLayers.length) {
+      setTimeout(function () { cover(); sweeping = false; onDone(); }, 0);
+      return;
+    }
+
+    /* 减弱动效：不做整屏位移，只做一次很轻的明暗过渡（更少更轻，而不是归零） */
+    if (reduceMotion) {
+      var veil = curtainLayers[curtainLayers.length - 1];
+      curtain.classList.add('is-active');
+      var calm = veil.animate([{ opacity: 0 }, { opacity: .94 }, { opacity: 0 }],
+        { duration: 200, easing: 'ease', fill: 'both' });
+      setTimeout(cover, 100);
+      setTimeout(function () {
+        calm.cancel();
+        curtain.classList.remove('is-active');
+        sweeping = false;
+        onDone();
+      }, 210);
+      return;
+    }
+
+    curtain.classList.add('is-active');
+    sweepLayer.dir = o.dir >= 0 ? 1 : -1;
+    var anims = curtainLayers.map(sweepLayer);
+    var figAnim = o.figure === false ? null : sweepFigure(sweepLayer.dir);
+    var labelAnim = sweepLabel(o.label);
+
+    var coverTimer = setTimeout(cover, TRANS.coverAll);
+
+    /* 收尾绑在最后一层的 finished 回调上（而不是又写一个魔数定时器），
+       所以"幕布确实收干净了"是确定事件；定时器只作为兜底。 */
+    var finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearTimeout(coverTimer);
+      cover();
+      anims.forEach(function (a) { a.cancel(); });
+      if (figAnim) figAnim.cancel();
+      if (labelAnim) labelAnim.cancel();
+      if (figure) { figure.hidden = true; figure.classList.remove('is-sliding'); }
+      if (curtainLabel) curtainLabel.textContent = '';
+      curtain.classList.remove('is-active');
       sweeping = false;
-    }, 1000);
+      onDone();
+    }
+    var last = anims[anims.length - 1];
+    if (last && last.finished) last.finished.then(finish, finish);
+    setTimeout(finish, TRANS.total + 260);
   }
 
   function navH() {
@@ -385,11 +534,21 @@
   function go(view, anchor) {
     closeNav();
     if (view && view !== currentView) {
-      sweep(function () {
-        showView(view);
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        armReveal($('#view-' + view));
-        if (anchor) requestAnimationFrame(function () { scrollToAnchor(anchor); });
+      /* 用户已经开始自己导航了：开屏那一次 sweep 就别再抢戏 */
+      navHappened = true;
+      /* 转场方向 = 目标视图相对当前视图在导航里的前后：往后走幕布自上而下，
+         往回走自下而上。方向感是这一版转场的核心，别退化成"永远从上往下"。 */
+      var dir = viewIndex(view) >= viewIndex(currentView) ? 1 : -1;
+      sweep({
+        dir: dir,
+        view: view,
+        label: VIEW_LABEL[view],
+        onCover: function () {
+          showView(view);
+          window.scrollTo({ top: 0, behavior: 'auto' });
+          armReveal($('#view-' + view));
+          if (anchor) requestAnimationFrame(function () { scrollToAnchor(anchor); });
+        }
       });
     } else {
       if (view) setNavCurrent(view);
@@ -1425,20 +1584,37 @@
     if (loadPct) loadPct.textContent = '100';
     document.body.classList.add('loaded');
 
-    if (!reduceMotion) {
-      curtain.classList.add('is-sweeping');
-      /* 幕布最后一层 820ms + 140ms 延迟 = 960ms，留一点余量再撤 */
-      setTimeout(function () { curtain.classList.remove('is-sweeping'); }, 1060);
-    }
-    setTimeout(function () {
-      if (loaderEl) loaderEl.classList.add('is-gone');
+    /* 开屏也走同一套转场编排：幕布盖满那一刻撤销加载屏并揭示首屏内容，
+       于是"加载屏消失"与"幕布退场"重叠成一次动作，而不是两段各干各的。
+       但如果用户已经在加载期间点了导航，这次开屏 sweep 就跳过 —— 否则它会把
+       data-curtain 和幕布方向覆盖成首页那次，等于把用户的跳转又抹掉一遍。 */
+    if (navHappened) {
+      if (loaderEl) loaderEl.style.display = 'none';
       armReveal($('#view-' + currentView));
       if (typeof window.__revealGuard === 'function') window.__revealGuard();
-    }, reduceMotion ? 0 : 300);
+    } else {
+      sweep({
+        dir: 1,
+        view: currentView,
+        label: VIEW_LABEL[currentView],
+        onCover: function () {
+          if (loaderEl) {
+            /* 加载屏 z-index 高于幕布，所以幕布盖满时它仍在最上层。
+               此刻幕布第三层（纯页面底色、不透明）已经铺满整个视口，
+               直接硬切掉加载屏，露出的就是幕布本层 —— 比让它慢慢淡出干净得多。
+               减弱动效时没有幕布可挡，退回淡出。 */
+            if (reduceMotion) loaderEl.classList.add('is-gone');
+            else { loaderEl.classList.add('is-gone'); loaderEl.style.display = 'none'; }
+          }
+          armReveal($('#view-' + currentView));
+          if (typeof window.__revealGuard === 'function') window.__revealGuard();
+        }
+      });
+    }
     /* 两道延时兜底：慢设备上 IO 可能晚到 */
     setTimeout(function () { if (window.__revealGuard) window.__revealGuard(); }, 1600);
     setTimeout(function () { if (window.__revealGuard) window.__revealGuard(); }, 3200);
-    setTimeout(function () { if (loaderEl) loaderEl.style.display = 'none'; }, 1200);
+    setTimeout(function () { if (loaderEl) loaderEl.style.display = 'none'; }, 1600);
   }
 
   (function runLoader() {

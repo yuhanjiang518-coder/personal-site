@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261017c">
+<link rel="stylesheet" href="style.css?v=20261017d">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
 </head>
@@ -282,6 +282,38 @@
       </div>
     </section>
 
+    <!-- 横向滑动区：打破竖向长页面（灵感来自参考站的横向滚动段落） -->
+    <section class="sec" id="reel">
+      <div class="sec-head reveal">
+        <span class="sec-idx" data-idx aria-hidden="true"></span><h2>最近在看</h2>
+        <span class="sec-more">左右滑一滑 →</span>
+      </div>
+      <div class="hscroll par-near" id="homeReel" tabindex="0" role="region" aria-label="最近在看的作品，可左右滚动">
+        <div class="hscroll-track">
+          <figure class="hslide">
+            <img src="assets/cover-elaina.webp" alt="魔女之旅" width="300" height="400" loading="lazy" decoding="async">
+            <figcaption><strong>魔女之旅</strong><span>2020 · 治愈 / 奇幻</span><em>★★★ ⁹·²</em></figcaption>
+          </figure>
+          <figure class="hslide">
+            <img src="assets/cover-joy.webp" alt="Joy of Program" width="300" height="400" loading="lazy" decoding="async">
+            <figcaption><strong>Joy of Program</strong><span>小游戏 · Python</span><em>已完成</em></figcaption>
+          </figure>
+          <figure class="hslide">
+            <img src="assets/cover-travel.webp" alt="旅人手记" width="300" height="400" loading="lazy" decoding="async">
+            <figcaption><strong>旅人手记</strong><span>随笔 · 这个网站</span><em>连载中</em></figcaption>
+          </figure>
+          <figure class="hslide">
+            <img src="assets/muki-art-happy.webp" alt="写真" width="300" height="400" loading="lazy" decoding="async">
+            <figcaption><strong>写真</strong><span>日常 · 插画</span><em>—</em></figcaption>
+          </figure>
+          <figure class="hslide">
+            <img src="assets/muki-art-sleep.webp" alt="小憩" width="300" height="400" loading="lazy" decoding="async">
+            <figcaption><strong>小憩</strong><span>日常 · 插画</span><em>—</em></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <!-- 联系我 -->
     <section class="sec" id="contact">
       <div class="sec-head reveal">
@@ -461,7 +493,7 @@
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/wall-sakura.webp" alt="个人主页" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img src="assets/cover-travel.webp" alt="个人主页" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已上线</span></div>
             <h3 class="proj-t">个人主页</h3>
@@ -481,7 +513,7 @@
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/wall-ink.webp" alt="算法练习" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img src="assets/muki-art-tired.webp" alt="算法练习" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag">长期</span></div>
             <h3 class="proj-t">算法练习</h3>
@@ -712,12 +744,12 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-17c · 排版强化（参考 JIEJOE） · 看到这行说明已加载最新版</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-17d · 大标题 · 逐词浮现 · 视差 · 横滑 · 看到这行说明已加载最新版</p>
   </div>
 </footer>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="script.js?v=20261017c"></script>
+<script src="script.js?v=20261017d"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="light" data-skin="aw">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
 <link rel="stylesheet" href="style.css?v=20261017l">
+<link rel="stylesheet" href="aw.css?v=20261018a">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
 </head>
@@ -150,7 +151,11 @@
       <div class="hero-inner">
         <div class="hero-copy">
           <p class="hero-kicker"><span class="dot"></span>沈阳理工大学 · 网络工程</p>
-          <h1>你好，我是 <span class="accent">向き</span></h1>
+          <h1 class="aw-hero-title">
+            <span class="aw-hero-title__word"><span class="aw-hero-title__inner">向き</span></span>
+            <span class="aw-hero-title__star" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.55 9.45L24 12l-9.45 2.55L12 24l-2.55-9.45L0 12l9.45-2.55z"/></svg></span>
+            <span class="aw-hero-title__word"><span class="aw-hero-title__inner">MUKI</span></span>
+          </h1>
           <p class="hero-lead">
             我是一名<span class="typed" id="typed"></span><span class="caret" aria-hidden="true"></span><br>
             在沈阳理工大学读网络工程。喜欢写代码，能用 C / C++ 和 Python 把想法实现出来；
@@ -746,12 +751,13 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-17l · 整页清晰壁纸（取消漂白）+ 标题玻璃底 · 看到这行说明已加载最新版</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-18a · WODNIACK 皮肤：波浪物理线 + 二进制分隔条 + 控制台 + 自绘滚动条 · 配色与壁纸未改</p>
   </div>
 </footer>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="script.js?v=20261017l"></script>
+<script src="aw.js?v=20261018a" defer></script>
 </body>
 </html>

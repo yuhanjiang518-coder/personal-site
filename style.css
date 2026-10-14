@@ -2126,6 +2126,134 @@ html:not(.js) .wd > i { transform: none; opacity: 1; }
   html.js .reveal.rv-wipe-up { clip-path: none !important; opacity: 1 !important; }
 }
 
+/* ============================ 14.7 交互与顺滑度 ============================ */
+/* 统一原则：
+   ① 只动 transform / opacity / clip-path，绝不碰 left/top/width → 不触发重排
+   ② 用「独立变换属性」translate / rotate / scale，
+      这样能和 .reveal 的 transform 叠加，互不覆盖
+   ③ 悬停类交互只在 (hover:hover) 且 (pointer:fine) 上开，手机上不做无用功 */
+
+/* --- 全局：让动画跑在合成层 --- */
+.card, .proj, .anime, .hslide, .feat, .now-item, .tw-chip, .btn, .site {
+  backface-visibility: hidden;
+}
+/* 网格父层给透视，子元素的 rotateX/Y 才有立体感 */
+.grid, .about-grid, .proj-grid, .now-grid, .anime-grid, .g-2, .g-3, .g-4 {
+  perspective: 1100px;
+}
+
+/* --- ① 卡片跟随指针 3D 倾斜 --- */
+/* 倾斜（--tx/--ty/--rx/--ry）和浮动（--float-y）
+   共用同一个 translate，所以必须写成一条合成表达式，
+   否则后写的规则会把前一条整个覆盖掉。 */
+.tilt, .float {
+  translate: var(--tx, 0px) calc(var(--ty, 0px) + var(--float-y, 0px));
+}
+.tilt {
+  rotate: x var(--rx, 0deg) y var(--ry, 0deg);
+  transition: translate 260ms var(--ease-out),
+              rotate 260ms var(--ease-out),
+              box-shadow var(--d-ui) ease,
+              transform var(--d-ui) var(--ease-out);
+  transform-style: preserve-3d;
+}
+.tilt.is-live { transition: translate 90ms linear, rotate 90ms linear, box-shadow var(--d-ui) ease; }
+/* 移上去时抬一点阴影，像被拿起来 */
+.tilt.is-live { box-shadow: var(--shadow-xl); }
+
+/* --- ② 点击水波纹 --- */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle,
+      color-mix(in oklab, var(--primary) 55%, transparent) 0%,
+      color-mix(in oklab, var(--primary) 24%, transparent) 45%,
+      transparent 70%);
+  animation: ripple-out 620ms var(--ease-out) forwards;
+  z-index: 0;
+}
+@keyframes ripple-out {
+  to { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+/* 承载水波纹的容器必须是定位上下文且裁切。
+   注意：.tw-chip 本身是 position:absolute（标签墙靠 JS 写 transform 定位），
+   绝不能被 position:relative 覆盖，否则整面标签墙会掉回文档流。 */
+.rip-host { overflow: hidden; }
+.rip-host:not(.tw-chip) { position: relative; }
+
+/* --- ③ 按钮磁吸 --- */
+.magnetic {
+  translate: var(--mg-x, 0px) var(--mg-y, 0px);
+  transition: translate 220ms var(--ease-out),
+              background var(--d-ui) ease,
+              color var(--d-ui) ease,
+              box-shadow var(--d-ui) ease;
+}
+
+/* --- ④ 卡片持续轻浮动（用 translate，与 transform 不冲突） --- */
+.float {
+  animation: card-float var(--float-dur, 7s) ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+}
+@keyframes card-float {
+  0%, 100% { --float-y: 0px; }
+  50%      { --float-y: -5px; }
+}
+@property --float-y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* --- ⑤ 滚动进度条 --- */
+#scrollProgress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--sp, 0));
+  background: linear-gradient(90deg,
+      color-mix(in oklab, var(--primary) 70%, transparent),
+      color-mix(in oklab, var(--primary) 100%, transparent));
+  z-index: var(--z-topbar);
+  pointer-events: none;
+  transition: transform 90ms linear;
+}
+
+/* --- ⑥ 视图切换：内容分段淡入 --- */
+.view-anim > * {
+  animation: view-in 560ms var(--ease-out) both;
+}
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.view-anim > *:nth-child(1) { animation-delay: 0ms; }
+.view-anim > *:nth-child(2) { animation-delay: 70ms; }
+.view-anim > *:nth-child(3) { animation-delay: 130ms; }
+.view-anim > *:nth-child(4) { animation-delay: 180ms; }
+.view-anim > *:nth-child(n+5) { animation-delay: 220ms; }
+
+/* --- ⑦ 数字滚动：等宽数字避免跳动 --- */
+[data-count] { font-variant-numeric: tabular-nums; }
+
+/* --- 悬停类交互只在真有指针的设备上启用 --- */
+@media (hover: none), (pointer: coarse) {
+  .tilt { translate: none; rotate: none; }
+  .magnetic { translate: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple { display: none; }
+  .float { animation: none; }
+  .tilt, .magnetic { translate: none; rotate: none; }
+  .view-anim > * { animation: none; }
+  #scrollProgress { transition: none; }
+}
+
 /* ============================ 15. 揭示动画 ============================ */
 /* 隐藏态一律带 html.js，特异性 (0,2,x)；
    .show 规则写成 html.js ...show 达到 (0,3,x)，必定覆盖。 */

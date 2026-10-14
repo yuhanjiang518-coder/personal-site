@@ -2966,26 +2966,84 @@ html[data-curtain="life"] {
 
 /* ============================ 16.35 开始界面（标题画面） ============================ */
 /* 机制来自 baier233/bocchi-template-1.21.5 的 Misayos 主菜单：
-   · 整屏 1500ms EASE_IN_OUT 淡入打底；
-   · 两块粉板"高度从 0 长出来"（1000ms），彼此错开 100ms；
-   · 描边元素依次登场：虚线靠 clip-path 扫出、斜条纹的间距从 9px 收到 4px；
+   · 满屏插画 1800ms 慢推近（1.06 → 1）打底；
+   · 竖带与卡片用 clip-path 从顶端"展开"（1000ms），彼此错开 110ms；
+   · 描边元素依次登场：虚线靠 clip-path 扫出、斜条纹靠 scaleX 收拢；
    · 大字是"位移 + 0.85→1 缩放 + 淡入"（700ms）；
-   · 立绘从画面外滑入后持续"呼吸"（余弦、3s 周期、绕底部轻微自转）；
    · 唱片是 CIRC_OUT 500ms 缩放入场，然后一直匀速转。
    基准态一律写成终态，关键帧只描述起始态 —— 这样"减弱动效"直接关掉动画就是成品。 */
 .start {
+  /* 局部令牌：色值取自插画的量化主色（#559bb4 海水 / #eeeff3 浪花 / #a88c74 草帽）。
+     卡片与按钮不是新造一套，而是复用站内 --card-solid / --btn-bg / --primary，
+     所以开场和站点是同一套 UI —— 换主题色时开场跟着一起换。 */
+  --sea-deep: #0b2130;
+  --sea:      #2f8fa8;
+  --panel:    rgb(255 253 249 / 94%);
+  --sand:     #e8d3a6;
+  --ink:      oklch(.24 .02 var(--hue));
+  --ink-soft: rgb(0 0 0 / 58%);
+  --mk-art:   rgb(11 33 48 / 62%);   /* 亮处的标注色：深海蓝压在海水上才看得见 */
+  --mk-warm:  var(--sand);           /* 暗处的标注色：草帽的暖色 */
+  /* 版心由这三个数推出来：竖带左缘 / 竖带宽 / 卡片内边距。
+     卡片、文字、按钮的位置全部写成它们的组合，改一个数整块版面跟着走。 */
+  --card-x:   4%;
+  --band-w:   clamp(2.8rem, 4.4vw, 4.2rem);
+  --pad:      clamp(1.05rem, 1.7vw, 1.6rem);
+
   position: fixed;
   inset: 0;
   z-index: 200;
   overflow: hidden;
-  background: linear-gradient(180deg, #0a0618 0%, #2a1c33 100%);
+  background: var(--sea-deep);
   color: #fff;
-  animation: start-fade 1500ms cubic-bezier(.65, 0, .35, 1) both;
+  animation: start-fade 1200ms var(--ease-out) both;
   user-select: none;
 }
 @keyframes start-fade {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* 满屏插画。拆成两条动画：淡入用 500ms 强 ease-out 抢在第一时间出画面，
+   推近用 1800ms 的 in-out —— 强 ease-out 在 1/4 时长处就已经走完 88%，
+   配长时长等于白给；in-out 才能让这段推近真的"看得见"。
+   开始界面是"一辈子看一次"的那一档，配得上这个时长。 */
+.start-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 4% 50%;
+  animation:
+    start-photo-fade 500ms var(--ease-out) both,
+    start-photo-zoom 1800ms cubic-bezier(.65, 0, .35, 1) both;
+}
+@keyframes start-photo-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes start-photo-zoom {
+  from { transform: scale(1.06); }
+  to   { transform: none; }
+}
+
+/* 压字层：左侧一层深海把文字托住，底部一层托住页脚，右上角补一点暖光呼应画里的逆光。 */
+.start-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(96deg,
+      rgb(11 33 48 / 96%) 0%,
+      rgb(11 33 48 / 84%) 22%,
+      rgb(11 33 48 / 42%) 38%,
+      transparent 54%),
+    linear-gradient(0deg,
+      rgb(6 20 30 / 62%) 0%,
+      rgb(6 20 30 / 16%) 13%,
+      transparent 32%),
+    radial-gradient(120% 92% at 80% 2%, rgb(255 238 200 / 14%) 0%, transparent 54%);
+  animation: start-fade 1400ms var(--ease-out) 120ms both;
 }
 .start.is-leaving {
   animation: none;
@@ -2997,79 +3055,83 @@ html[data-curtain="life"] {
 }
 
 /* 点阵底纹：纯 CSS、零 JS、无动画。
-   用 radial-gradient 平铺出 22px 的点阵，再用径向遮罩把中间挖空 ——
-   于是点阵只出现在四周，不跟中间的立绘和大字抢注意力（aceternity 的 grid 背景同一个思路）。 */
+   用 radial-gradient 平铺出 22px 的点阵，再用径向遮罩把人物所在的中段挖空 ——
+   于是点阵只落在四周，不跟插画和大字抢注意力（aceternity 的 grid 背景同一个思路）。
+   点是深色的：底色现在是亮插画，白点会直接消失在海水里。 */
 .start::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgb(255 255 255 / 15%) 1px, transparent 1.2px);
+  background-image: radial-gradient(rgb(9 44 62 / 15%) 1px, transparent 1.2px);
   background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 24%, #000 78%);
-  mask-image: radial-gradient(ellipse 62% 58% at 50% 46%, transparent 24%, #000 78%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 64% at 64% 46%, transparent 18%, #000 74%);
+  mask-image: radial-gradient(ellipse 70% 64% at 64% 46%, transparent 18%, #000 74%);
   pointer-events: none;
 }
 
-/* 背景渐变（叠在底色之上做一层偏紫的顶光） */
-.start-grad {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 80% at 50% -10%, rgb(255 120 187 / 22%) 0%, transparent 60%);
-  animation: start-fade 1500ms cubic-bezier(.65, 0, .35, 1) 200ms both;
-}
-
-/* 两块粉板 */
+/* 两块色块共用"从顶端展开"的入场。
+   用 clip-path 而不是 scaleY：scaleY 会把子元素（卡片里的水印、竖带顶端那道亮边）
+   一起压扁，clip-path 只裁不改形 —— 而 clip-path 正是本站允许的第四个可动属性。 */
 .start-block {
   position: absolute;
-  transform-origin: 50% 0;
   overflow: hidden;
-  animation: start-grow 1000ms var(--ease-out) both;
+  animation: start-unfurl 1000ms var(--ease-out) both;
 }
-@keyframes start-grow {
-  from { transform: scaleY(0); opacity: 0; }
-  to   { transform: scaleY(1); opacity: 1; }
+@keyframes start-unfurl {
+  from { clip-path: inset(0 0 100% 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
 }
+/* 青绿竖带：挂在左版心上，从顶边垂下来 */
 .start-block--tall {
-  left: 15%;
+  left: var(--card-x);
   top: 0;
-  width: clamp(3.2rem, 6.5vw, 6rem);
-  height: min(64vh, 34rem);
-  background: linear-gradient(180deg, #fb85ae 0%, #fc67a7 30%);
-  animation-delay: 400ms;
+  width: var(--band-w);
+  height: min(58vh, 32rem);
+  background: linear-gradient(180deg, #6fd8e8 0%, var(--sea) 44%, #14566b 100%);
+  animation-delay: 350ms;
 }
 .start-block--tall i {
   position: absolute;
   left: 0; right: 0; top: 0;
-  height: 6%;
-  background: #fb85ae;
+  height: 5%;
+  background: #bdf2f9;
 }
+/* 奶白卡片：做法和站内 .card / .card-solid 一致（暖白 + 1px 浅边 + 圆角）。
+   没给 box-shadow —— clip-path 会把外阴影一起裁掉，而卡片压在深海底色上本身就够分开了。 */
 .start-block--big {
-  left: 30%;
-  top: 11%;
-  width: min(46vw, 62vh);
-  height: min(78vh, 46rem);
-  background: linear-gradient(150deg, #f69db2 0%, #ff78bb 100%);
-  box-shadow: -15px 0 30px rgb(0 0 0 / 34%);
-  animation-delay: 500ms;
+  left: calc(var(--card-x) + var(--band-w) + .9rem);
+  top: 15%;
+  width: min(34vw, 27rem);
+  padding: var(--pad) var(--pad) calc(var(--pad) * .85);
+  border-radius: var(--r-2xl);
+  background: var(--panel);
+  border: 1px solid rgb(255 255 255 / 72%);
+  color: var(--ink);
+  animation-delay: 460ms;
 }
+/* 卡片里那张旧立绘：压成一块很淡的灰底纹，而且是往右下角"出血"出去的 ——
+   它不是图案，只是卡面的纸纹。brightness(0) 把它变成纯剪影，
+   否则原本的浅色在奶白底上等于不存在。 */
 .start-block__mark {
   position: absolute;
-  left: 6%;
-  bottom: -8%;
-  width: 88%;
-  height: 96%;
-  object-fit: cover;
-  object-position: 50% 18%;
-  opacity: .07;
+  right: -26%;
+  bottom: -16%;
+  width: 74%;
+  height: auto;
+  opacity: .035;
+  filter: brightness(0);
+  pointer-events: none;
 }
 
-/* 描边元素 */
+/* 描边元素。分三处落：左上与左下是深海底色，用白与草帽的暖色；
+   她左侧那块亮海水上只留一道深海色的斜条纹 —— 暖色和白色在亮处都会糊掉。 */
 .start-strokes { position: absolute; inset: 0; pointer-events: none; }
 .start-dash {
   position: absolute;
   height: 0;
-  border-top: 1px dashed rgb(255 255 255 / 72%);
-  clip-path: inset(0 100% 0 0);
+  border-top: 1px dashed currentColor;
+  /* 基准态就是终态（不写 clip-path）。起始态只活在关键帧里 ——
+     否则"减弱动效"把 animation 关掉后，它会被基准态那行永远裁成看不见。 */
   animation: start-draw 600ms cubic-bezier(.55, .055, .675, .19) both;
 }
 @keyframes start-draw {
@@ -3077,59 +3139,71 @@ html[data-curtain="life"] {
   to   { clip-path: inset(0 0 0 0); opacity: 1; }
 }
 .start-dash--1 {
-  left: 17%;
-  top: 22%;
-  width: 22%;
-  transform: rotate(-19deg);
+  left: 21%;
+  top: 11.4%;
+  width: 14%;
+  color: rgb(255 255 255 / 78%);
+  transform: rotate(-4deg);
   animation-delay: 900ms;
 }
 .start-dash--2 {
-  left: 17%;
-  top: 62%;
-  width: 26%;
-  transform: rotate(14deg);
+  left: 8%;
+  top: 63%;
+  width: 25%;
+  color: var(--mk-warm);
+  transform: rotate(8deg);
   animation-duration: 760ms;
   animation-timing-function: cubic-bezier(.215, .61, .355, 1);
   animation-delay: 1000ms;
 }
 .start-sq {
   position: absolute;
-  background: #fff;
+  background: currentColor;
   animation: start-pop 600ms var(--ease-out) both;
 }
 @keyframes start-pop {
-  from { transform: scale(0); opacity: 0; }
+  from { transform: scale(.5); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
-.start-sq--dot { left: 16.5%; top: 21%; width: 4px; height: 4px; animation-delay: 1000ms; }
+.start-sq--dot { left: 20.6%; top: 11%; width: 4px; height: 4px; color: rgb(255 255 255 / 88%); animation-delay: 1000ms; }
 .start-sq--grow {
-  left: 31.5%; top: 36%;
+  left: 35%; top: 70%;
   width: 5px;
   height: 5px;
+  color: var(--mk-warm);
   transform-origin: 50% 0;
-  animation: start-grow 700ms var(--ease-out) 1050ms both;
+  animation: start-grow-sq 700ms var(--ease-out) 1050ms both;
 }
-.start-sq--b3 { left: 17.5%; top: 62.5%; width: 8px; height: 8px; transform-origin: 50% 0; animation-delay: 1100ms; }
+@keyframes start-grow-sq {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+.start-sq--b3 { left: 34.5%; top: 60.5%; width: 8px; height: 8px; color: var(--mk-warm); transform-origin: 50% 0; animation-delay: 1100ms; }
+/* 斜条纹：原来动的是 background-size（每帧重绘并重排渐变）。
+   改成固定 4px 间距 + scaleX 从 1.9 收到 1 —— 视觉上就是"条纹收拢"，但只走合成层。 */
 .start-blinds {
   position: absolute;
-  background-image: repeating-linear-gradient(48deg, #fff 0 2px, transparent 2px 100%);
-  animation: start-blinds 1000ms var(--ease-out) 1100ms both;
+  background-image: repeating-linear-gradient(48deg, currentColor 0 2px, transparent 2px 100%);
+  background-size: 4px 4px;
+  transform-origin: 0 50%;
+  animation: start-blinds 900ms var(--ease-out) 1100ms both;
 }
 @keyframes start-blinds {
-  from { background-size: 9px 9px; opacity: 0; }
-  to   { background-size: 4px 4px; opacity: 1; }
+  from { transform: scaleX(1.9); opacity: 0; }
+  to   { transform: none; opacity: 1; }
 }
-.start-blinds--1 { left: 19%; top: 60%; width: 3.4rem; height: 8px; }
-.start-blinds--2 { left: 80%; top: 8%; width: 6rem; height: 8px; }
+.start-blinds--1 { left: 46%; top: 57%; width: 2.6rem; height: 8px; color: var(--mk-art); }
+.start-blinds--2 { left: 11%; top: 70.5%; width: 5rem; height: 8px; color: var(--mk-warm); }
 
-/* 唱片 */
+/* 唱片：压在右上角的明处，深色唱片和亮海面正好互相衬出来 */
 .start-record {
   position: absolute;
-  left: 58%;
-  top: 16%;
-  width: min(52vh, 34vw);
+  right: 3.5%;
+  top: 4%;
+  width: min(26vh, 14vw);
   aspect-ratio: 1;
   border-radius: 50%;
+  box-shadow: 0 18px 40px -14px rgb(4 18 30 / 62%);
   animation: start-record-in 500ms cubic-bezier(.075, .82, .165, 1) 1400ms both;
 }
 @keyframes start-record-in {
@@ -3141,7 +3215,7 @@ html[data-curtain="life"] {
   inset: 0;
   border-radius: 50%;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #241826 0 34%, #150d18 34% 100%);
+  background: radial-gradient(circle at 50% 50%, #16283a 0 34%, #0b1721 34% 100%);
   animation: start-spin 26s linear 1900ms infinite;
 }
 .start-record__spin img,
@@ -3174,43 +3248,11 @@ html[data-curtain="life"] {
   box-shadow: 0 0 0 3px rgb(0 0 0 / 42%);
 }
 
-/* 立绘 */
-.start-char-wrap {
-  position: absolute;
-  left: 33%;
-  bottom: 0;
-  height: min(92vh, 52rem);
-  display: flex;
-  align-items: flex-end;
-  animation: start-char-in 900ms var(--ease-out) 1200ms both;
-}
-@keyframes start-char-in {
-  from { transform: translate3d(-14%, 8%, 0); opacity: 0; }
-  to   { transform: none; opacity: 1; }
-}
-.start-char {
-  height: 100%;
-  width: auto;
-  display: block;
-  filter: drop-shadow(0 18px 40px rgb(0 0 0 / 45%));
-  transform-origin: 50% 96%;
-  animation: start-breathe 3s ease-in-out infinite;
-}
-@keyframes start-breathe {
-  0%, 100% { transform: rotate(-.6deg) translateY(0); }
-  50%      { transform: rotate(.6deg) translateY(-.35%); }
-}
-
-/* 文字层 */
-/* 文字在左、立绘在右 —— 参考站就是这么分的：大字压在竖粉板的右缘上，
-   立绘站在大粉板的中右侧并盖住唱片的左边一半。 */
+/* 文字层：整个装在奶白卡片里，所以文字是深色墨，不再是白字压深底。
+   立绘交给满屏插画本身 —— 她本来就在画面中右侧，位置和参考站的立绘一样。 */
 .start-text {
-  position: absolute;
-  left: 6%;
-  top: 36%;
-  width: min(35vw, 27rem);
+  position: relative;
   z-index: 1;
-  isolation: isolate;      /* 自成层：里面的暗底(z-index:-1)才会压在文字之后、立绘之前 */
 }
 .start-kicker {
   display: flex;
@@ -3220,14 +3262,14 @@ html[data-curtain="life"] {
   font-weight: 700;
   letter-spacing: .34em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 86%);
+  color: var(--ink-soft);
   animation: start-slide 700ms var(--ease-out) 800ms both;
 }
 .start-kicker i {
   flex: 0 0 auto;
-  width: 2.4rem;
+  width: 2.2rem;
   height: 1px;
-  background: currentColor;
+  background: var(--primary);
   transform-origin: 0 50%;
   animation: start-draw 600ms var(--ease-out) 850ms both;
 }
@@ -3237,12 +3279,11 @@ html[data-curtain="life"] {
 }
 .start-title {
   margin: .35rem 0 .5rem;
-  font-size: clamp(2.6rem, 7.4vw, 5.4rem);
-  line-height: .88;
+  font-size: clamp(2.5rem, 6.6vw, 4.6rem);
+  line-height: .9;
   font-weight: 900;
   letter-spacing: -.03em;
   text-transform: uppercase;
-  text-shadow: 0 6px 26px rgb(0 0 0 / 42%);
 }
 .start-title span {
   display: block;
@@ -3270,7 +3311,7 @@ html[data-curtain="life"] {
 }
 .start-title span:nth-child(2) {
   animation-delay: 1000ms;
-  color: #ffd9e6;
+  color: var(--primary-deep);
   font-size: .78em;
 }
 @keyframes start-title-in {
@@ -3280,25 +3321,25 @@ html[data-curtain="life"] {
 .start-info {
   font-size: .82rem;
   line-height: 1.7;
-  color: rgb(255 255 255 / 84%);
+  color: var(--ink-soft);
   animation: start-slide 700ms var(--ease-out) 1050ms both;
 }
-.start-info--2 { color: rgb(255 255 255 / 66%); animation-delay: 1120ms; }
+.start-info--2 { color: rgb(0 0 0 / 44%); animation-delay: 1120ms; }
 .start-rule {
   display: block;
   width: 100%;
   height: 1px;
-  margin: .8rem 0 .6rem;
-  background: rgb(255 255 255 / 55%);
+  margin: .75rem 0 .55rem;
+  background: rgb(0 0 0 / 13%);
   transform-origin: 0 50%;
-  clip-path: inset(0 100% 0 0);
+  /* 同上：基准态是终态，起始态只在关键帧里 */
   animation: start-draw 700ms var(--ease-out) 1180ms both;
 }
 .start-deco {
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: 2.4px;          /* 终态：2.4px（动画从 0.5px 展开） */
-  color: #fff;
+  color: var(--primary-deep);
   animation: start-deco 700ms var(--ease-out) 1250ms both;
 }
 @keyframes start-deco {
@@ -3308,30 +3349,31 @@ html[data-curtain="life"] {
 .start-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: .45rem;
-  margin-top: .8rem;
+  gap: .4rem;
+  margin-top: .75rem;
   animation: start-pop 600ms var(--ease-out) 1350ms both;
 }
+/* 胶囊直接照搬站内 .tag：同一套 --btn-bg / --primary-deep，换主题色一起换 */
 .start-tags span {
-  padding: .3rem .7rem;
-  border-radius: 999rem;
-  background: rgb(255 255 255 / 92%);
-  color: #2a1c33;
+  padding: .26rem .62rem;
+  border-radius: var(--r-full);
+  background: var(--btn-bg);
+  color: var(--primary-deep);
   font-size: .7rem;
-  font-weight: 700;
+  font-weight: 650;
 }
 .start-hand {
-  /* 挂在 .start 上而不是文字块里 —— 它是"手写批注"，位置要相对整屏（左上角空白处） */
+  /* 挂在 .start 上而不是卡片里 —— 它是"手写批注"，位置要相对整屏（左上角的暗处） */
   position: absolute;
-  left: 7.5%;
-  top: 9%;
-  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  left: calc(var(--card-x) + var(--band-w) + .55rem);
+  top: 3.5%;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
   font-weight: 700;
   letter-spacing: .08em;
   color: #fff;
   opacity: .92;
   transform: rotate(-13deg);
-  text-shadow: 0 3px 14px rgb(0 0 0 / 45%);
+  text-shadow: 0 3px 14px rgb(0 0 0 / 55%);
   animation: start-hand 700ms var(--ease-back) 1450ms both;
 }
 @keyframes start-hand {
@@ -3339,45 +3381,44 @@ html[data-curtain="life"] {
   to   { transform: rotate(-13deg) scale(1); opacity: .92; }
 }
 
-/* GUI 层 */
+/* GUI 层：装在卡片底部，和站内的按钮用的是同一组令牌 */
 .start-gui {
-  position: absolute;
-  left: 6%;
-  bottom: 11%;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: .5rem;
+  gap: .45rem;
+  margin-top: 1rem;
 }
 .start-btn {
-  padding: .62rem 1.15rem;
-  border: 1px solid rgb(255 255 255 / 42%);
-  border-radius: 999rem;
-  background: rgb(255 255 255 / 10%);
-  color: #fff;
+  padding: .58rem 1.05rem;
+  border: 1px solid rgb(0 0 0 / 8%);
+  border-radius: var(--r-full);
+  background: var(--btn-bg);
+  color: var(--primary-deep);
   font: inherit;
-  font-size: .82rem;
+  font-size: .8rem;
   font-weight: 700;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   transition: background-color var(--d-fast) ease, transform var(--d-instant) var(--ease-out), border-color var(--d-fast) ease;
   animation: start-pop 600ms var(--ease-out) both;
 }
 .start-btn:nth-child(1) { animation-delay: 1650ms; }
 .start-btn:nth-child(2) { animation-delay: 1740ms; }
 .start-btn:nth-child(3) { animation-delay: 1830ms; }
-.start-btn--primary { background: rgb(255 255 255 / 92%); color: #2a1c33; border-color: transparent; }
-.start-btn:hover { background: rgb(255 255 255 / 26%); border-color: rgb(255 255 255 / 70%); }
-.start-btn--primary:hover { background: #fff; }
+.start-btn--primary { background: var(--primary); color: var(--on-primary); border-color: transparent; }
+.start-btn:hover { background: var(--btn-bg-hover); }
+.start-btn--primary:hover { background: color-mix(in oklab, var(--primary) 86%, var(--text)); }
 .start-btn:active { transform: scale(.96); }
-.start-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.start-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 .start-foot {
   position: absolute;
   bottom: 1rem;
   font-size: .68rem;
   letter-spacing: .06em;
-  color: rgb(255 255 255 / 62%);
+  color: rgb(255 255 255 / 68%);
+  text-shadow: 0 2px 10px rgb(0 0 0 / 60%);
   animation: start-fade 800ms ease 1900ms both;
 }
 .start-foot--l { left: 1.2rem; }
@@ -3386,45 +3427,49 @@ html[data-curtain="life"] {
 /* 开场期间锁滚动 */
 body.is-startup { overflow: hidden; }
 
-/* 窄屏：改成"上立绘、下文字"的堆叠，文字块自带自下而上的暗底保证可读 */
+/* 窄屏：卡片改成贴底的整块，插画往上让，取景推到人物脸上。
+   卡片本身是奶白的，不再需要以前那层"自下而上的暗底"。 */
 @media (max-width: 900px) {
-  .start-block--tall { left: 7%; width: 2.6rem; height: 36vh; }
-  .start-block--big { left: 15%; top: 5%; width: 82vw; height: 42vh; }
-  .start-record { left: 58%; top: 3%; width: 34vw; }
-  .start-char-wrap { left: 26%; bottom: 27%; height: 46vh; }
-  .start-text {
-    left: 6%;
+  /* 窄屏只改版心令牌，竖带 / 卡片 / 手写批注的位置自动跟着走 */
+  .start { --card-x: 6%; --band-w: 2.5rem; }
+  .start-photo { object-position: 62% 36%; }
+  .start-scrim {
+    background:
+      linear-gradient(0deg,
+        rgb(11 33 48 / 94%) 0%,
+        rgb(11 33 48 / 72%) 32%,
+        rgb(11 33 48 / 20%) 56%,
+        transparent 74%),
+      linear-gradient(180deg, rgb(11 33 48 / 46%) 0%, transparent 26%);
+  }
+  .start::before { -webkit-mask-image: none; mask-image: none; }
+  .start-block--tall { height: 24vh; }
+  .start-block--big {
+    left: var(--card-x);
+    right: 6%;
     top: auto;
-    bottom: 15%;
-    width: 88vw;
+    bottom: 7%;
+    width: auto;
+    border-radius: var(--r-xl);
   }
-  .start-text::before {
-    content: '';
-    position: absolute;
-    left: -8vw;
-    right: -8vw;
-    top: -1.4rem;
-    bottom: -1.2rem;
-    z-index: -1;
-    background: linear-gradient(180deg,
-      transparent 0%,
-      rgb(10 6 24 / 82%) 24%,
-      rgb(10 6 24 / 94%) 100%);
-  }
-  .start-title { font-size: clamp(1.9rem, 11.5vw, 3rem); }
+  .start-record { right: 5%; top: 3%; width: 30vw; }
+  .start-hand { font-size: 1.35rem; }
+  .start-title { font-size: clamp(1.9rem, 10.5vw, 2.9rem); }
   .start-info, .start-info--2 { font-size: .76rem; }
-  .start-rule { margin: .6rem 0 .45rem; }
-  .start-gui { left: 6%; bottom: 6%; }
-  /* 手机上这些小装饰只会添乱：留斜条纹，其余收掉 */
-  .start-hand,
+  .start-rule { margin: .55rem 0 .4rem; }
+  /* 手机上留在亮处的那几个标注会变噪点，收掉 */
   .start-dash--1,
-  .start-dash--2,
-  .start-sq,
+  .start-sq--dot,
+  .start-sq--grow,
+  .start-blinds--1,
   .start-foot--r { display: none; }
 }
 @media (max-width: 560px) {
-  .start-blinds--1 { display: none; }
-  .start-tags span { font-size: .66rem; padding: .26rem .6rem; }
+  .start-record,
+  .start-dash--2,
+  .start-sq--b3,
+  .start-blinds--2 { display: none; }
+  .start-tags span { font-size: .66rem; padding: .24rem .55rem; }
 }
 
 /* 减弱动效：全部按终态呈现，只保留一次很短的淡出 */

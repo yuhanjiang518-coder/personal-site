@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261018k">
+<link rel="stylesheet" href="style.css?v=20261019a">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -19,19 +19,20 @@
 <body data-wallpaper="dusk">
 
 <!-- ==================== 开始界面（标题画面） ====================
-     参考 baier233/bocchi-template-1.21.5 的 Misayos 主菜单：
-     深色渐变底 + 两块"长出来"的粉板 + 斜条纹/虚线描边 + 大字位移缩放入场
-     + 立绘从画面外滑入并持续"呼吸" + 唱片圈。素材换成伊蕾娜。 -->
+     机制来自 baier233/bocchi-template-1.21.5 的 Misayos 主菜单（竖带从顶端"长"下来 +
+     虚线/方块/斜条纹依次登场 + 大字位移缩放入场 + 唱片一直转），底色换成伊蕾娜的海边插画。
+     构图：满屏插画 → 左侧深海把文字托住 → 一条青绿竖带 → 一张奶白卡片 → 唱片。
+     卡片/胶囊/按钮全部沿用站内令牌，所以开场不是另一个世界，而是同一套 UI 的封面。 -->
 <div class="start" id="startScreen" role="dialog" aria-modal="true" aria-label="开始界面">
-  <div class="start-grad" aria-hidden="true"></div>
+  <img class="start-photo" src="assets/elaina/start-photo.webp"
+       srcset="assets/elaina/start-photo-sm.webp 880w, assets/elaina/start-photo.webp 1760w"
+       sizes="100vw" alt="" width="1760" height="997" fetchpriority="high" decoding="async">
+  <div class="start-scrim" aria-hidden="true"></div>
 
-  <!-- 0. 两块粉板（高度从 0 长出来） -->
+  <!-- 0. 青绿竖带：从左版心垂下来 -->
   <div class="start-block start-block--tall" aria-hidden="true"><i></i></div>
-  <div class="start-block start-block--big" aria-hidden="true">
-    <img class="start-block__mark" src="assets/elaina/start-char.webp" alt="" width="620" height="907" aria-hidden="true">
-  </div>
 
-  <!-- 1. 描边元素：虚线 / 方块 / 斜条纹 -->
+  <!-- 1. 描边元素：虚线 / 方块 / 斜条纹。亮处用深海色，暗处用白与草帽的暖色 -->
   <div class="start-strokes" aria-hidden="true">
     <span class="start-dash start-dash--1"></span>
     <span class="start-dash start-dash--2"></span>
@@ -46,35 +47,33 @@
   <div class="start-record" aria-hidden="true">
     <span class="start-record__spin">
       <span class="start-record__grooves"></span>
-      <img src="assets/elaina/start-portrait.webp" alt="" width="720" height="720">
+      <img src="assets/elaina/start-portrait.webp?v=20261019a" alt="" width="720" height="720">
       <span class="start-record__label"></span>
     </span>
   </div>
 
-  <!-- 3. 立绘：外层负责入场位移，内层负责持续"呼吸"（避免两条动画抢 transform） -->
-  <div class="start-char-wrap" aria-hidden="true">
-    <img class="start-char" src="assets/elaina/start-char.webp" alt="" width="620" height="907">
+  <!-- 3. 奶白卡片：文字与按钮都装在里面（做法和站内的 .card 一致） -->
+  <div class="start-block start-block--big">
+    <img class="start-block__mark" src="assets/elaina/start-char.webp" alt="" width="620" height="907" aria-hidden="true">
+    <div class="start-text">
+      <p class="start-kicker"><span>MUKI</span><i></i><span>旅人手记</span></p>
+      <h1 class="start-title"><span>ELAINA</span><span>向き</span></h1>
+      <p class="start-info">灰之魔女 · 一个人旅行，边走边把见闻记下来。</p>
+      <p class="start-info start-info--2">这个站就是那份手记 —— 写代码，也写点生活。</p>
+      <span class="start-rule"></span>
+      <p class="start-deco">WANDERING&nbsp;&nbsp;WITCH</p>
+      <div class="start-tags"><span>灰之魔女</span><span>沈阳理工大学 · 网络工程</span></div>
+    </div>
+
+    <!-- 4. GUI 层 -->
+    <div class="start-gui">
+      <button class="start-btn start-btn--primary" type="button" id="startGo">开始旅途</button>
+      <button class="start-btn" type="button" data-start-go="about">关于我</button>
+      <button class="start-btn" type="button" data-start-go="contact">联系方式</button>
+    </div>
   </div>
 
-  <!-- 4. 文字层 -->
-  <div class="start-text">
-    <p class="start-kicker"><span>MUKI</span><i></i><span>旅人手记</span></p>
-    <h1 class="start-title"><span>ELAINA</span><span>向き</span></h1>
-    <p class="start-info">灰之魔女 · 一个人旅行，边走边把见闻记下来。</p>
-    <p class="start-info start-info--2">这个站就是那份手记 —— 写代码，也写点生活。</p>
-    <span class="start-rule"></span>
-    <p class="start-deco">WANDERING&nbsp;&nbsp;WITCH</p>
-    <div class="start-tags"><span>灰之魔女</span><span>沈阳理工大学 · 网络工程</span></div>
-  </div>
   <p class="start-hand" aria-hidden="true">ひとり旅</p>
-
-  <!-- 5. GUI 层 -->
-  <div class="start-gui">
-    <button class="start-btn start-btn--primary" type="button" id="startGo">开始旅途</button>
-    <button class="start-btn" type="button" data-start-go="about">关于我</button>
-    <button class="start-btn" type="button" data-start-go="contact">联系方式</button>
-  </div>
-
   <p class="start-foot start-foot--l">向き · 个人主页</p>
   <p class="start-foot start-foot--r">点击任意处开始 · Enter / Esc 跳过</p>
 </div>

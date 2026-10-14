@@ -415,16 +415,24 @@
   var io = null;
 
   function assignStagger(scope) {
-    var groups = [];
+    var byParent = new Map();
     $$(revealSel, scope || document).forEach(function (el) {
       var parent = el.parentElement;
       if (!parent) return;
-      var idx = groups.indexOf(parent);
-      if (idx < 0) { groups.push(parent); idx = groups.length - 1; }
-      /* 每个父容器各自计数 → 同组错峰 */
-      var count = parent.__rvCount || 0;
-      parent.__rvCount = count + 1;
-      el.style.setProperty('--stagger-i', String(Math.min(count, 7)));
+      if (!byParent.has(parent)) byParent.set(parent, []);
+      byParent.get(parent).push(el);
+    });
+    /* 参考站用 stagger:{from:"random"} —— 同组元素随机先后，
+       比"从上到下依次"更像自然浮现，也不容易看出是模板。 */
+    byParent.forEach(function (list) {
+      var order = list.map(function (_, i) { return i; });
+      for (var i = order.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = order[i]; order[i] = order[j]; order[j] = t;
+      }
+      list.forEach(function (el, i) {
+        el.style.setProperty('--stagger-i', String(Math.min(order[i], 9)));
+      });
     });
   }
 
@@ -448,8 +456,20 @@
         setTimeout(function () { el.classList.add('show'); }, reduceMotion ? 0 : 40);
         io.unobserve(el);
       });
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    }, {
+      /* 参考站在视口下缘留 1/6 屏提前量：元素"即将进入"时就起步，
+         滚到位时刚好落定，避免"滚到了才开始动"的迟滞。 */
+      rootMargin: '0px 0px -' + Math.round(window.innerHeight / 6) + 'px 0px',
+      threshold: 0.08
+    });
   }
+
+  /* 区块编号：01 / 02 … 按视图内顺序写入 */
+  $$('.view').forEach(function (v) {
+    $$('.sec-idx[data-idx]', v).forEach(function (el, i) {
+      el.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+    });
+  });
 
   assignStagger();
   armReveal();

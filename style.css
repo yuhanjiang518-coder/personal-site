@@ -497,6 +497,38 @@ body.nav-hidden .topbar { transform: translateY(-102%); }
 .wall-item:hover .wall-name,
 .wall-item[aria-pressed="true"] .wall-name { opacity: 1; }
 
+/* --- 单张壁纸展示卡 --- */
+.wall-single {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: .55rem;
+  border-radius: var(--r-lg);
+  background: var(--btn-bg);
+  border: 1px solid var(--card-border);
+}
+.wall-single img {
+  flex: 0 0 auto;
+  width: 5.6rem;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
+}
+.wall-single-meta { min-width: 0; }
+.wall-single-t {
+  font-size: .82rem;
+  font-weight: 700;
+  margin: 0 0 .1rem;
+  line-height: 1.4;
+}
+.wall-single-d {
+  font-size: .7rem;
+  color: var(--text-faint);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* --- 滑杆 --- */
 .slider-row { display: flex; align-items: center; gap: var(--s-3); }
 input[type="range"] {

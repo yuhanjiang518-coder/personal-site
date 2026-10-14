@@ -2055,8 +2055,38 @@ body[data-wall-mode="none"] .hero {
 }
 /* 被筛掉 */
 .tw-chip[hidden] { display: none; }
-/* 正在下落时抬起来的阴影，落地后收回 */
-.tw-chip.is-falling { box-shadow: var(--shadow-lg); }
+/* 正在下落时抬起来的阴影，落地后收回。
+   拖影用 box-shadow 画：它画在自身背景之后，不会盖住标签文字，
+   方向和强度由物理循环逐帧写进 --tw-dx/--tw-dy/--tw-sp；静止时 --tw-sp=0 自然消失。
+   顺便把「下落 → 落地」的量化值一起平滑过渡，免得速度变量跳变时闪一下。*/
+.tw-chip.is-falling {
+  /* 只读三个"算好的像素值"变量，CSS 里不做任何乘法 ——
+     `calc(var(--a) * var(--b) * 24px)` 这种写法在 box-shadow 里会被判为
+     无效值（整条声明作废，计算值变成 none），踩过一次，记在这里。 */
+  box-shadow:
+    var(--tw-sx, 0px) var(--tw-sy, 0px) var(--tw-blur, 0px)
+      color-mix(in oklab, var(--primary) 55%, transparent),
+    var(--shadow-lg);
+}
+/* aw 皮肤是「无阴影 + 全直角」的平面语言（aw.css 里有
+   `html[data-skin="aw"] .tw-chip { box-shadow: none }`，比上面那条高一级，
+   会把模糊光晕整条压掉）。所以这里改成【套印偏移】的硬边色块：
+   没有模糊、没有圆角光晕，一板一眼地印在运动反方向 —— 既合皮肤，也省掉每帧模糊重绘。
+   偏移量用 JS 另算的 --tw-hx/--tw-hy（比软阴影小一半左右）。 */
+html[data-skin="aw"] .tw-chip.is-falling {
+  box-shadow:
+    var(--tw-hx, 0px) var(--tw-hy, 0px) 0 0
+      color-mix(in oklab, var(--primary) 58%, transparent);
+}
+/* 手机上关掉拖影：每帧重绘阴影在低端机上不划算 */
+@media (max-width: 640px) {
+  .tw-chip.is-falling { box-shadow: var(--shadow-lg); }
+  html[data-skin="aw"] .tw-chip.is-falling { box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-chip.is-falling { box-shadow: var(--shadow-lg); }
+  html[data-skin="aw"] .tw-chip.is-falling { box-shadow: none; }
+}
 
 .tw-bar {
   display: flex;

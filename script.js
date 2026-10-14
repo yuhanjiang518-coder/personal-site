@@ -1456,6 +1456,28 @@
         var b = bodies[i];
         if (!b.active) continue;
         b.el.style.transform = 'translate(' + b.x.toFixed(2) + 'px,' + b.y.toFixed(2) + 'px)';
+
+        /* 拖影：把"往哪掉、掉多快"直接算成像素值交给 CSS（CSS 里不做乘法，
+           那样 box-shadow 会被判无效值）。静止时三个值归零 → 阴影正好压在
+           自身下方被元素挡住，等于看不见。 */
+        var sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        if (sp > 0.7) {
+          var k = Math.min(1, sp / 14);
+          var nx = -b.vx / sp, ny = -b.vy / sp;
+          /* 软阴影（非 aw 皮肤）用大偏移 + 模糊 */
+          b.el.style.setProperty('--tw-sx', (nx * k * 26).toFixed(1) + 'px');
+          b.el.style.setProperty('--tw-sy', (ny * k * 30).toFixed(1) + 'px');
+          b.el.style.setProperty('--tw-blur', (2 + k * 14).toFixed(1) + 'px');
+          /* aw 皮肤要的是硬边"套印偏移"，偏移量小一半 */
+          b.el.style.setProperty('--tw-hx', (nx * k * 13).toFixed(1) + 'px');
+          b.el.style.setProperty('--tw-hy', (ny * k * 15).toFixed(1) + 'px');
+        } else if (b.el.style.getPropertyValue('--tw-hy') !== '0px') {
+          b.el.style.setProperty('--tw-sx', '0px');
+          b.el.style.setProperty('--tw-sy', '0px');
+          b.el.style.setProperty('--tw-blur', '0px');
+          b.el.style.setProperty('--tw-hx', '0px');
+          b.el.style.setProperty('--tw-hy', '0px');
+        }
       }
     }
 

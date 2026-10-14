@@ -350,17 +350,22 @@
   var curtain = $('#curtain'), figure = $('#jump-figure');
   var sweeping = false;
 
+  /* 转场编排（与 CSS 关键帧对齐，改任一处记得同步另一处）：
+      幕布 3 层从上方落下，45% 时盖满 → 此时换内容；
+      角色沿底边横向滑过，48%~66% 停在中央（正好覆盖幕布盖满那段）；
+      幕布最后 100% + 140ms 延迟 = 960ms 收完，角色也是 960ms。
+     所以「换内容」放在 420ms，「收尾」放在 1000ms。 */
   function sweep(done) {
     if (reduceMotion || sweeping) { done(); return; }
     sweeping = true;
     curtain.classList.add('is-sweeping');
-    if (figure) { figure.hidden = false; figure.classList.add('is-jumping'); }
-    setTimeout(done, 380);                 /* 幕布盖满的瞬间换内容 */
+    if (figure) { figure.hidden = false; figure.classList.add('is-sliding'); }
+    setTimeout(done, 420);                 /* 幕布盖满、角色停在中央时换内容 */
     setTimeout(function () {
       curtain.classList.remove('is-sweeping');
-      if (figure) { figure.classList.remove('is-jumping'); figure.hidden = true; }
+      if (figure) { figure.classList.remove('is-sliding'); figure.hidden = true; }
       sweeping = false;
-    }, 900);
+    }, 1000);
   }
 
   function navH() {
@@ -1420,7 +1425,8 @@
 
     if (!reduceMotion) {
       curtain.classList.add('is-sweeping');
-      setTimeout(function () { curtain.classList.remove('is-sweeping'); }, 900);
+      /* 幕布最后一层 820ms + 140ms 延迟 = 960ms，留一点余量再撤 */
+      setTimeout(function () { curtain.classList.remove('is-sweeping'); }, 1060);
     }
     setTimeout(function () {
       if (loaderEl) loaderEl.classList.add('is-gone');

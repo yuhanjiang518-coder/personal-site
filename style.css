@@ -3076,6 +3076,99 @@ html[data-curtain="life"] {
   animation-delay: 640ms;
 }
 
+/* --- 与粉板拼接的大色块 ---------------------------------------------------
+   立体感来自三件事，而不是加阴影（参考站的色块本来就是平的）：
+     1. 错位：背板整体往左上偏 14px，粉板立刻有"厚度"；
+     2. 色调分层：暗酒红 / 紫场 / 亮粉 / 粉，四层各不相同；
+     3. 硬边界：块与块之间不留缝隙也不留投影，只靠色差分界。
+   紫场故意做成很大一块并被立绘、唱片压掉大半 —— 参考站那块大粉板也是这个用法。 */
+.start-slab {
+  position: absolute;
+  z-index: 2;
+  border-radius: var(--r-sm);
+  animation: start-slab-in 820ms var(--ease-out) both;
+}
+@keyframes start-slab-in {
+  from { clip-path: inset(0 0 100% 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+/* 背板：和粉板同尺寸，往左上错开，于是露出左上两条深色边 */
+.start-slab--back {
+  left: calc(2% - 14px);
+  top: calc(29% - 14px);
+  width: min(44vw, 33rem);
+  height: min(64vh, 36rem);
+  background: #45102e;
+  animation-delay: 280ms;
+}
+/* 右上紫场：够大才有参考站那种"色场"感，但要离右边缘留出深色底，
+   否则整块紫板顶到边，构图就没有框了。 */
+.start-slab--violet {
+  left: 40%;
+  top: 14%;
+  width: 54%;
+  height: 42%;
+  background: linear-gradient(160deg, #7d4fc0 0%, #452877 100%);
+  transform: rotate(-1deg);
+  animation-delay: 340ms;
+}
+/* 右下亮粉台阶：把整组色块的轮廓收成阶梯状 */
+.start-slab--hot {
+  left: 1%;
+  top: 86%;
+  width: 34%;
+  height: 13%;
+  background: linear-gradient(180deg, #ff5fa2 0%, #d93c86 100%);
+  animation-delay: 400ms;
+}
+
+/* --- 细长的白色色块 -------------------------------------------------------
+   参考站里那些白横规 / 白竖条是同一种语言：它们是版面的分隔线，不是装饰花边。
+   所以统一 3px 粗、和相邻的色块等长，两端用渐变淡出（真线不会突然断在地上）。 */
+.start-edge {
+  position: absolute;
+  left: 0.7%;
+  top: 6%;
+  width: 3px;
+  height: 88%;
+  z-index: 7;
+  background: linear-gradient(180deg,
+    rgb(255 255 255 / 8%) 0%,
+    rgb(255 255 255 / 76%) 24%,
+    rgb(255 255 255 / 76%) 76%,
+    rgb(255 255 255 / 8%) 100%);
+  animation: start-fade 900ms var(--ease-out) 700ms both;
+}
+/* 压在粉板上沿的白横规：比色块更宽，横穿过去被立绘的帽子截断 */
+.start-rulebar {
+  position: absolute;
+  left: 2%;
+  top: 27.4%;
+  width: 56%;
+  height: 3px;
+  z-index: 3;
+  background: rgb(255 255 255 / 88%);
+  transform-origin: 0 50%;
+  animation: start-draw 700ms var(--ease-out) 620ms both;
+}
+/* 白底标签条：参考站那条 "SOCIAL PHOBIA" 的同款位置与做法（白底 + 深色小字 + 宽字距） */
+.start-chip {
+  position: absolute;
+  left: 73%;
+  top: 52.5%;
+  z-index: 4;
+  margin: 0;
+  padding: .36rem .85rem;
+  border-radius: var(--r-full);
+  background: rgb(255 255 255 / 96%);
+  color: #a32b63;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  white-space: nowrap;
+  animation: start-slide 700ms var(--ease-out) 1150ms both;
+}
+
 /* 唱片：压在右侧明处。深色盘面和亮背景正好互相衬出来。 */
 .start-record {
   position: absolute;
@@ -3422,6 +3515,41 @@ html[data-curtain="life"] {
 }
 .start-blinds--1 { left: 3%; top: 2.5%; width: 2.6rem; height: 8px; color: rgb(255 255 255 / 80%); }
 .start-blinds--2 { left: 88%; top: 3.5%; width: 2.6rem; height: 8px; color: rgb(255 255 255 / 80%); }
+/* 补充的标注：都落在真正空着的地方 —— 左沟一条竖虚线、帽子上方一条横虚线、
+   亮粉台阶上一条横虚线，外加三个散点方块。 */
+.start-dash--3 {
+  left: 1.75%;
+  top: 29%;
+  width: 0;
+  height: 57%;
+  border-top: 0;
+  border-left: 1px dashed currentColor;
+  color: rgb(255 255 255 / 58%);
+  animation: start-draw-v 700ms var(--ease-out) 980ms both;
+}
+@keyframes start-draw-v {
+  from { clip-path: inset(0 0 100% 0); opacity: 0; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+.start-dash--4 {
+  left: 47%;
+  top: 3%;
+  width: 12%;
+  color: rgb(255 255 255 / 66%);
+  transform: rotate(-5deg);
+  animation-delay: 1060ms;
+}
+.start-dash--5 {
+  left: 3.5%;
+  top: 96.6%;
+  width: 26%;
+  color: rgb(255 255 255 / 82%);
+  transform: rotate(1.5deg);
+  animation-delay: 1140ms;
+}
+.start-sq--d1 { left: 74.5%; top: 8%; width: 5px; height: 5px; color: rgb(255 255 255 / 78%); animation-delay: 1180ms; }
+.start-sq--d2 { left: 3%; top: 25%; width: 4px; height: 4px; color: rgb(255 255 255 / 78%); animation-delay: 1240ms; }
+.start-sq--d3 { left: 79%; top: 60%; width: 6px; height: 6px; color: rgb(255 255 255 / 78%); animation-delay: 1300ms; }
 
 .start-foot {
   position: absolute;
@@ -3448,6 +3576,20 @@ body.is-startup { overflow: hidden; }
   }
   .start-photo { object-position: 62% 38%; }
   .start-strokes, .start-hand { z-index: 5; }
+  /* 手机上版面是"上照片 + 下粉板"，大色块重排：紫场缩到照片块后面，
+     亮粉台阶和横规没有对应的位置就收掉，白标签条挪到粉板上方。 */
+  .start-slab--violet { left: 24%; top: 5%; width: 68%; height: 32%; }
+  /* 亮粉台阶和错位背板都是围着桌面那套版式设计的：手机上板块高度由内容决定，
+     对不上就会变成两条贴边的色带，干脆收掉。 */
+  .start-slab--hot,
+  .start-slab--back { display: none; }
+  .start-rulebar { display: none; }
+  /* 白色标签条上移：50% 正好压在她额头上，挪到照片块下沿和帽子之间那道空里 */
+  .start-chip { left: 6%; top: 38%; font-size: .58rem; padding: .3rem .7rem; }
+  .start-dash--3,
+  .start-dash--5,
+  .start-sq--d1,
+  .start-sq--d3 { display: none; }
   .start-panel--a { left: 8%; top: 2%; width: 56%; }
   .start-panel--b { display: none; }
   .start-record { right: 4%; top: 3%; width: 32vw; }

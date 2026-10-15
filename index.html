@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261019c">
+<link rel="stylesheet" href="style.css?v=20261019e">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -33,7 +33,20 @@
        sizes="100vw" alt="" width="1500" height="850" fetchpriority="high" decoding="async">
   <div class="start-scrim" aria-hidden="true"></div>
 
-  <!-- 0. 两块照片块（海边插画的两个取景，斜着切进版面） -->
+  <!-- 0. 与粉板拼在一起的三块大色块。
+       立体感来自"错位 + 每块色调不同 + 边界是硬的"，不是靠加阴影（参考站的色块本来就是平的）。
+       放在照片块之前，所以照片块会盖在它们上面。 -->
+  <div class="start-slab start-slab--back" aria-hidden="true"></div>
+  <div class="start-slab start-slab--violet" aria-hidden="true"></div>
+  <div class="start-slab start-slab--hot" aria-hidden="true"></div>
+
+  <!-- 0b. 细长的白色色块：参考站里那些白横规 / 白竖条是同一种语言 ——
+       它们是版面的分隔线，不是装饰花边，所以只有 3px 粗。 -->
+  <div class="start-edge" aria-hidden="true"></div>
+  <div class="start-rulebar" aria-hidden="true"></div>
+  <p class="start-chip" aria-hidden="true">ひとり旅 · SOLO JOURNEY</p>
+
+  <!-- 1. 两块照片块（海边插画的两个取景，斜着切进版面） -->
   <figure class="start-panel start-panel--a" aria-hidden="true">
     <img src="assets/elaina/start-panel-a.webp" alt="" width="900" height="776" fetchpriority="high" decoding="async">
   </figure>
@@ -41,7 +54,7 @@
     <img src="assets/elaina/start-panel-b.webp" alt="" width="700" height="494" loading="lazy" decoding="async">
   </figure>
 
-  <!-- 1. 唱片：圆心里是另一张立绘 -->
+  <!-- 2. 唱片：圆心里是另一张立绘 -->
   <div class="start-record" aria-hidden="true">
     <span class="start-record__spin">
       <span class="start-record__grooves"></span>
@@ -80,9 +93,15 @@
   <div class="start-strokes" aria-hidden="true">
     <span class="start-dash start-dash--1"></span>
     <span class="start-dash start-dash--2"></span>
+    <span class="start-dash start-dash--3"></span>
+    <span class="start-dash start-dash--4"></span>
+    <span class="start-dash start-dash--5"></span>
     <span class="start-sq start-sq--dot"></span>
     <span class="start-sq start-sq--grow"></span>
     <span class="start-sq start-sq--b3"></span>
+    <span class="start-sq start-sq--d1"></span>
+    <span class="start-sq start-sq--d2"></span>
+    <span class="start-sq start-sq--d3"></span>
     <span class="start-blinds start-blinds--1"></span>
     <span class="start-blinds start-blinds--2"></span>
   </div>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 单页站点：所有板块都在同一个 URL 里通过视图切换，所以只有一条记录。
+     改版后把 <lastmod> 跟着更新一下即可（跟 index.html 的日期保持一致）。 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://yuhanjiang518-coder.github.io/personal-site/</loc>
+    <lastmod>2026-10-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -12,6 +12,9 @@
  *   · 去掉了 React，改成读 DOM 里的图库条目（#artStrip [data-full]），
  *     这样加一张画廊图不用再同步一份数据。
  *   · 遮挡层不透明度抽成 --dw-overlay-o，方便按站点暗底调。
+ *   · **加了"手记页"这一层**：每块瓦片带页码，被压住的那一页翻出题名
+ *     （题名取自画廊的 data-cap）。原版是一面纯图形墙，这里是"一叠有次序、
+ *     有出处的页"—— 这也是这面墙在这站上自己的说法，而不是原版的样子。
  */
 (function () {
   'use strict';
@@ -43,6 +46,13 @@
   function columnFactor(index, variance) {
     var pseudo = ((index * 0.6180339887 + 0.35) % 1) * 2 - 1;
     return 1 + variance * pseudo;
+  }
+
+  /* 画廊的题名统一带一个"· 同人插画"的后缀 —— 那是画廊语境里的出处标注，
+     到了手记页上就成了噪音（每页都写一遍等于没写）。这里只去掉这一节，
+     题名本身一个字都不改。 */
+  function shortCap(cap) {
+    return String(cap || '').replace(/\s*·\s*同人插画\s*$/, '');
   }
 
   function num(el, name, dflt) {
@@ -140,19 +150,36 @@
             var inner = document.createElement('span');
             inner.className = 'drift-wall__inner';
             var img = document.createElement('img');
-            img.src = item.src;
-            img.alt = copy === 0 ? (item.alt || '') : '';
-            /* 这里刻意不用 lazy：墙是"点开才搭"的，搭的时候它已经在视口里、
-               用户就是来看图的 —— 这时候还懒加载等于把解码推到滚动/帧回调上，
-               在帧被节流的情况下会看到一片没画出来的空块。画廊那边仍然是 lazy。 */
+            /* 属性必须在 src 之前设！Chromium 是在 src 被赋值那一刻读 loading 的，
+               先写 src 再改 loading，那次加载已经按默认的 lazy 发出去了 ——
+               墙是"点开才搭"的，搭的时候它就在视口里，本该 eager，
+               结果整批图被压在"等滚动"的队里，一片空白。
+               这个顺序问题是上一版真实存在的 bug，不是无头环境的问题。 */
             img.loading = 'eager';
             img.decoding = 'async';
             img.draggable = false;
+            img.src = item.src;
+            img.alt = copy === 0 ? (item.alt || '') : '';
             var ov = document.createElement('span');
             ov.className = 'drift-wall__overlay';
             ov.setAttribute('aria-hidden', 'true');
+            /* ---- 这一层是移植时自己加的：把"一面循环漂移的画墙"读成"一叠手记页" ----
+               原版的瓦片只有图。这里的每一页都带页码，压上去的那一页再把题名翻出来。
+               页码用的是条目在画廊里的序号（不是这一份拷贝的序号），
+               所以同一页循环回来时，编号还对得上 —— 这正是"手记"该有的性质：
+               它是有次序、有出处的，不是一堆随机漂过去的图。 */
+            var no = document.createElement('span');
+            no.className = 'drift-wall__no';
+            no.setAttribute('aria-hidden', 'true');
+            no.textContent = ('0' + (item.index + 1)).slice(-2);
+            var cap = document.createElement('span');
+            cap.className = 'drift-wall__cap';
+            cap.setAttribute('aria-hidden', 'true');
+            cap.textContent = shortCap(item.cap);
             inner.appendChild(img);
             inner.appendChild(ov);
+            inner.appendChild(no);
+            inner.appendChild(cap);
             tile.appendChild(inner);
             tile.addEventListener('focus', function () { activate(id, c); });
             tile.addEventListener('blur', function () { if (!wallHovered) release(); });
@@ -325,7 +352,8 @@
         src: src,
         full: el.getAttribute('data-full') || src,
         cap: el.getAttribute('data-cap') || '',
-        alt: img ? img.getAttribute('alt') || '' : ''
+        alt: img ? img.getAttribute('alt') || '' : '',
+        index: out.length      // 画廊里的次序 = 手记的页码，从 0 起
       });
     }
     return out;

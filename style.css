@@ -3646,6 +3646,30 @@ html[data-curtain="life"] {
 /* 开场期间锁滚动 */
 body.is-startup { overflow: hidden; }
 
+/* --- 视觉重心校正（只调轻重，不删元素） -------------------------------------
+   反馈是"元素密度过高、缺少主角"。十六个描边元素、两块照片、唱片、五块色块
+   全都不动 —— 换一个分配重量的依据：按"离立绘的距离"排前后。
+     · 右半场（她的位置）的两个竞争者：照片块与唱片，各降一档亮度；
+     · 描边元素本来压在 z8、盖在她身上，整体降到七成不透明度；
+     · 她的投影加重、个子再高一点，于是画面里最亮、最实、最大的那个是她。
+   放在 max-width:900px 那条窄屏规则之前，窄屏那套重排仍然完全生效。 */
+.start-panel--a { filter: brightness(.82) saturate(.9); }
+.start-panel--b { filter: brightness(.86) saturate(.92); }
+.start-record { width: min(40vh, 25vw); }
+.start-record img { filter: brightness(.94); }
+.start-strokes { opacity: .7; }
+/* 让她再往上长一点：底边本来就出血，长高的部分全落在画面上半部，
+   而那里正是照片块和唱片在抢的地方。窄屏那条 58vh 写在后面，仍然生效。 */
+.start { --tachie-h: min(95vh, 58rem); }
+.start-tachie { filter: drop-shadow(0 26px 54px rgb(0 0 0 / 56%)); }
+/* 一句要记住的话：把第二句从"补充说明"提到"口号"的重墨色，
+   和第一句拉开层级 —— 两句一样灰的时候，就变成两句都不记得。 */
+.start-info--2 { color: rgb(255 255 255 / 88%); font-weight: 600; }
+/* 立绘长高之后，右中侧那两枚白胶囊被她的头发多吃掉一个字。
+   胶囊本来就是从她身后探出来的（这是版式，不是遮挡），往右让 2.5% 让文字回到看得全的位置。 */
+.start-chip { left: 75.5%; }
+.start-chip--b { left: 79.5%; }
+
 /* 窄屏：立绘退到色块后面，只露出头和肩 —— 像从卡片背后探出来。
    照片块只留上面那块，唱片缩小。 */
 @media (max-width: 900px) {
@@ -3928,6 +3952,48 @@ html.has-drift-wall .wall-open { display: inline-flex; }
 .drift-wall__tile:focus-visible img { filter: grayscale(0) saturate(1.06); }
 .drift-wall__tile.is-active .drift-wall__overlay,
 .drift-wall__tile:focus-visible .drift-wall__overlay { opacity: 0; }
+
+/* ---------- 手记页：页码 + 题名 ----------
+   这是这面墙在本站唯一"原版没有"的一层，也是它从"一面画墙"变成"一叠手记"的地方。
+   页码常显（小、靠角、压暗），题名只在被指针/焦点压住时翻出来 ——
+   墙的秩序一直看得见，内容却不喧哗；这正好和画廊那种"全部摊开并列"互补。 */
+.drift-wall__no {
+  position: absolute;
+  left: .5rem;
+  top: .5rem;
+  z-index: 2;
+  min-width: 1.5rem;
+  padding: .1rem .28rem;
+  font: 700 .62rem/1.5 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .08em;
+  text-align: center;
+  color: rgb(255 236 245 / 92%);
+  background: rgb(9 16 28 / 58%);
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: .375rem;
+  pointer-events: none;
+}
+.drift-wall__cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 1.7rem .6rem .5rem;
+  font: 600 .68rem/1.4 var(--font-sans);
+  letter-spacing: .02em;
+  color: #fff;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 70%);
+  background: linear-gradient(to top, rgb(4 9 17 / 92%) 0%, rgb(4 9 17 / 0%) 100%);
+  opacity: 0;
+  transform: translateY(.45rem);
+  transition: opacity .42s cubic-bezier(.22, 1, .36, 1), transform .42s cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+}
+.drift-wall__tile.is-active .drift-wall__cap,
+.drift-wall__tile:focus-visible .drift-wall__cap { opacity: 1; transform: none; }
+
 .drift-wall__tile:focus-visible .drift-wall__inner {
   box-shadow:
     0 24px 60px -18px rgb(0 0 0 / 75%),

@@ -1,0 +1,90 @@
+本站由多种来源的东西拼成，所以授权也分三层：自己的代码、移植件、插画。
+逐层写清楚，比笼统写一句 "MIT" 更有用 —— 至少别人拿图之前知道该去问谁。
+
+======================================================================
+一、本站自己的代码 —— MIT
+======================================================================
+
+适用：index.html / style.css / script.js / aw.css / aw.js / 404.html /
+      js/liquid-glass/ 以及 assets/ 下本站自绘的图形与图标。
+
+Copyright (c) 2026 向き (MUKI) <https://github.com/yuhanjiang518-coder>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+======================================================================
+二、三个动画模块 —— reactbits 原作的许可，原样带过来
+======================================================================
+
+适用：pattern-waves.js（页脚波场）、tech-text.js（板块标题）、
+      drift-wall.js（伊蕾娜插画漂移墙）。
+
+这三个文件是从 reactbits.dev 对应的 React 组件改写成的零依赖原生 JS：
+算法、参数与观感对齐原作，运行方式换成不依赖框架的 Canvas / DOM。
+按原作的许可，把它们作为网站的一部分使用是被明确允许的（那一条限制的是
+"把组件本身再卖一遍 / 再发一遍"，包括移植版）—— 本站正是"作为网站的一部分"，
+但本站自身的代码因此也不得被重新打包成组件库分发。
+
+原许可全文：
+
+  MIT + Commons Clause License Condition v1.0
+
+  Copyright (c) 2026 David Haz
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, and distribute the Software
+  **as part of an application, website, or product**, subject to the following
+  conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  ## Commons Clause Restriction
+
+  You may use this Software, including for any commercial purpose, **so long as
+  you do not sell, sublicense, or redistribute the components themselves-whether
+  alone, in a bundle, or as a ported version.**
+
+  ## No Warranty
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+来源：https://github.com/DavidHDev/react-bits
+
+
+======================================================================
+三、伊蕾娜插画 —— 不在上述授权范围内
+======================================================================
+
+assets/elaina/ 下的插画、assets/ 下的角色主题图，以及由它们加工出来的
+抠图 / 裁切 / 预览图（含 assets/og-cover.png），都是《魔女之旅》的同人作品，
+版权属于各自的画师。它们来自 elaina1017.com 的公开画廊，本站只作个人、
+非商业的展示与出处标注使用。
+
+上面第一、二条的授权都不覆盖这些图。要使用请回到原作者处取得许可。
+如果任何一位作者不希望自己的作品出现在这里，告知后我会立刻撤下。

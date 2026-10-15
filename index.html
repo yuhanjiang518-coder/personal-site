@@ -4,12 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="向き的个人主页：沈阳理工大学网络工程、开发技能、项目收藏，以及动漫与游戏口味。">
+<meta name="description" content="向き（MUKI）的个人主页 —— 沈阳理工大学网络工程在读，记录学习路线、技能、项目与收藏。旅人手记主题，纯静态手写，写代码，也写点生活。">
+<meta name="author" content="向き / MUKI">
 <meta name="theme-color" content="#fdfaf4">
+<link rel="canonical" href="https://yuhanjiang518-coder.github.io/personal-site/">
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261020y">
+
+<!-- ==================== 分享卡片 ====================
+     个人主页最主要的传播路径是被人贴进微信 / QQ / 群里，
+     没有这组标签就是一条光秃秃的链接。图是 1200x630，站点自己的素材重排的，
+     不是截屏（截屏在 1.91:1 下会把按钮切掉）。改图跑 dev/gen-og.py。 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="向き · 旅人手记">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:url" content="https://yuhanjiang518-coder.github.io/personal-site/">
+<meta property="og:title" content="向き · 写代码，也写点生活">
+<meta property="og:description" content="沈阳理工大学网络工程在读。学习路线、技能墙、项目与收藏，以及一些动画与游戏的口味。旅人手记主题，纯静态手写。">
+<meta property="og:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="粉色板上写着 ELAINA 与“向き”，右侧是灰之魔女伊蕾娜的立绘">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="向き · 写代码，也写点生活">
+<meta name="twitter:description" content="沈阳理工大学网络工程在读。学习路线、技能墙、项目与收藏，以及一些动画与游戏的口味。">
+<meta name="twitter:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png">
+<meta name="twitter:image:alt" content="粉色板上写着 ELAINA 与“向き”，右侧是灰之魔女伊蕾娜的立绘">
+
+<!-- 结构化数据：让搜索引擎能直接把"这个人是谁、在哪、会什么"读出来 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "向き",
+  "alternateName": "MUKI",
+  "url": "https://yuhanjiang518-coder.github.io/personal-site/",
+  "image": "https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png",
+  "description": "沈阳理工大学网络工程在读，记录学习路线、技能、项目与收藏。",
+  "affiliation": { "@type": "CollegeOrUniversity", "name": "沈阳理工大学" },
+  "knowsAbout": ["网络工程", "网络安全", "HTML", "CSS", "JavaScript", "Python", "C / C++"],
+  "sameAs": ["https://github.com/yuhanjiang518-coder"]
+}
+</script>
+<link rel="stylesheet" href="style.css?v=20261021a">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -905,7 +944,7 @@
       <h3 style="font-size:.9rem;margin:0">同人画廊</h3>
       <button class="wall-open" type="button" data-wall-open aria-haspopup="dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="2"/><rect x="14" y="5" width="7" height="14" rx="2"/></svg>
-        漂移墙
+        旅人手记墙
       </button>
     </div>
     <div class="art-strip reveal" id="artStrip" role="group" aria-label="伊蕾娜同人插画">
@@ -1094,13 +1133,16 @@
 <div id="toast" role="status" aria-live="polite"></div>
 
 <!-- 插画灯箱 -->
-<!-- 插画漂移墙：reactbits DriftWall 的原生移植。单独一块全屏浮层，
-     因为墙是"暗场 + 满屏 + 3D 平面"，塞进浅色玻璃卡片里会两边都不像。 -->
+<!-- 旅人手记墙：reactbits DriftWall 的原生移植。单独一块全屏浮层，
+     因为墙是"暗场 + 满屏 + 3D 平面"，塞进浅色玻璃卡片里会两边都不像。
+     移植之外自己加了一层"手记页"：每页带页码，被压住的那一页翻出题名 ——
+     题名用的是画廊里已经写好的 data-cap，所以这面墙是有次序、有出处的，
+     和画廊那种"全部摊开并列"正好互补。 -->
 <div class="wall-veil" id="wallVeil" data-wall-veil role="dialog" aria-modal="true"
-     aria-label="伊蕾娜插画漂移墙" aria-hidden="true">
+     aria-label="伊蕾娜 · 旅人手记墙" aria-hidden="true">
   <div class="wall-veil__head">
-    <p class="wall-veil__title">伊蕾娜 · 漂移墙</p>
-    <p class="wall-veil__sub">指针压住哪一张，哪一张就亮起来 · 点开看大图 · Esc 退出</p>
+    <p class="wall-veil__title">伊蕾娜 · 旅人手记墙</p>
+    <p class="wall-veil__sub">二十四页手记在暗场里循环漂移 · 压住哪一页，哪一页就翻出题名 · 点开看大图 · Esc 退出</p>
   </div>
   <div class="wall-veil__field" data-drift-wall
        data-dw-columns="6" data-dw-speed="42" data-dw-dim="0.7" data-dw-lift="70"
@@ -1120,7 +1162,7 @@
 <script src="aw.js?v=20261018j" defer></script>
 <script src="pattern-waves.js?v=20261020u" defer></script>
 <script src="tech-text.js?v=20261020u" defer></script>
-<script src="drift-wall.js?v=20261020z" defer></script>
+<script src="drift-wall.js?v=20261021a" defer></script>
 <!-- 液态玻璃顶栏（组件来自 elaina1017.com 的 web-liquid-glass，已就近搬入 js/liquid-glass/） -->
 <script type="module" src="js/liquid-glass-boot.js?v=20261018k"></script>
 </body>

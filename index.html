@@ -24,15 +24,15 @@
 <meta property="og:url" content="https://yuhanjiang518-coder.github.io/personal-site/">
 <meta property="og:title" content="向き · 写代码，也写点生活">
 <meta property="og:description" content="沈阳理工大学网络工程在读。学习路线、技能墙、项目与收藏，以及一些动画与游戏的口味。旅人手记主题，纯静态手写。">
-<meta property="og:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png">
-<meta property="og:image:type" content="image/png">
+<meta property="og:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="粉色板上写着 ELAINA 与“向き”，右侧是灰之魔女伊蕾娜的立绘">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="向き · 写代码，也写点生活">
 <meta name="twitter:description" content="沈阳理工大学网络工程在读。学习路线、技能墙、项目与收藏，以及一些动画与游戏的口味。">
-<meta name="twitter:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png">
+<meta name="twitter:image" content="https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.jpg">
 <meta name="twitter:image:alt" content="粉色板上写着 ELAINA 与“向き”，右侧是灰之魔女伊蕾娜的立绘">
 
 <!-- 结构化数据：让搜索引擎能直接把"这个人是谁、在哪、会什么"读出来 -->
@@ -43,7 +43,7 @@
   "name": "向き",
   "alternateName": "MUKI",
   "url": "https://yuhanjiang518-coder.github.io/personal-site/",
-  "image": "https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.png",
+  "image": "https://yuhanjiang518-coder.github.io/personal-site/assets/og-cover.jpg",
   "description": "沈阳理工大学网络工程在读，记录学习路线、技能、项目与收藏。",
   "affiliation": { "@type": "CollegeOrUniversity", "name": "沈阳理工大学" },
   "knowsAbout": ["网络工程", "网络安全", "HTML", "CSS", "JavaScript", "Python", "C / C++"],
@@ -611,7 +611,7 @@
 
       <div class="art-split art-split--flip">
         <figure class="art">
-          <img src="assets/elaina/skills.webp" alt="伊蕾娜 · 读书" width="678" height="1200" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/skills.webp" alt="伊蕾娜 · 读书" width="678" height="1200" loading="lazy" decoding="async">
           <figcaption>旅途中的书页</figcaption>
         </figure>
         <div>
@@ -653,7 +653,7 @@
 
       <div class="art-split">
         <figure class="art">
-          <img src="assets/elaina/roadmap.webp" alt="伊蕾娜 · 暮色" width="760" height="1081" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/roadmap.webp" alt="伊蕾娜 · 暮色" width="760" height="1081" loading="lazy" decoding="async">
           <figcaption>路还长</figcaption>
         </figure>
         <div>
@@ -705,7 +705,7 @@
 
       <div class="art-split art-split--flip">
         <figure class="art">
-          <img src="assets/elaina/method.webp?v=20261015a" alt="伊蕾娜 · 窗前" width="760" height="950" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/method.webp?v=20261015a" alt="伊蕾娜 · 窗前" width="760" height="950" loading="lazy" decoding="async">
           <figcaption>想清楚再动手</figcaption>
         </figure>
         <div>
@@ -729,7 +729,7 @@
 
       <div class="art-split">
         <figure class="art">
-          <img src="assets/elaina/major.webp?v=20261015a" alt="伊蕾娜 · 石街" width="760" height="950" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/major.webp?v=20261015a" alt="伊蕾娜 · 石街" width="760" height="950" loading="lazy" decoding="async">
           <figcaption>异国的街</figcaption>
         </figure>
         <div>
@@ -771,7 +771,7 @@
 
       <div class="art-split art-split--flip">
         <figure class="art">
-          <img src="assets/elaina/projects.webp?v=20261015a" alt="伊蕾娜 · 旅店里的小坐" width="760" height="950" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/projects.webp?v=20261015a" alt="伊蕾娜 · 旅店里的小坐" width="760" height="950" loading="lazy" decoding="async">
           <figcaption>出发前先坐一会儿</figcaption>
         </figure>
         <div>
@@ -783,40 +783,52 @@
 
       <div class="proj-grid">
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/games/cover-minesweeper.webp" alt="扫雷在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/games/cover-minesweeper.webp" alt="扫雷在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
             <h3 class="proj-t">扫雷</h3>
             <p class="proj-d">16×16 摆 40 颗雷，也能切回初级的 9×9 / 10 雷。第一下点击周围 3×3 一定不放雷，所以开局永远是安全的；翻到空格会递归把连成一片的空区一起掀开。输入「行 列」翻格，「f 行 列」插旗，实时显示剩余雷数。</p>
             <div class="proj-foot"><span class="tag">C</span><span class="tag">二维数组</span><span class="tag">递归</span></div>
-            <p class="proj-src"><a href="assets/games/minesweeper.c" download>minesweeper.c</a><span>·</span><span>249 行</span></p>
+            <div class="proj-acts">
+              <button class="proj-btn" type="button" data-game="minesweeper">运行演示</button>
+              <button class="proj-btn" type="button" data-game="minesweeper" data-demo-mode="code">关键代码</button>
+            </div>
+            <p class="proj-src"><a href="assets/games/minesweeper.c" download>minesweeper.c</a><span>·</span><span>249 行</span><span>·</span><span>只用 stdio / stdlib / time，哪个平台都能编</span></p>
           </div>
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/games/cover-snake.webp" alt="贪吃蛇在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/games/cover-snake.webp" alt="贪吃蛇在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
             <h3 class="proj-t">贪吃蛇</h3>
             <p class="proj-d">20×20 的场地，W A S D 或方向键控制。用 <code>conio.h</code> 的 <code>_kbhit()</code> 判断有没有按键、<code>_getch()</code> 读键，所以不用敲回车就能立刻转向；蛇身用两个数组记每一节的坐标，吃到食物加 10 分并长一节，撞墙或咬到自己结束。</p>
             <div class="proj-foot"><span class="tag">C</span><span class="tag">Windows 控制台</span><span class="tag">数组当蛇身</span></div>
-            <p class="proj-src"><a href="assets/games/snake.c" download>snake.c</a><span>·</span><span>195 行</span></p>
+            <div class="proj-acts">
+              <button class="proj-btn" type="button" data-game="snake">运行演示</button>
+              <button class="proj-btn" type="button" data-game="snake" data-demo-mode="code">关键代码</button>
+            </div>
+            <p class="proj-src"><a href="assets/games/snake.c" download>snake.c</a><span>·</span><span>195 行</span><span>·</span><span>仅 Windows：用到 <code>conio.h</code> 的 <code>_kbhit()</code> / <code>_getch()</code></span></p>
           </div>
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/games/cover-tetris.webp" alt="俄罗斯方块在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/games/cover-tetris.webp" alt="俄罗斯方块在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
             <h3 class="proj-t">俄罗斯方块</h3>
             <p class="proj-d">10×20 的场地，I O T S Z J L 七种方块各用一个 4×4 矩阵表示，旋转就是把这个矩阵转 90°、再检查会不会撞到边界或已经落定的方块。A / D 左右移、W 旋转、S 加速落下，消一行加 10 分，堆到顶就结束。</p>
             <div class="proj-foot"><span class="tag">C</span><span class="tag">4×4 矩阵</span><span class="tag">游戏循环</span></div>
-            <p class="proj-src"><a href="assets/games/tetris.c" download>tetris.c</a><span>·</span><span>303 行</span></p>
+            <div class="proj-acts">
+              <button class="proj-btn" type="button" data-game="tetris">运行演示</button>
+              <button class="proj-btn" type="button" data-game="tetris" data-demo-mode="code">关键代码</button>
+            </div>
+            <p class="proj-src"><a href="assets/games/tetris.c" download>tetris.c</a><span>·</span><span>303 行</span><span>·</span><span>仅 Windows：按键轮询同样是 <code>conio.h</code></span></p>
           </div>
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/cover-joy.webp" alt="猜数字小游戏" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/cover-joy.webp" alt="猜数字小游戏" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
             <h3 class="proj-t">猜数字小游戏</h3>
@@ -826,7 +838,7 @@
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/cover-travel.webp" alt="个人主页" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/cover-travel.webp" alt="个人主页" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已上线</span></div>
             <h3 class="proj-t">个人主页</h3>
@@ -836,7 +848,7 @@
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/cover-travel.webp" alt="AI 工具折腾" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/cover-travel.webp" alt="AI 工具折腾" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag">进行中</span></div>
             <h3 class="proj-t">AI 工具折腾</h3>
@@ -846,7 +858,7 @@
         </article>
 
         <article class="proj reveal rv-lift">
-          <div class="proj-cover"><img src="assets/muki-art-tired.webp" alt="算法练习" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-cover"><img data-src="assets/muki-art-tired.webp" alt="算法练习" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">
             <div style="display:flex;align-items:center;gap:.5rem"><span class="tag">长期</span></div>
             <h3 class="proj-t">算法练习</h3>
@@ -872,7 +884,7 @@
     </p>
 
     <figure class="art art-band reveal">
-      <img src="assets/elaina/tags.webp" alt="伊蕾娜与芙兰 · 屋顶" width="780" height="529" loading="lazy" decoding="async">
+      <img data-src="assets/elaina/tags.webp" alt="伊蕾娜与芙兰 · 屋顶" width="780" height="529" loading="lazy" decoding="async">
       <figcaption>师徒二人 · 屋顶上的黄昏</figcaption>
     </figure>
 
@@ -888,8 +900,8 @@
     <div class="tw-stage reveal" id="tagStage">
       <!-- 舞台插画：垫在星空与标签之下，靠遮罩融进背景；标签落下时稍微显影 -->
       <div class="tw-art" aria-hidden="true">
-        <img class="tw-art__back" src="assets/elaina/tw-a.webp" alt="" width="900" height="1280" loading="lazy" decoding="async">
-        <img class="tw-art__accent" src="assets/elaina/tw-b.webp" alt="" width="620" height="1102" loading="lazy" decoding="async">
+        <img class="tw-art__back" data-src="assets/elaina/tw-a.webp" alt="" width="900" height="1280" loading="lazy" decoding="async">
+        <img class="tw-art__accent" data-src="assets/elaina/tw-b.webp" alt="" width="620" height="1102" loading="lazy" decoding="async">
       </div>
       <div class="tw-sky" aria-hidden="true">
         <span class="tw-star"></span><span class="tw-star"></span><span class="tw-star"></span>
@@ -958,7 +970,7 @@
     <section class="sec" id="life">
       <div class="feat reveal rv-wipe-up">
         <div class="feat-media">
-          <img src="assets/muki-feature.webp" alt="向き的日常插画" width="640" height="360" loading="lazy" decoding="async">
+          <img data-src="assets/muki-feature.webp" alt="向き的日常插画" width="640" height="360" loading="lazy" decoding="async">
         </div>
         <div class="feat-body">
           <h3>这个小世界</h3>
@@ -983,30 +995,30 @@
       </button>
     </div>
     <div class="art-strip reveal" id="artStrip" role="group" aria-label="伊蕾娜同人插画">
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g1.webp" data-cap="魔女装 · 同人插画"><img src="assets/elaina/g1.webp" alt="伊蕾娜同人插画 1" width="420" height="420" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g2.webp" data-cap="骑扫帚 · 同人插画"><img src="assets/elaina/g2.webp" alt="伊蕾娜同人插画 2" width="420" height="420" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g3.webp" data-cap="出发 · 同人插画"><img src="assets/elaina/g3.webp" alt="伊蕾娜同人插画 3" width="413" height="604" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g4.webp" data-cap="巷口 · 同人插画"><img src="assets/elaina/g4.webp" alt="伊蕾娜同人插画 4" width="420" height="265" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g5.webp" data-cap="夜色 · 同人插画"><img src="assets/elaina/g5.webp" alt="伊蕾娜同人插画 5" width="420" height="606" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g6.webp" data-cap="街灯 · 同人插画"><img src="assets/elaina/g6.webp" alt="伊蕾娜同人插画 6" width="420" height="606" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g7.webp" data-cap="微笑 · 同人插画"><img src="assets/elaina/g7.webp" alt="伊蕾娜同人插画 7" width="420" height="409" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g8.webp" data-cap="草地 · 同人插画"><img src="assets/elaina/g8.webp" alt="伊蕾娜同人插画 8" width="420" height="606" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g9.webp" data-cap="海滨 · 白裙 · 同人插画"><img src="assets/elaina/g9.webp" alt="伊蕾娜同人插画 9" width="820" height="465" style="object-position:50%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g10.webp" data-cap="圣托里尼 · 黄昏 · 同人插画"><img src="assets/elaina/g10.webp" alt="伊蕾娜同人插画 10" width="820" height="465" style="object-position:62%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g11.webp" data-cap="阳台 · 气球 · 同人插画"><img src="assets/elaina/g11.webp" alt="伊蕾娜同人插画 11" width="820" height="561" style="object-position:55%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g12.webp" data-cap="花田 · 大笑 · 同人插画"><img src="assets/elaina/g12.webp" alt="伊蕾娜同人插画 12" width="820" height="461" style="object-position:45%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g13.webp" data-cap="窗前 · 红茶 · 同人插画"><img src="assets/elaina/g13.webp" alt="伊蕾娜同人插画 13" width="820" height="461" style="object-position:46%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g14.webp" data-cap="云下 · 长路 · 同人插画"><img src="assets/elaina/g14.webp" alt="伊蕾娜同人插画 14" width="492" height="820" style="object-position:50% 30%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g15.webp" data-cap="校服 · 樱 · 同人插画"><img src="assets/elaina/g15.webp" alt="伊蕾娜同人插画 15" width="492" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g16.webp" data-cap="祭典 · 自拍 · 同人插画"><img src="assets/elaina/g16.webp" alt="伊蕾娜同人插画 16" width="820" height="455" style="object-position:45%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g17.webp" data-cap="旅店 · 小坐 · 同人插画"><img src="assets/elaina/g17.webp" alt="伊蕾娜同人插画 17" width="580" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g18.webp" data-cap="地图 · 书堆 · 同人插画"><img src="assets/elaina/g18.webp" alt="伊蕾娜同人插画 18" width="561" height="820" style="object-position:50% 30%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g19.webp" data-cap="魔女帽 · 侧目 · 同人插画"><img src="assets/elaina/g19.webp" alt="伊蕾娜同人插画 19" width="547" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g20.webp" data-cap="暮色 · 围巾 · 同人插画"><img src="assets/elaina/g20.webp" alt="伊蕾娜同人插画 20" width="819" height="637" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g21.webp" data-cap="碎片 · 眼 · 同人插画"><img src="assets/elaina/g21.webp" alt="伊蕾娜同人插画 21" width="820" height="513" style="object-position:50% 32%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g22.webp" data-cap="窗边 · 夜色 · 同人插画"><img src="assets/elaina/g22.webp" alt="伊蕾娜同人插画 22" width="760" height="1081" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g23.webp" data-cap="夜巷 · 灯火 · 同人插画"><img src="assets/elaina/g23.webp" alt="伊蕾娜同人插画 23" width="760" height="1097" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
-      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g24.webp" data-cap="扫帚上 · 出发前 · 同人插画"><img src="assets/elaina/g24.webp" alt="伊蕾娜同人插画 24" width="640" height="905" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g1.webp" data-cap="魔女装 · 同人插画"><img data-src="assets/elaina/g1.webp" alt="伊蕾娜同人插画 1" width="420" height="420" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g2.webp" data-cap="骑扫帚 · 同人插画"><img data-src="assets/elaina/g2.webp" alt="伊蕾娜同人插画 2" width="420" height="420" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g3.webp" data-cap="出发 · 同人插画"><img data-src="assets/elaina/g3.webp" alt="伊蕾娜同人插画 3" width="413" height="604" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g4.webp" data-cap="巷口 · 同人插画"><img data-src="assets/elaina/g4.webp" alt="伊蕾娜同人插画 4" width="420" height="265" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g5.webp" data-cap="夜色 · 同人插画"><img data-src="assets/elaina/g5.webp" alt="伊蕾娜同人插画 5" width="420" height="606" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g6.webp" data-cap="街灯 · 同人插画"><img data-src="assets/elaina/g6.webp" alt="伊蕾娜同人插画 6" width="420" height="606" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g7.webp" data-cap="微笑 · 同人插画"><img data-src="assets/elaina/g7.webp" alt="伊蕾娜同人插画 7" width="420" height="409" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g8.webp" data-cap="草地 · 同人插画"><img data-src="assets/elaina/g8.webp" alt="伊蕾娜同人插画 8" width="420" height="606" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g9.webp" data-cap="海滨 · 白裙 · 同人插画"><img data-src="assets/elaina/g9.webp" alt="伊蕾娜同人插画 9" width="820" height="465" style="object-position:50%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g10.webp" data-cap="圣托里尼 · 黄昏 · 同人插画"><img data-src="assets/elaina/g10.webp" alt="伊蕾娜同人插画 10" width="820" height="465" style="object-position:62%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g11.webp" data-cap="阳台 · 气球 · 同人插画"><img data-src="assets/elaina/g11.webp" alt="伊蕾娜同人插画 11" width="820" height="561" style="object-position:55%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g12.webp" data-cap="花田 · 大笑 · 同人插画"><img data-src="assets/elaina/g12.webp" alt="伊蕾娜同人插画 12" width="820" height="461" style="object-position:45%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g13.webp" data-cap="窗前 · 红茶 · 同人插画"><img data-src="assets/elaina/g13.webp" alt="伊蕾娜同人插画 13" width="820" height="461" style="object-position:46%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g14.webp" data-cap="云下 · 长路 · 同人插画"><img data-src="assets/elaina/g14.webp" alt="伊蕾娜同人插画 14" width="492" height="820" style="object-position:50% 30%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g15.webp" data-cap="校服 · 樱 · 同人插画"><img data-src="assets/elaina/g15.webp" alt="伊蕾娜同人插画 15" width="492" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g16.webp" data-cap="祭典 · 自拍 · 同人插画"><img data-src="assets/elaina/g16.webp" alt="伊蕾娜同人插画 16" width="820" height="455" style="object-position:45%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g17.webp" data-cap="旅店 · 小坐 · 同人插画"><img data-src="assets/elaina/g17.webp" alt="伊蕾娜同人插画 17" width="580" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g18.webp" data-cap="地图 · 书堆 · 同人插画"><img data-src="assets/elaina/g18.webp" alt="伊蕾娜同人插画 18" width="561" height="820" style="object-position:50% 30%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g19.webp" data-cap="魔女帽 · 侧目 · 同人插画"><img data-src="assets/elaina/g19.webp" alt="伊蕾娜同人插画 19" width="547" height="820" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g20.webp" data-cap="暮色 · 围巾 · 同人插画"><img data-src="assets/elaina/g20.webp" alt="伊蕾娜同人插画 20" width="819" height="637" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g21.webp" data-cap="碎片 · 眼 · 同人插画"><img data-src="assets/elaina/g21.webp" alt="伊蕾娜同人插画 21" width="820" height="513" style="object-position:50% 32%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g22.webp" data-cap="窗边 · 夜色 · 同人插画"><img data-src="assets/elaina/g22.webp" alt="伊蕾娜同人插画 22" width="760" height="1081" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g23.webp" data-cap="夜巷 · 灯火 · 同人插画"><img data-src="assets/elaina/g23.webp" alt="伊蕾娜同人插画 23" width="760" height="1097" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+      <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g24.webp" data-cap="扫帚上 · 出发前 · 同人插画"><img data-src="assets/elaina/g24.webp" alt="伊蕾娜同人插画 24" width="640" height="905" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
     </div>
     <p class="reveal" style="font-size:.72rem;color:var(--text-faint);margin:-.6rem 0 1.4rem">
       同人插画来自 <a href="https://elaina1017.com/" target="_blank" rel="noopener">elaina1017.com</a> 的公开画廊；角色版权归原作者 白石定规 / あずーる 所有，仅作个人非商业展示。
@@ -1018,7 +1030,7 @@
 
       <div class="art-split art-split--flip">
         <figure class="art">
-          <img src="assets/elaina/fortune.webp" alt="伊蕾娜 · 花束" width="760" height="1073" loading="lazy" decoding="async">
+          <img data-src="assets/elaina/fortune.webp" alt="伊蕾娜 · 花束" width="760" height="1073" loading="lazy" decoding="async">
           <figcaption>今天也要好运</figcaption>
         </figure>
         <div>
@@ -1050,15 +1062,15 @@
       <div class="sec-head reveal"><span class="sec-idx" data-idx aria-hidden="true"></span><h2 data-tech-text>动漫口味</h2><span class="sec-more">偏爱的几部</span></div>
       <div class="anime-grid">
         <article class="anime reveal rv-wipe-up">
-          <div class="anime-poster"><img src="assets/cover-elaina.webp" alt="魔女之旅" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 9.2</span></div>
+          <div class="anime-poster"><img data-src="assets/cover-elaina.webp" alt="魔女之旅" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 9.2</span></div>
           <div class="anime-body"><p class="anime-t">魔女之旅</p><p class="anime-m">白石定规 · あずーる</p></div>
         </article>
         <article class="anime reveal rv-wipe-up">
-          <div class="anime-poster"><img src="assets/cover-joy.webp" alt="我心里危险的东西" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.9</span></div>
+          <div class="anime-poster"><img data-src="assets/cover-joy.webp" alt="我心里危险的东西" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.9</span></div>
           <div class="anime-body"><p class="anime-t">我心里危险的东西</p><p class="anime-m">樱井纪雄</p></div>
         </article>
         <article class="anime reveal rv-wipe-up">
-          <div class="anime-poster"><img src="assets/cover-travel.webp" alt="碧蓝之海" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.7</span></div>
+          <div class="anime-poster"><img data-src="assets/cover-travel.webp" alt="碧蓝之海" width="240" height="320" loading="lazy" decoding="async"><span class="anime-score">★ 8.7</span></div>
           <div class="anime-body"><p class="anime-t">碧蓝之海</p><p class="anime-m">井上坚二 · 吉冈公威</p></div>
         </article>
         <article class="anime reveal rv-wipe-up">
@@ -1067,9 +1079,9 @@
         </article>
       </div>
       <div class="art-strip reveal" style="margin-top:1rem">
-        <figure class="art"><img src="assets/elaina/anime1.webp" alt="魔女之旅 · 剧照" width="540" height="540" loading="lazy" decoding="async"></figure>
-        <figure class="art"><img src="assets/elaina/anime2.webp" alt="魔女之旅 · 剧照" width="540" height="540" loading="lazy" decoding="async"></figure>
-        <figure class="art"><img src="assets/elaina/anime3.webp" alt="魔女之旅 · 剧照" width="388" height="390" loading="lazy" decoding="async"></figure>
+        <figure class="art"><img data-src="assets/elaina/anime1.webp" alt="魔女之旅 · 剧照" width="540" height="540" loading="lazy" decoding="async"></figure>
+        <figure class="art"><img data-src="assets/elaina/anime2.webp" alt="魔女之旅 · 剧照" width="540" height="540" loading="lazy" decoding="async"></figure>
+        <figure class="art"><img data-src="assets/elaina/anime3.webp" alt="魔女之旅 · 剧照" width="388" height="390" loading="lazy" decoding="async"></figure>
       </div>
 
       <p class="reveal" style="font-size:.8rem;color:var(--text-faint);margin-top:.9rem">
@@ -1082,7 +1094,7 @@
       <div class="sec-head reveal"><span class="sec-idx" data-idx aria-hidden="true"></span><h2 data-tech-text>游戏口味</h2><span class="sec-more">常玩的几类</span></div>
 
       <figure class="art art-band reveal">
-        <img src="assets/elaina/games.webp" alt="伊蕾娜 · 剧照" width="900" height="645" loading="lazy" decoding="async">
+        <img data-src="assets/elaina/games.webp" alt="伊蕾娜 · 剧照" width="900" height="645" loading="lazy" decoding="async">
         <figcaption>「怎么不按套路出牌」· 偶尔也想这么吐槽一下</figcaption>
       </figure>
       <div class="game-grid">
@@ -1193,11 +1205,11 @@
   <button class="artbox-btn" type="button" data-dir="next" aria-label="下一张">▶</button>
 </div>
 
-<script src="script.js?v=20261021a"></script>
+<script src="script.js?v=20261021b"></script>
 <script src="aw.js?v=20261018j" defer></script>
 <script src="pattern-waves.js?v=20261020u" defer></script>
 <script src="tech-text.js?v=20261020u" defer></script>
-<script src="drift-wall.js?v=20261021a" defer></script>
+<script src="drift-wall.js?v=20261021b" defer></script>
 <!-- 液态玻璃顶栏（组件来自 elaina1017.com 的 web-liquid-glass，已就近搬入 js/liquid-glass/） -->
 <script type="module" src="js/liquid-glass-boot.js?v=20261018k"></script>
 </body>

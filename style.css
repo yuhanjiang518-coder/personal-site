@@ -4464,3 +4464,180 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
   .sec-idx, .load-mark::before, .foot-sign::before { background: none; box-shadow: none; }
   .sec-idx { color: inherit; text-shadow: none; }
 }
+
+/* ============================ 20. 作品区：终端回放 ============================ */
+/* 三个 C 小游戏在浏览器里跑不了，所以做一台"回放机"：把程序自己 printf 出来的
+   每一帧存下来按帧播一遍。数据 + 播放器 30KB，而且**首次点击之前不下载**
+   （按需加载见 script.js 第 17 节）—— 站上已经有 5 个脚本 + 1 个 WebGL2 模块，
+   不该为了一个可能没人点的演示再常驻一份。 */
+
+.proj-acts { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .15rem; }
+.proj-btn {
+  padding: .34rem .78rem;
+  border-radius: var(--r-full);
+  font-family: var(--font-sans);
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--primary-deep);
+  background: color-mix(in oklab, var(--primary-soft) 78%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary) 32%, transparent);
+  cursor: pointer;
+  transition: background var(--d-fast) ease, transform var(--d-fast) var(--ease-out);
+}
+.proj-btn:hover { background: color-mix(in oklab, var(--primary) 22%, transparent); transform: translateY(-1px); }
+.proj-btn:active { transform: translateY(0); }
+.proj-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.gdm {
+  position: fixed;
+  inset: 0;
+  z-index: 120;                 /* 压在灯箱（110）之上：演示是当前唯一的前景 */
+  display: grid;
+  /* 行高写成 minmax(0,1fr)：否则这一行是 auto，.gdm__win 的 max-height:100%
+     会拿一个不确定的高度去解析（等于没有），长内容（比如"关键代码"里的源码）
+     会把面板顶出屏幕。这一行是让内部滚动生效的关键。 */
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  padding: clamp(.8rem, 3vw, 2rem);
+  background: rgb(4 8 14 / 82%);
+  animation: gdm-in .28s var(--ease-out) both;
+}
+@keyframes gdm-in { from { opacity: 0 } to { opacity: 1 } }
+.gdm__win {
+  width: min(54rem, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #0b1220;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: var(--r-lg);
+  box-shadow: 0 30px 80px -20px rgb(0 0 0 / 82%);
+}
+.gdm__bar {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .7rem;
+  background: #121e2f;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+.gdm__dots { display: inline-flex; gap: .28rem; flex: 0 0 auto; }
+.gdm__dots i { width: .58rem; height: .58rem; border-radius: 50%; }
+.gdm__dots i:nth-child(1) { background: #e2606e; }
+.gdm__dots i:nth-child(2) { background: #e8c86a; }
+.gdm__dots i:nth-child(3) { background: #96d296; }
+.gdm__title {
+  flex: 1;
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .68rem;
+  font-weight: 600;
+  color: rgb(190 208 226 / 88%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gdm__x {
+  flex: 0 0 auto;
+  width: 1.7rem; height: 1.7rem;
+  display: grid; place-items: center;
+  font-size: 1rem; line-height: 1;
+  color: rgb(255 255 255 / 78%);
+  background: rgb(255 255 255 / 8%);
+  border: 0; border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--d-fast) ease, transform var(--d-fast) var(--ease-out);
+}
+.gdm__x:hover { background: rgb(255 255 255 / 18%); transform: rotate(90deg); }
+
+/* 屏幕：等宽、不折行 —— 那些 ASCII 棋盘靠列对齐，一折就散。
+   汉字会回退到系统中文等宽字体，行高不变。 */
+.gdm__screen {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  overflow: auto;
+  white-space: pre;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .82rem;
+  line-height: 1.34;
+  color: #cfe0f0;
+  background: #0b1220;
+  -webkit-overflow-scrolling: touch;
+}
+.gdm__screen i { font-style: normal; }
+.a-dim { color: #4a5f75; }
+.a-num { color: #e8c86a; }
+.a-flag { color: #78b0f0; }
+.a-mine { color: #e8606e; }
+.a-body { color: #f07aac; }
+.a-head { color: #ffffff; }
+.a-block { color: #f07aac; }
+.a-line { color: #38505f; }
+.a-plain { color: #cfe0f0; }
+
+.gdm__note,
+.gdm__plat {
+  margin: 0;
+  padding: 0 1.15rem;
+  font-size: .72rem;
+  line-height: 1.6;
+  color: rgb(190 208 226 / 64%);
+  background: #0b1220;
+}
+.gdm__note { padding-top: .15rem; }
+.gdm__plat { padding-bottom: .6rem; color: rgb(190 208 226 / 48%); }
+
+.gdm__foot {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  padding: .55rem .7rem;
+  background: #121e2f;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+.gdm__btn {
+  padding: .3rem .7rem;
+  border-radius: var(--r-full);
+  font-family: var(--font-sans);
+  font-size: .72rem;
+  font-weight: 700;
+  color: #dbe8f5;
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  cursor: pointer;
+  transition: background var(--d-fast) ease;
+}
+.gdm__btn:hover { background: rgb(255 255 255 / 18%); }
+.gdm__btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.gdm__count {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .68rem;
+  color: rgb(190 208 226 / 66%);
+  font-variant-numeric: tabular-nums;
+}
+.gdm__prog {
+  flex: 1 1 5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 12%);
+  overflow: hidden;
+}
+.gdm__prog > b {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--primary);
+  transition: width .18s linear;
+}
+
+@media (max-width: 560px) {
+  .gdm__screen { font-size: .68rem; padding: .8rem; }
+  .gdm__note, .gdm__plat { padding-left: .8rem; padding-right: .8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gdm { animation: none; }
+  .gdm__prog > b { transition-duration: .01ms; }
+}

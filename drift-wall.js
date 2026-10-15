@@ -346,7 +346,12 @@
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       var img = el.querySelector('img');
-      var src = img ? (img.getAttribute('src') || '') : (el.getAttribute('data-full') || '');
+      /* 画廊在"兴趣 / 日常"视图里，而那个视图是 hidden 的 ——
+         script.js 会把隐藏视图里所有图的 src 摘到 data-src，等切过去再装回来
+         （否则 Chromium 会把 display:none 子树里的 loading=lazy 当立即加载）。
+         这个模块是在页面 load 时就收集条目的，那时候 src 还没有 —— 所以要回退读 data-src。 */
+      var src = img ? (img.getAttribute('src') || img.getAttribute('data-src') || '')
+                    : (el.getAttribute('data-full') || '');
       if (!src) continue;
       out.push({
         src: src,

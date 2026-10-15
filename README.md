@@ -41,6 +41,7 @@ personal-site/
 ├── pattern-waves.js        # 页脚波场（reactbits PatternWaves 的原生移植）
 ├── tech-text.js            # 板块标题的扫描镜片（reactbits TechText 的原生移植）
 ├── drift-wall.js           # 旅人手记墙（reactbits DriftWall 的原生移植 + 手记页层）
+├── game-demo.js            # 终端回放 / 关键代码查看器（首次点击才下载）
 ├── js/liquid-glass/        # 顶栏的 WebGL2 折射
 │   ├── liquid-glass-navigation.js
 │   ├── shaders.js
@@ -48,7 +49,7 @@ personal-site/
 │   └── scene-capture.js
 ├── assets/
 │   ├── elaina/             # 伊蕾娜同人插画（54 张，含开始界面用的抠图立绘）
-│   ├── games/              # 三个 C 小游戏的源码与运行截图
+│   ├── games/              # 三个 C 小游戏的源码、运行截图，以及逐帧回放数据
 │   ├── wall-*.webp         # 6 张壁纸 × 3 个尺寸（-p / 无后缀 / -thumb）
 │   ├── icon-192.png        # PWA 图标（唱片造型）
 │   ├── icon-512.png
@@ -109,7 +110,17 @@ personal-site/
 gcc -o minesweeper minesweeper.c && ./minesweeper
 ```
 
-封面由 `dev/capture-games.py` 编译并运行后抓取真实输出，再用 `dev/render-game-covers.py` 渲染（属于开发工具，不在站点里）。
+**站上就能看它们跑起来。** 三个 `.c` 在浏览器里没法执行，所以做了一台"回放机"：
+把程序自己 `printf` 出来的**每一帧**存下来按帧播一遍，逐帧着色，进度可拖、可单帧步进，
+还带一个"关键代码"视图——按函数名从 `.c` 里抽原文（`rotate_piece` / `clear_line` / `open_cell` …），
+不是手抄的片段。数据和播放器一共 31 KB，而且**第一次点按钮之前一个字节都不下载**。
+
+封面与回放数据都由开发脚本生成，不在站点里：
+`dev/capture-games.py`（编译并运行，抓真实 stdout）→ `dev/build-game-demos.py`（打包成回放）
+→ `dev/render-game-covers.py`（渲染封面）。
+
+平台限制写在每张卡上和回放窗口里：`snake.c` / `tetris.c` 依赖 `conio.h` 的 `_kbhit()`，
+**只能 Windows**；`minesweeper.c` 只用 `stdio / stdlib / time`，哪个平台都能编。
 
 ## ♿ / 🚀 工程
 
@@ -118,6 +129,31 @@ gcc -o minesweeper minesweeper.c && ./minesweeper
 - `forced-colors` / 打印模式下，纯装饰层（标题字 canvas、唱片盘面）自动退场
 - 低端机让路：`hardwareConcurrency <= 4` 或 `deviceMemory <= 4` 或省电模式时不加载重力墙、波场、标题镜片
 - 图片全部 WebP；插画封面 960×540，卡片按 2× 取图
+- 分享卡片是 JPEG（同内容 PNG 355 KB → 79 KB，1200×630 上看不出差别）
+
+## 📉 字节预算（实测，不是估计）
+
+预算：**首屏 ≤1.5 MB**。测法：1000×900 视口、本地服务器（未压缩）、`load` 之后读
+`performance.getEntriesByType('resource')` 去重求和。GitHub Pages 上的 HTML/CSS/JS 还会再走一遍 gzip
+（`script.js` 91 KB → 线上约 25 KB），所以真实首屏比下表更低。
+
+| 指标 | 改前 | 现在 | |
+|---|---|---|---|
+| 资源个数 | 85 | **49** | −36 |
+| 首屏总字节 | 4081 KB | **2237 KB** | **−45 %** |
+| 其中图片 | 3641 KB | **1796 KB** | −1845 KB |
+| `og-cover` | 355 KB（PNG） | **79 KB**（JPEG q82） | −276 KB |
+
+**那 1.8 MB 是怎么省下来的**：Chromium 有一条例外 —— 处在 `display:none` 子树里的
+`<img loading="lazy">` **不会**被懒加载拦住，它算不出位置，就按立即加载处理。
+本站有三个视图是 `hidden` 的，里面有 48 张整幅插画，于是页面一 `load` 就全下来了。
+改法是：这些图的 `src` 直接写成 `data-src`，`showView()` 切过去时再装回来
+（`script.js` 里的 `deferHiddenImages` / `hydrateImages`）。
+每张图本来就写了 `width` / `height`，所以摘掉 `src` 不会跳版。
+
+> 中途踩过一次：`drift-wall.js` 在页面 `load` 时就收集画廊条目，而那时 `src` 还没装回去，
+> 于是墙上一条都收不到、入口按钮直接不出现。现在它回退读 `data-src`。
+> 这类"初始化时读 DOM 属性"的代码，改懒加载一定要一起过一遍。
 - 快捷键：`T` 切主题、`W` 换壁纸
 - 分享卡片：Open Graph / Twitter Card / canonical / JSON-LD `Person`
 - 响应式断点：1100px / 900px / 700px / 640px / 560px / 420px
@@ -155,7 +191,7 @@ python -m http.server 8000
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |
 | 配色 | `style.css` 顶部 `:root` 的 `--hue`（换色相只改这一个数） |
 | 壁纸 | 替换 `assets/wall-*.webp`（保持同名最省事） |
-| 分享卡片图 | 改 `dev/gen-og.py` 后重新生成 `assets/og-cover.png` |
+| 分享卡片图 | 改 `dev/gen-og.py` 后重新生成 `assets/og-cover.jpg` |
 | 应用图标 | 改 `dev/gen-icons.py` 后重新生成 `assets/icon-192.png` / `icon-512.png` |
 | 板块编号的唱片 | `aw.css` 最后一节 `.sec-idx` |
 | GitHub / B 站链接 | 全局搜索 `yuhanjiang518-coder` 或 `627368437` |

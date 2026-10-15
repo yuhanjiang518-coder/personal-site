@@ -379,11 +379,36 @@
   }
   setNavCurrent('home');
 
+  /* ------------------------------------------------------------------
+     隐藏视图里的图，先别下载。
+     Chromium 有一条例外：处于 display:none 子树里的 <img loading="lazy">
+     **不会**被懒加载拦住 —— 它算不出位置，就直接按立即加载处理。
+     而这个站有三个视图是 hidden 的，里面有十几张整幅插画。
+     实测（1000×900 视口，页面刚 load）：85 个资源共 4.08 MB，其中图片 3.64 MB，
+     而首屏真正需要的不到其中一半。所以这里做一件很小的事：
+     把隐藏视图里的 src 摘下来存进 data-src，等这个视图真的被切过去再装回去。
+     好处是不用改任何 HTML —— 每张图都已经写了 width/height，摘掉 src 也不会跳版。
+     ------------------------------------------------------------------ */
+  function deferHiddenImages() {
+    $$('.view[hidden] img[src]').forEach(function (im) {
+      im.setAttribute('data-src', im.getAttribute('src'));
+      im.removeAttribute('src');
+    });
+  }
+  function hydrateImages(scope) {
+    $$('img[data-src]', scope).forEach(function (im) {
+      im.setAttribute('src', im.getAttribute('data-src'));
+      im.removeAttribute('data-src');
+    });
+  }
+  deferHiddenImages();
+
   function showView(name) {
     if (name === currentView) return false;
     var target = $('#view-' + name);
     if (!target) return false;
     views.forEach(function (v) { v.hidden = v.dataset.view !== name; });
+    hydrateImages(target);          /* 视图变成可见之后再让浏览器去取图 */
     currentView = name;
     setNavCurrent(name);
     /* 新视图内容分段淡入（函数在后面的交互模块里定义，这里做存在性判断） */
@@ -2311,4 +2336,49 @@
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) renderFortune(activeKind);
   });
+
+  /* ==================================================================
+     17. 作品区的"可验证性"：按需加载终端回放
+     ------------------------------------------------------------------
+     三个 C 小游戏在浏览器里跑不了，所以做一台"回放机"：把程序自己 printf
+     出来的每一帧存下来，按帧播一遍。数据和播放器加起来 30KB 出头，
+     但**在用户第一次点按钮之前一个字节都不下载** —— 这是刻意的：
+     站上已经有 5 个脚本 + 1 个 WebGL2 模块，不该为了一个可能没人点的
+     演示再常驻一份。
+     ================================================================== */
+  (function initGameDemo() {
+    var loading = null;
+    function boot() {
+      if (loading) return loading;
+      loading = new Promise(function (resolve, reject) {
+        var a = document.createElement('script');
+        a.src = 'assets/games/game-demos.js?v=20261021a';
+        a.onload = function () {
+          var b = document.createElement('script');
+          b.src = 'game-demo.js?v=20261021a';
+          b.onload = resolve;
+          b.onerror = reject;
+          document.head.appendChild(b);
+        };
+        a.onerror = reject;
+        document.head.appendChild(a);
+      });
+      return loading;
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-game]') : null;
+      if (!btn) return;
+      e.preventDefault();
+      var key = btn.getAttribute('data-game');
+      var mode = btn.getAttribute('data-demo-mode') || 'frames';
+      /* 脚本还在路上时先把请求排队，加载完自动打开（见 game-demo.js 末尾） */
+      Promise.resolve(boot()).then(function () {
+        if (window.GameDemo) window.GameDemo.open(key, mode);
+        else (window.__GAME_DEMO_QUEUE = window.__GAME_DEMO_QUEUE || []).push([key, mode]);
+      }, function () {
+        window.location.href = 'assets/games/' + key + '.c';
+      });
+    });
+  })();
 })();

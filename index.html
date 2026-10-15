@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261020t">
+<link rel="stylesheet" href="style.css?v=20261020y">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -901,7 +901,13 @@
     </section>
 
     <!-- 同人画廊（点开看大图） -->
-    <h3 class="reveal" style="font-size:.9rem;margin:0 0 .7rem">同人画廊</h3>
+    <div class="reveal" style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:0 0 .7rem">
+      <h3 style="font-size:.9rem;margin:0">同人画廊</h3>
+      <button class="wall-open" type="button" data-wall-open aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="2"/><rect x="14" y="5" width="7" height="14" rx="2"/></svg>
+        漂移墙
+      </button>
+    </div>
     <div class="art-strip reveal" id="artStrip" role="group" aria-label="伊蕾娜同人插画">
       <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g1.webp" data-cap="魔女装 · 同人插画"><img src="assets/elaina/g1.webp" alt="伊蕾娜同人插画 1" width="420" height="420" loading="lazy" decoding="async"></figure>
       <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g2.webp" data-cap="骑扫帚 · 同人插画"><img src="assets/elaina/g2.webp" alt="伊蕾娜同人插画 2" width="420" height="420" loading="lazy" decoding="async"></figure>
@@ -1081,13 +1087,27 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-20q · 板块标题 TechText（reactbits 原生移植）· 页脚波场（PatternWaves 原生移植）· 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-20v · 插画漂移墙 DriftWall（reactbits 原生移植）· 板块标题 TechText（reactbits 原生移植）· 页脚波场（PatternWaves 原生移植）· 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
   </div>
 </footer>
 
 <div id="toast" role="status" aria-live="polite"></div>
 
 <!-- 插画灯箱 -->
+<!-- 插画漂移墙：reactbits DriftWall 的原生移植。单独一块全屏浮层，
+     因为墙是"暗场 + 满屏 + 3D 平面"，塞进浅色玻璃卡片里会两边都不像。 -->
+<div class="wall-veil" id="wallVeil" data-wall-veil role="dialog" aria-modal="true"
+     aria-label="伊蕾娜插画漂移墙" aria-hidden="true">
+  <div class="wall-veil__head">
+    <p class="wall-veil__title">伊蕾娜 · 漂移墙</p>
+    <p class="wall-veil__sub">指针压住哪一张，哪一张就亮起来 · 点开看大图 · Esc 退出</p>
+  </div>
+  <div class="wall-veil__field" data-drift-wall
+       data-dw-columns="6" data-dw-speed="42" data-dw-dim="0.7" data-dw-lift="70"
+       data-dw-parallax="0.6" data-dw-fade="0.62" data-dw-overlay="#0a1622"></div>
+  <button class="wall-veil__close" type="button" data-wall-close aria-label="关闭">×</button>
+</div>
+
 <div class="artbox" id="artbox" role="dialog" aria-modal="true" aria-label="插画预览" aria-hidden="true">
   <img id="artboxImg" src="" alt="">
   <p class="artbox-cap" id="artboxCap"></p>
@@ -1100,6 +1120,7 @@
 <script src="aw.js?v=20261018j" defer></script>
 <script src="pattern-waves.js?v=20261020u" defer></script>
 <script src="tech-text.js?v=20261020u" defer></script>
+<script src="drift-wall.js?v=20261020z" defer></script>
 <!-- 液态玻璃顶栏（组件来自 elaina1017.com 的 web-liquid-glass，已就近搬入 js/liquid-glass/） -->
 <script type="module" src="js/liquid-glass-boot.js?v=20261018k"></script>
 </body>

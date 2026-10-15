@@ -2246,6 +2246,21 @@
       open(items.indexOf(el));
     });
 
+    /* 漂移墙点过来的画：墙上每一块也被复制了很多遍（无限滚动要副本），
+       不能拿它自己的下标去 open —— 按 data-full 反查画廊里的位置，
+       这样"上一张/下一张"仍然沿着画廊那 24 张走，也不会出现同一张图点两次序号不同。 */
+    document.addEventListener('driftwall:pick', function (e) {
+      var full = e.detail && e.detail.full;
+      if (!full) return;
+      var at = -1;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].getAttribute('data-full') === full) { at = i; break; }
+      }
+      if (at < 0) return;
+      lastFocus = null;
+      open(at);
+    });
+
     strip.addEventListener('keydown', function (e) {
       var el = e.target.closest ? e.target.closest('[data-full]') : null;
       if (!el) return;

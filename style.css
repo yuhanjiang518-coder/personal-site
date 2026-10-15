@@ -3729,6 +3729,221 @@ body.is-startup { overflow: hidden; }
   .start.is-leaving { transition: opacity .25s ease; transform: none; filter: none; }
 }
 
+/* ============================ 16.38 插画漂移墙 ============================ */
+/* reactbits.dev/components/drift-wall 的原生移植（见 site/drift-wall.js）。
+   墙本身是"暗场 + 满屏 + 一个倾斜的 3D 平面"，塞不进站里那张浅色玻璃卡片，
+   所以给它单独一块全屏浮层：从图库旁边的按钮打开，Esc 或点空白关掉。
+
+   z-index 特意压在灯箱（--z-toast = 110）之下 —— 点墙上的画，
+   要在墙上面开大图，而不是被墙盖住。 */
+.wall-open {
+  display: none;               /* 默认藏着：模块没跑起来就不该有这个入口 */
+  align-items: center;
+  gap: .4rem;
+  padding: .38rem .8rem;
+  font-size: .76rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--primary-deep);
+  background: color-mix(in oklab, var(--card-solid) 86%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary) 34%, transparent);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: background var(--d-fast) ease, transform var(--d-fast) var(--ease-out),
+              box-shadow var(--d-fast) ease;
+}
+html.has-drift-wall .wall-open { display: inline-flex; }
+.wall-open:hover {
+  background: color-mix(in oklab, var(--primary-soft) 80%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--primary) 60%, transparent);
+}
+.wall-open:active { transform: translateY(0); }
+.wall-open svg { width: .95rem; height: .95rem; }
+
+/* ---------- 全屏浮层：暗场 ---------- */
+.wall-veil {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader);
+  visibility: hidden;
+  opacity: 0;
+  /* 墙自己的边缘遮罩会把四周淡出，所以底下必须是一块能"淡进"去的深底 */
+  background: radial-gradient(ellipse 72% 62% at 50% 44%,
+    #17253f 0%, #0b1726 42%, #05090f 100%);
+  transition: opacity .42s var(--ease-out), visibility 0s linear .42s;
+  overscroll-behavior: contain;
+}
+.wall-veil.is-open {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .42s var(--ease-out), visibility 0s;
+}
+.wall-veil__head {
+  position: absolute;
+  left: 50%;
+  top: clamp(1rem, 3.6vh, 2.2rem);
+  transform: translateX(-50%);
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+}
+.wall-veil__title {
+  margin: 0;
+  font-size: clamp(1rem, 2.2vw, 1.4rem);
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #fff;
+  text-shadow: 0 2px 18px rgb(4 10 20 / 70%);
+}
+.wall-veil__sub {
+  margin: .3rem 0 0;
+  font-size: .72rem;
+  letter-spacing: .04em;
+  color: rgb(255 255 255 / 58%);
+}
+.wall-veil__field { position: absolute; inset: 0; }
+.wall-veil__close {
+  position: absolute;
+  right: clamp(.7rem, 2.2vw, 1.5rem);
+  top: clamp(.7rem, 2.2vh, 1.4rem);
+  z-index: 3;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: rgb(255 255 255 / 82%);
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--d-fast) ease, color var(--d-fast) ease, transform var(--d-fast) var(--ease-out);
+}
+.wall-veil__close:hover { background: rgb(255 255 255 / 16%); color: #fff; transform: rotate(90deg); }
+
+/* ---------- 墙本体（结构照搬原版） ---------- */
+.drift-wall {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: var(--dw-perspective, 1200px);
+  perspective-origin: 50% 50%;
+  --dw-tile-w: 200px;
+  --dw-tile-h: 268px;
+  --dw-gap: 18px;
+  --dw-radius: 16px;
+  --dw-lift: 70px;
+  --dw-dim: .78;
+  --dw-gray: 0;
+  --dw-overlay: #0a1622;
+  --dw-overlay-o: .32;
+  --dw-edge: 38%;
+  /* 两道遮罩相交：中间一块椭圆 + 自下而上的一道渐变 —— 于是墙从四周化进暗底里 */
+  -webkit-mask-image:
+    radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%),
+    linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(ellipse 78% 82% at 50% 46%, #000 var(--dw-edge), transparent 100%),
+    linear-gradient(to top, #000 var(--dw-edge), transparent 100%);
+  mask-composite: intersect;
+}
+.drift-wall__plane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: row;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.drift-wall__col {
+  position: relative;
+  width: calc(var(--dw-tile-w) + var(--dw-gap));
+  transform-style: preserve-3d;
+}
+.drift-wall__track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.drift-wall__tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: calc(var(--dw-tile-h) + var(--dw-gap));
+  flex: 0 0 auto;
+  outline: none;
+  transform-style: preserve-3d;
+}
+.drift-wall__inner {
+  position: absolute;
+  inset: calc(var(--dw-gap) / 2);
+  display: block;
+  border-radius: var(--dw-radius);
+  overflow: hidden;
+  background: #0b0b12;
+  opacity: var(--dw-dim);
+  /* 原版这里是 translateZ(0)。去掉它 —— 那等于把 50 多块画各自提成一个 3D 合成层，
+     对一张"每帧只平移几根轨道"的墙毫无收益（位移在 track 上，本来就已经提层了），
+     却要多几十个图层。悬停抬起用的是 transform 过渡，去不去提示都照常。 */
+  pointer-events: none;      /* 让 elementFromPoint 永远命中 .drift-wall__tile */
+  transition:
+    transform .42s cubic-bezier(.22, 1, .36, 1),
+    opacity .42s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .42s cubic-bezier(.22, 1, .36, 1);
+}
+.drift-wall__tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 26%;   /* 偏上取景：和画廊里那批插画用的同一套取法 */
+  display: block;
+  filter: grayscale(var(--dw-gray)) saturate(.96);
+  transition: filter .42s cubic-bezier(.22, 1, .36, 1);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.drift-wall__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--dw-overlay);
+  opacity: var(--dw-overlay-o);
+  pointer-events: none;
+  transition: opacity .42s cubic-bezier(.22, 1, .36, 1);
+}
+.drift-wall__tile.is-active .drift-wall__inner,
+.drift-wall__tile:focus-visible .drift-wall__inner {
+  opacity: 1;
+  transform: translateZ(var(--dw-lift));
+  box-shadow: 0 24px 60px -18px rgb(0 0 0 / 75%);
+}
+.drift-wall__tile.is-active img,
+.drift-wall__tile:focus-visible img { filter: grayscale(0) saturate(1.06); }
+.drift-wall__tile.is-active .drift-wall__overlay,
+.drift-wall__tile:focus-visible .drift-wall__overlay { opacity: 0; }
+.drift-wall__tile:focus-visible .drift-wall__inner {
+  box-shadow:
+    0 24px 60px -18px rgb(0 0 0 / 75%),
+    0 0 0 2px rgb(255 255 255 / 88%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drift-wall__plane,
+  .drift-wall__track { will-change: auto; }
+  /* 静止用户仍然能悬停看出"这是可以点开的画"，只是过程不带动画 */
+  .drift-wall__inner,
+  .drift-wall__tile img,
+  .drift-wall__overlay { transition-duration: .01ms; }
+  .wall-veil { transition-duration: .01ms; }
+}
+
 /* ============================ 16.37 板块标题 TechText ============================ */
 /* reactbits.dev/text-animations/tech-text 的原生移植（见 site/tech-text.js）。
    实心标题 + 一只扫过的镜片：镜片下的那个字淡入成虚线技术轮廓，同时弹出测量框、

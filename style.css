@@ -3101,14 +3101,15 @@ html[data-curtain="life"] {
   background: #45102e;
   animation-delay: 280ms;
 }
-/* 右上紫场：够大才有参考站那种"色场"感，但要离右边缘留出深色底，
-   否则整块紫板顶到边，构图就没有框了。 */
-.start-slab--violet {
+/* 右上那块大色板：参考站用的是"浅粉 + 深粉"的同族拼色，所以这里也留在粉族里，
+   而不是另起一个紫色。够大才有那种"色场"感，但要离右边缘留出深色底 ——
+   整块板顶到边，构图就没有框了。 */
+.start-slab--deep {
   left: 40%;
   top: 14%;
   width: 54%;
   height: 42%;
-  background: linear-gradient(160deg, #8d5fcd 0%, #53318f 100%);
+  background: linear-gradient(160deg, #b04a82 0%, #5a1c40 100%);
   transform: rotate(-1deg);
   overflow: hidden;      /* 裁住里面的放大暗影 */
   animation-delay: 340ms;
@@ -3631,7 +3632,7 @@ body.is-startup { overflow: hidden; }
   .start-strokes, .start-hand { z-index: 5; }
   /* 手机上版面是"上照片 + 下粉板"，大色块重排：紫场缩到照片块后面，
      亮粉台阶和横规没有对应的位置就收掉，白标签条挪到粉板上方。 */
-  .start-slab--violet { left: 24%; top: 5%; width: 68%; height: 32%; }
+  .start-slab--deep { left: 24%; top: 5%; width: 68%; height: 32%; }
   /* 亮粉台阶和错位背板都是围着桌面那套版式设计的：手机上板块高度由内容决定，
      对不上就会变成两条贴边的色带，干脆收掉。 */
   .start-slab--hot,

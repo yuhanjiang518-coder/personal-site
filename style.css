@@ -4364,3 +4364,93 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
   .topbar, .panel, .panel-scrim, #toast { display: none !important; }
   .card, .wrap { box-shadow: none; }
 }
+
+/* =====================================================================
+   19. 视觉签名：黑胶唱片
+   =====================================================================
+   开屏里最容易被记住的东西是那台唱片机 —— 但原来它只活在开屏里，点一次
+   「开始旅途」就永远消失了。这一节把它抽成一个可复用的记号，铺到全站，
+   让它变成"一眼认出是这个站"的东西，而不是一次性的布景。
+
+   为什么挑唱片，而不是"白描边立绘骑色块边界"那套构图：
+     · 立绘骑边界是一套**构图**，好看，但重复十几次需要十几张抠好的立绘，
+       而且正好会把"密度过高"这个毛病带回来；
+     · 唱片是一个**记号**（像 logo）。记号重复十几次才叫体系；
+     · 零成本：盘面是四层 gradient 画的，没有新图片、没有新请求，
+       从 1rem（页脚）到 4.4rem（加载屏）都是同一段代码；
+     · 它有含义 —— 这是"旅人手记"，唱片是"在播的那一面"；头像正好当中央
+       标签，于是"人 + 唱片"合成一个东西，不用再解释。
+     至于"骑边界"那个手法没有被丢掉：唱片的第一个落点就是**骑在内容列的
+     左边界上**（见 aw.css 第 10 节，板块编号那一处，一页重复十几次）。
+
+   这里的落点（不依赖皮肤，写在 style.css）：
+     ① 加载屏的转盘 —— 头像变成唱片中央的标签，外面是盘面
+     ② 页脚署名行
+     ③ 404 页的品牌行（那边单独写了一份，因为它不加载本文件）
+   ===================================================================== */
+
+.sig-disc,
+.sec-idx,
+.load-mark::before,
+.foot-sign::before {
+  /* 中央标签的半径。板块编号要当"曲目号"坐进去，所以那一处在 aw.css 单独调大。 */
+  --sig-label: 17%;
+  background:
+    /* 最上面那层：偏心的反光，让盘面有弧度而不是一块平色 */
+    radial-gradient(circle at 68% 26%, rgb(255 255 255 / 15%), transparent 36%),
+    /* 中央标签 */
+    radial-gradient(circle at 50% 50%,
+      var(--primary-deep) 0 var(--sig-label),
+      color-mix(in oklab, var(--primary) 62%, #fff) var(--sig-label) calc(var(--sig-label) + 2.6%),
+      transparent calc(var(--sig-label) + 3%)),
+    /* 纹路：1px 亮线 + 3px 间隔，尺寸一变密就跟真唱片一样变细 */
+    repeating-radial-gradient(circle at 50% 50%,
+      rgb(255 255 255 / 8%) 0 1px, transparent 1px 3px),
+    /* 盘面本体 */
+    radial-gradient(circle at 50% 50%, #26374d 0 34%, #0a1119 34% 100%);
+  border-radius: 50%;
+  /* 一圈亮边 —— 这是开屏那张立绘的白描边换算到小尺寸上的写法 */
+  box-shadow:
+    0 0 0 1.5px color-mix(in oklab, var(--card-solid) 90%, transparent),
+    0 0 0 2.5px color-mix(in oklab, var(--primary) 26%, transparent),
+    0 3px 10px -4px rgb(0 0 0 / 55%);
+}
+
+/* ---------- ① 加载屏：头像 = 唱片标签 ---------- */
+.load-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.load-mark img {
+  position: relative;
+  border-radius: 50%;
+  width: 2.85rem;
+  height: 2.85rem;
+  box-shadow: 0 0 0 2px color-mix(in oklab, #fff 78%, transparent);
+}
+
+/* ---------- ② 页脚署名行 ---------- */
+.foot-sign {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+.foot-sign::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+/* 强制配色 / 打印：盘面是纯装饰，收掉，但编号本身要留下来 */
+@media (forced-colors: active) {
+  .sec-idx, .load-mark::before, .foot-sign::before { background: none; box-shadow: none; }
+  .sec-idx { color: inherit; text-shadow: none; }
+  .load-mark img { border-radius: var(--r-md); }
+}
+@media print {
+  .sec-idx, .load-mark::before, .foot-sign::before { background: none; box-shadow: none; }
+  .sec-idx { color: inherit; text-shadow: none; }
+}

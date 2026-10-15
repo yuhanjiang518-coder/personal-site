@@ -835,3 +835,51 @@ html[data-skin="aw"] .reveal { transition-duration: .7s; transition-timing-funct
   html[data-skin="aw"] .aw-hero-title__inner { transform: none; }
   html[data-skin="aw"] .aw-hero-title__star { opacity: 1; transform: none; }
 }
+
+/* ---------------------------------------------- 10. 视觉签名：黑胶唱片 */
+/* 全站的重复记号。板块编号 01 / 02 … 现在同时是一张唱片：
+   盘面（三层 gradient，定义在 style.css 第 19 节）加上中央标签里的"曲目号"。
+
+   它骑在内容列的左边界上 —— 也就是开屏里"立绘骑色块边界"那个手法，
+   只是换到了一个能重复十几次、又不会把版面塞满的位置。
+
+   为什么这条规则必须写在本文件、而不是 style.css：
+     · aw.css 在 style.css 之后加载；上面第 8 节给 .sec-head 的 padding
+       带了 !important，同权重下后加载的样式表赢；
+     · 这里的选择器带 html[data-skin="aw"]，权重压过 .sec-head（0,1,0），
+       于是在屏幕、打印两种情形下都说了算。
+   直接改 style.css 的话，padding 会被上面的 !important 顶掉 —— 已经踩过一次。 */
+
+html[data-skin="aw"] .sec-head {
+  position: relative;
+  padding-left: 3.7rem !important;
+}
+
+html[data-skin="aw"] .sec-idx {
+  --sig-label: 30%;
+  position: absolute;
+  left: -.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 3.1rem;
+  height: 3.1rem;
+  margin: 0;
+  padding-bottom: .3rem;     /* 视觉居中：等宽数字的字面重心偏下 */
+  opacity: 1;                /* 上面第 8 节把它压到 .62 —— 那会儿它还只是一行小字 */
+  letter-spacing: .06em;
+  color: #fff2f8;
+  text-shadow: 0 1px 3px rgb(40 6 26 / 65%);
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  html[data-skin="aw"] .sec-head { padding-left: 2.7rem !important; }
+  html[data-skin="aw"] .sec-idx {
+    width: 2.15rem;
+    height: 2.15rem;
+    left: -.5rem;
+    padding-bottom: .2rem;
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "向き · 旅人手记",
+  "short_name": "向き",
+  "description": "沈阳理工大学网络工程在读。学习路线、技能墙、项目与收藏，以及一些动画与游戏的口味。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fdfaf4",
+  "theme_color": "#fdfaf4",
+  "categories": ["personal", "portfolio", "education"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "项目与收藏",
+      "short_name": "项目",
+      "url": "./#projects"
+    },
+    {
+      "name": "技能标签墙",
+      "short_name": "标签墙",
+      "url": "./#tags"
+    }
+  ]
+}

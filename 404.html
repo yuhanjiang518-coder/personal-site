@@ -8,6 +8,7 @@
 <title>404 · 这条路手记里没有记过 — 向き</title>
 <meta name="description" content="页面不存在。回到向き的个人主页。">
 <link rel="icon" type="image/png" href="/personal-site/assets/favicon-64.png">
+<link rel="manifest" href="/personal-site/manifest.webmanifest">
 <!-- GitHub Pages 的项目站会把这页送到任意未知路径下，
      所以这里的链接一律写成绝对路径 —— 相对路径在 /personal-site/a/b/ 下会算错。
      换自定义域名时记得一起改。 -->
@@ -46,7 +47,20 @@
   .wrap{width:min(46rem,100%)}
   .brand{display:inline-flex; align-items:center; gap:.55rem; font-size:.82rem;
          letter-spacing:.16em; color:var(--soft); margin-bottom:clamp(1rem,3vw,1.75rem)}
-  .brand i{display:block; width:2.1rem; height:2px; background:var(--primary-deep); border-radius:2px}
+  /* 品牌行前面那枚记号就是全站的视觉签名：黑胶唱片。
+     跟 index.html 用的是同一套三层 radial-gradient，只是这里为了不依赖 style.css 又写了一遍。 */
+  .brand i{
+    display:block; width:1.15rem; height:1.15rem; border-radius:50%;
+    background:
+      radial-gradient(circle at 68% 26%, rgb(255 255 255 / 15%), transparent 36%),
+      radial-gradient(circle at 50% 50%, var(--primary-deep) 0 15%,
+        color-mix(in oklab, var(--primary) 62%, #fff) 15% 17.5%, transparent 17.8%),
+      repeating-radial-gradient(circle at 50% 50%, rgb(255 255 255 / 8%) 0 1px, transparent 1px 3px),
+      radial-gradient(circle at 50% 50%, #26374d 0 34%, #0a1119 34% 100%);
+    box-shadow:
+      0 0 0 1.5px color-mix(in oklab, var(--card) 90%, transparent),
+      0 0 0 2.5px color-mix(in oklab, var(--primary) 26%, transparent);
+  }
   .card{
     background:color-mix(in oklab, var(--card) 92%, transparent);
     border:1px solid var(--line); border-radius:1.5rem;

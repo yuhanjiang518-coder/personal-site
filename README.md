@@ -4,191 +4,186 @@
 
 沈阳理工大学 · 信息科学与工程学院 · 网络工程
 
-一个纯静态的个人主页，使用 HTML / CSS / JavaScript 手写，**零依赖、零构建**，直接托管在 GitHub Pages 上。
+一个纯静态的个人主页：手写 HTML / CSS / JavaScript，**零依赖、零构建**，直接托管在 GitHub Pages 上。
+没有 npm、没有打包器、没有框架 —— 打开 `index.html` 看到的就是仓库里的东西。
 
 ## 🌐 在线访问
 
 **https://yuhanjiang518-coder.github.io/personal-site/**
 
-## ✨ 特性
+## ✨ 视觉签名：黑胶唱片
 
-**背景**
-- 以插画《魔女の旅々》风格森林场景为全屏背景
-- 配色直接取自插画本身：橄榄绿 / 暖金 / 蝶粉
-- 背景固定不随滚动，叠加渐变遮罩保证文字可读
-- 侧边栏顶部有人物插画条
-- **5 种背景模式可切换**：暗色柔化 / 原图横版 / 原图竖版 / 模糊 / 纯色
-- 全站玻璃拟态（backdrop-filter），无此支持时自动降级为实色
+开屏画面上最容易被记住的是那台唱片机。它原来只活在开屏里，点一次「开始旅途」就没了 ——
+现在同一个记号铺到了全站，成了"一眼认出是这个站"的东西：
 
-**布局**
-- 左侧固定侧边栏 + 右侧内容区（桌面端经典双栏）
-- 移动端自动收起为抽屉式菜单，带遮罩层
-- 顶部滚动进度条
-
-**视觉**
-- 深色氤氲主题，粉色渐变点缀色
-- 背景光晕（orb）与玻璃拟态（backdrop-filter）
-- 深色 / 浅色双主题，自动跟随系统并记住选择
-
-**学校 / 学习相关**
-
-三个新区块，内容都基于真实信息：
-
-| 区块 | 内容 |
+| 位置 | 形态 |
 |---|---|
-| 学习路线 | 5 个阶段时间线（编程基础 → 计算机基础 → 网络工程 → AI → 工程实践），带已掌握/进行中/下一步状态 |
-| 课程技能矩阵 | 24 个知识点分 5 组，三档状态：已掌握 / 在学 / 待学习 |
-| 我的专业 | 辽宁省一流专业建设点、软科排名第 63 位、网络安全特色、奇安信/深信服/绿盟 校企合作 |
+| 每个板块标题左侧 | 编号 `01 / 02 …` 坐在唱片的中央标签里，碟身骑在内容列的左边界上 |
+| 加载屏 | 头像就是唱片的标签，外面一圈盘面，再外面是进度环 |
+| 页脚署名行 | 1rem 的小唱片 |
+| `404.html` | 品牌行前面那枚记号 |
+| 应用图标 | `assets/icon-192.png` / `icon-512.png`，同一个造型 |
 
-> 专业信息来源：[学院官网专业介绍](https://sise.sylu.edu.cn/zyjs/zyjs/wlgc.htm)，页面已标注出处。
-> **没有编造任何竞赛奖项、证书或个人成绩。**
-
-**游戏口味**
-
-按四类展示常玩游戏：
-
-| 分类 | 游戏 |
-|---|---|
-| 音游 | Phigros、Rizline、Orzmic、世界计划 |
-| 类银河恶魔城 | 空洞骑士、空洞骑士：丝之歌、奥日、苍翼：混沌效应 |
-| Galgame | Rewrite、樱之诗、樱之刻、夏日口袋、CLANNAD、命运石之门、Ever17 |
-| 沙盒 / Roguelike | 泰拉瑞亚、死亡细胞、杀戮尖塔 |
-
-**动漫口味**
-
-| 作品 | 作者 |
-|---|---|
-| JoJo 的奇妙冒险 | 荒木飞吕彦 |
-| 魔女之旅 | 白石定规 · あずーる |
-| 我心里危险的东西 | 樱井纪雄 |
-| 碧蓝之海 | 井上坚二 · 吉冈公威 |
-
-封面用 CSS 渐变 + 汉字代替海报，**避免使用版权图片**。
-
-**账号链接**
-- 侧边栏头像下方：GitHub / Bilibili 两个图标按钮
-- 首屏底部：社交行（「在这些地方找到我」）
-- 「常去的地方」：两张带「本人」标记的账号卡片，排在第一位
-- 「联系我」：文字链接形式
-
-- GitHub — https://github.com/yuhanjiang518-coder
-- Bilibili — https://space.bilibili.com/627368437 （向きー）
-
-**交互**
-- 打字机动态标题
-- 滚动显现动画、技能进度条、数字增长动画
-- 侧边栏导航高亮（scroll-spy 滚动监听）
-- 一键复制邮箱（带 Clipboard API 降级方案）、一键唤起邮件客户端
-- 头像渐变光环旋转
-- 卡片悬浮微交互
-
-**工程**
-- 图片全部转 WebP 并压缩：802 KB 原图 → 6 个变体合计 249 KB
-- 快捷键：`T` 切主题、`W` 换壁纸
-- 语义化标签、`aria-label` 无障碍标注、"跳到主要内容" 快捷链接
-- 适配 `prefers-reduced-motion`（尊重系统减弱动效设置）
-- 响应式断点：1100px / 800px / 520px
+盘面没有一个像素是图片：整块是四层 `radial-gradient` 画的（反光 / 中央标签 / 纹路 / 盘体），
+所以从 1rem 到 4.4rem 都是同一段代码，不增加任何请求。
+定义在 `style.css` 第 19 节；"骑在内容列边界上"那一处的定位在 `aw.css` 第 10 节
+（因为 `aw.css` 在 `style.css` 之后加载，而且那边的 `padding` 带 `!important`，只有那一层改得动）。
 
 ## 📁 文件结构
 
 ```
 personal-site/
-├── index.html    # 单文件，内含三个界面
-├── style.css     # 样式、主题变量与动画
-├── script.js     # 全部交互逻辑
-├── assets/       # 背景插画（WebP，6 个尺寸/风格变体）
-├── .nojekyll     # 告诉 GitHub Pages 不要跑 Jekyll
+├── index.html              # 单文件，四个视图都在里面（约 1200 行）
+├── style.css               # 基础样式、主题变量、动效（约 4500 行）
+├── aw.css                  # 皮肤层：排版尺度、区块头部、卡片材质（约 880 行）
+├── aw.js                   # 皮肤层的运行时（冲击波、行距等）
+├── script.js               # 交互逻辑：视图切换、灯箱、壁纸、抽签……（约 2300 行）
+├── pattern-waves.js        # 页脚波场（reactbits PatternWaves 的原生移植）
+├── tech-text.js            # 板块标题的扫描镜片（reactbits TechText 的原生移植）
+├── drift-wall.js           # 旅人手记墙（reactbits DriftWall 的原生移植 + 手记页层）
+├── js/liquid-glass/        # 顶栏的 WebGL2 折射
+│   ├── liquid-glass-navigation.js
+│   ├── shaders.js
+│   ├── layout.js
+│   └── scene-capture.js
+├── assets/
+│   ├── elaina/             # 伊蕾娜同人插画（54 张，含开始界面用的抠图立绘）
+│   ├── games/              # 三个 C 小游戏的源码与运行截图
+│   ├── wall-*.webp         # 6 张壁纸 × 3 个尺寸（-p / 无后缀 / -thumb）
+│   ├── icon-192.png        # PWA 图标（唱片造型）
+│   ├── icon-512.png
+│   ├── og-cover.png        # 分享卡片图，1200×630
+│   └── *.webp              # 头像、封面、贴纸等
+├── 404.html                # 自带样式的 404（不加载 index 的任何脚本）
+├── manifest.webmanifest    # 可"添加到主屏幕"
+├── robots.txt              # 允许抓取 + 指向 sitemap
+├── sitemap.xml
+├── LICENSE                 # 分三层：本站代码 / 移植件 / 同人插画
+├── .nojekyll               # 别让 GitHub Pages 跑 Jekyll
 └── README.md
 ```
 
-## 📄 三个界面（同一个网址）
+## 📄 四个视图（同一个网址）
 
-整站是**一个 HTML 文件**，通过 `.view` 容器切换显示，**地址栏始终不变**。
+整站是**一个 HTML 文件**，靠 `.view` 容器切换显示，地址栏始终不变。
 
-| 界面 | `data-view` | 内容 |
+| 视图 | `data-view` | 内容 |
 |---|---|---|
-| 首页 | `home` | 首屏 Hero、关于我、联系我 |
-| 学习 / 工作 | `study` | 技能与近况、学习路线、课程技能矩阵、我的专业、项目与收藏 |
-| 兴趣 / 日常 | `life` | 动漫口味、游戏口味（音游/类银河恶魔城/Galgame/沙盒Roguelike）、常去的地方 |
+| 首页 | `home` | 首屏 Hero、关于我、现在在做什么、最近在看、联系我、同人画廊、项目与收藏 |
+| 学习 / 工作 | `study` | 技能与近况、学习路线、我的学习法、我的专业 |
+| 技能标签墙 | `tags` | 标签下落碰撞舞台、技能墙插画 |
+| 兴趣 / 日常 | `life` | 今日抽签、动漫口味、游戏口味、常去的地方 |
 
 **工作方式**
 
-- 侧栏链接带 `data-view` + `data-anchor`，点击时 `preventDefault()`，只切换 `.view[hidden]`，不跳页
-- 切换后自动滚到目标区块（`el.offsetTop - 22`，避开顶部进度条）
-- 切换时重放该界面的入场动画、重新触发技能条增长
-- 隐藏界面里的元素**不参与** `IntersectionObserver` 观察，切换时才纳入，避免"切过去发现是空白"
-- 支持带 hash 打开（如 `#games`）直接定位到对应界面
+- 导航链接带 `data-view` + `data-anchor`，点击时 `preventDefault()`，只切换 `.view[hidden]`，不跳页
+- 切换由"方向感知的幕布转场"驱动（向下展开 / 向上收拢），带一块章节牌报出目标页
+- 隐藏视图里的元素不参与 `IntersectionObserver`，切过去才纳入观察，避免"切过去一片空白"
+- 支持带 hash 直接打开（如 `#projects`）并定位到对应视图
 
-> 早期版本曾经拆成 `study.html` / `life.html` 三个物理文件，后按需求合并回单文件。
+## 🎞️ 动效一览
+
+| 效果 | 实现 | 文件 |
+|---|---|---|
+| 开始界面 | 色块 / 黑胶唱片 / 白描边立绘 / 斜虚线标注，从参考站的主菜单语言重做 | `style.css` 16.35 |
+| 方向感知幕布 | 每页一套配色的三色幕布 + 章节牌 | `script.js` TRANS 编排表 |
+| 液态玻璃顶栏 | WebGL2 折射，实时取页面背景 | `js/liquid-glass/` |
+| 技能标签墙 | 标签下落 + 真实重力碰撞 | `script.js` + `.tw-*` |
+| 板块标题 | 一只镜片扫过，镜片下的字变成虚线技术轮廓，弹出测量框与「字 + 尺寸」标注 | `tech-text.js` |
+| 页脚波场 | 世界坐标噪声驱动的加号阵列 | `pattern-waves.js` |
+| 旅人手记墙 | 图片分列循环漂移 + 3D 平面视差，每页带页码、压住的那页翻出题名 | `drift-wall.js` |
+| 联系板块 | 圆形展开 + 波浪冲击 | `aw.js` |
+| 打字机标题、滚动显现、数字增长、复制邮箱 | —— | `script.js` |
+
+## 🎮 三个 C 控制台小游戏
+
+`assets/games/` 下是三个能直接 `gcc` 编译的 C 程序，每个都配了一张**真实运行截下来的画面**（不是画的插画）：
+
+| 文件 | 行数 | 内容 |
+|---|---|---|
+| `minesweeper.c` | 249 | 扫雷。9×9/10 雷与 16×16/40 雷两档；第一次点击周围 3×3 不放雷；空格递归掀开 |
+| `snake.c` | 195 | 贪吃蛇。20×20，`conio.h` 的 `_kbhit()` 做到不等回车就读键 |
+| `tetris.c` | 303 | 俄罗斯方块。10×20，七种方块各一个 4×4 矩阵，旋转即矩阵转 90° 再判碰撞 |
+
+```bash
+gcc -o minesweeper minesweeper.c && ./minesweeper
+```
+
+封面由 `dev/capture-games.py` 编译并运行后抓取真实输出，再用 `dev/render-game-covers.py` 渲染（属于开发工具，不在站点里）。
+
+## ♿ / 🚀 工程
+
+- 语义化标签、`aria-label`、跳转链接、对话框焦点管理；灯箱与浮层支持键盘
+- 尊重 `prefers-reduced-motion`：所有 canvas 动效都有不依赖 `requestAnimationFrame` 的静态绘制路径
+- `forced-colors` / 打印模式下，纯装饰层（标题字 canvas、唱片盘面）自动退场
+- 低端机让路：`hardwareConcurrency <= 4` 或 `deviceMemory <= 4` 或省电模式时不加载重力墙、波场、标题镜片
+- 图片全部 WebP；插画封面 960×540，卡片按 2× 取图
+- 快捷键：`T` 切主题、`W` 换壁纸
+- 分享卡片：Open Graph / Twitter Card / canonical / JSON-LD `Person`
+- 响应式断点：1100px / 900px / 700px / 640px / 560px / 420px
 
 ## 🚀 本地预览
 
-直接双击 `index.html`，或起一个本地服务器：
+直接双击 `index.html` 即可；或者起一个本地服务器（推荐，`fetch` 与 WebGL 才有正确行为）：
 
 ```bash
-python3 -m http.server 8000
-# 访问 http://localhost:8000
+python -m http.server 8000
+# 打开 http://localhost:8000
 ```
 
 ## 🛠️ 部署到 GitHub Pages
 
-1. 新建仓库 `personal-site`
-2. 推送代码：
+1. Settings → Pages
+2. Source 选 `Deploy from a branch`
+3. Branch 选 `main` + `/ (root)`，Save
+4. 等 1–2 分钟，访问 https://yuhanjiang518-coder.github.io/personal-site/
 
-```bash
-git remote add origin https://github.com/yuhanjiang518-coder/personal-site.git
-git branch -M main
-git push -u origin main
-```
-
-3. 仓库 **Settings → Pages**
-4. **Source** 选 `Deploy from a branch`
-5. **Branch** 选 `main` + `/ (root)`，点 **Save**
-6. 等 1–2 分钟，访问 https://yuhanjiang518-coder.github.io/personal-site/
-
-> 仓库里已经有 `.nojekyll`，避免 Jekyll 处理下划线开头的文件导致 404。
+> 仓库里已有 `.nojekyll`，避免 Jekyll 处理下划线开头的文件导致 404。
 
 ## ✏️ 如何修改内容
 
 | 想改什么 | 改哪里 |
 |---|---|
-| 姓名 / 一句话签名 | `index.html` 里 `.rail-name` 和 `.rail-tag` |
+| 姓名 / 一句话签名 | `index.html` 的 `.brand` 与页脚 |
 | 自我介绍 | `index.html` 的 `<section id="about">` |
-| 技能条目与熟练度 | `<section id="skills">`，改 `.skill-name` 和 `--w:80%` |
-| 最近在做 | `<section id="skills">` 里的 `.doing` 列表 |
-| 项目卡片 | `<section id="projects">` 里的 `.card` |
-| 兴趣爱好 | `<section id="life">` 里的 `.hobby` |
-| 游戏口味 / 常玩游戏 | `<section id="life">` 里的 `.game`（4 类，改 `.game-tags` 里的游戏名） |
-| 动漫口味 / 常看作品 | `<section id="life">` 里的 `.anime-card`（改 `<h4>` 标题与 `.anime-note`） |
-| 动漫封面配色 | `style.css` 里的 `.anime-jojo` / `.anime-elaina` / `.anime-bokuyaba` / `.anime-grandblue` |
-| 学习路线 | `<section id="roadmap">` 里的 `.rm-item`，改 `done`/`doing`/`next` 换状态 |
-| 课程矩阵 | `<section id="courses">` 里的 `.mx`，改 `lv-done`/`lv-doing`/`lv-todo` 换状态 |
-| 常去的网站 | `<section id="sites">` 里的 `.site` 链接 |
+| 学习路线 | `<section id="roadmap">` 的 `.rm-item`，改 `done` / `doing` / `next` 换状态 |
+| 课程矩阵 | `<section id="courses">` 的 `.mx`，改 `lv-done` / `lv-doing` / `lv-todo` |
+| 项目卡片 | `<section id="projects">` 里的 `.proj`，封面放 `assets/` 后改 `<img src>` |
+| 画廊 | `<section id="artStrip">`，每张 `figure.art` 带 `data-full`（大图）与 `data-cap`（题名，墙上的题名条也用这个） |
+| 游戏口味 / 动漫口味 | `<section id="life">` 里的 `.game` / `.anime-card` |
 | 邮箱 / 联系方式 | `<section id="contact">` |
 | 打字机文案 | `script.js` 顶部的 `phrases` 数组 |
-| 配色主题 | `style.css` 顶部的 `:root` 变量（改 `--accent` 换点缀色） |
-| 背景图 | 替换 `assets/` 里的 webp 文件（保持同名最省事） |
-| GitHub / B站 链接 | 全局搜索 `yuhanjiang518-coder` 或 `627368437` 批量替换 |
+| 配色 | `style.css` 顶部 `:root` 的 `--hue`（换色相只改这一个数） |
+| 壁纸 | 替换 `assets/wall-*.webp`（保持同名最省事） |
+| 分享卡片图 | 改 `dev/gen-og.py` 后重新生成 `assets/og-cover.png` |
+| 应用图标 | 改 `dev/gen-icons.py` 后重新生成 `assets/icon-192.png` / `icon-512.png` |
+| 板块编号的唱片 | `aw.css` 最后一节 `.sec-idx` |
+| GitHub / B 站链接 | 全局搜索 `yuhanjiang518-coder` 或 `627368437` |
 
-改完 `git push`，GitHub Pages 会在 1 分钟内自动重新部署。
+改完 `git push`，GitHub Pages 一分钟内自动重新部署。
+改了 `style.css` / `aw.css` / 任何 `.js` 之后，记得把 `index.html` 里对应的 `?v=` 日期戳一起改掉，否则浏览器会用缓存里的旧文件。
 
 ## 🎨 配色
 
-配色是从背景插画里采样出来的，不是随便选的：
+配色是从插画里采样出来的，不是随便选的：
 
-| 变量 | 深色 | 来源 |
+| 变量 | 值 | 来源 |
 |---|---|---|
-| `--accent` | `#f0a6c0` | 粉色蝴蝶与波斯菊 |
-| `--accent-2` | `#e8c86a` | 阳光与落叶的暖金 |
-| `--accent-3` | `#a8c99a` | 草地绿 |
-| `--bg` | `#14170f` | 树荫深绿 |
-| `--text` | `#f2f4ea` | 偏暖的米白 |
+| `--primary` | `oklch(.68 .15 340)` | 粉色蝴蝶与波斯菊 |
+| `--primary-deep` | `oklch(.55 .16 340)` | 同色系压深，用于文字与描边 |
+| 暖金 | `#e8c86a` | 阳光与落叶 |
+| 草地绿 | `#a8c99a` | 草地 |
+| `--page-bg`（浅色） | `#fdfaf4` | 暖纸白 |
 
 ## ⚖️ 版权说明
 
-背景插画版权归原作者（白石定规 / あずーる / GA文库）所有，此页面仅作**个人学习与非商业用途**。
-如果这个页面要公开传播或用于展示，建议换成你自己绘制或有授权的图片。
-页脚已标注该说明。
+见 [`LICENSE`](LICENSE)，分三层写清楚了：
+
+1. **本站自己的代码**（HTML / CSS / JS / 三个 C 程序）—— MIT；
+2. **三个 reactbits 移植件** —— 带上原作 `MIT + Commons Clause` 全文（该条款限制的是"把组件本身再卖 / 再发一遍"，作为网站的一部分使用是被明确允许的）；
+3. **伊蕾娜同人插画** —— 版权归各画师所有，来自 elaina1017.com 的公开画廊，仅作个人非商业展示，不在上面两条授权范围内。
+
+页脚同样标注了第 3 条。如果任何一位作者不希望作品出现在这里，告知后会立刻撤下。
 
 ---
 

@@ -11,6 +11,8 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
+<!-- 有了 manifest 就能被"添加到主屏幕"，开起来是没有地址栏的独立窗口 -->
+<link rel="manifest" href="manifest.webmanifest">
 
 <!-- ==================== 分享卡片 ====================
      个人主页最主要的传播路径是被人贴进微信 / QQ / 群里，
@@ -48,8 +50,8 @@
   "sameAs": ["https://github.com/yuhanjiang518-coder"]
 }
 </script>
-<link rel="stylesheet" href="style.css?v=20261021b">
-<link rel="stylesheet" href="aw.css?v=20261018j">
+<link rel="stylesheet" href="style.css?v=20261021d">
+<link rel="stylesheet" href="aw.css?v=20261021a">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
 <!-- 没有 JS 时开始界面永远不会退场，所以直接不显示它 -->
@@ -1157,9 +1159,9 @@
       <a href="https://space.bilibili.com/627368437" target="_blank" rel="noopener">B 站</a>
       <button class="nav-link" type="button" id="footWall" style="padding:0;font-size:.75rem">壁纸设置</button>
     </div>
-    <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
+    <p class="foot-sign">© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-20v · 插画漂移墙 DriftWall（reactbits 原生移植）· 板块标题 TechText（reactbits 原生移植）· 页脚波场（PatternWaves 原生移植）· 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-21 · 视觉签名：黑胶唱片（板块标题骑在标题片左边界 / 加载屏 / 顶栏品牌 / 页脚）· 插画漂移墙 DriftWall（reactbits 原生移植，另加页码与题名的"手记页"层）· 板块标题 TechText（reactbits 原生移植）· 页脚波场（PatternWaves 原生移植）· 液态玻璃顶栏（WebGL2 折射）· 三个 C 控制台小游戏（源码在 assets/games/）· 配色与壁纸未改</p>
   </div>
 </footer>
 

@@ -1000,6 +1000,17 @@
          画廊就停在 .art-strip 自己那套自动网格上，也不会多出一屏滚动距离。 -->
     <div class="art-expand" id="artExpand">
       <div class="art-expand__pin">
+        <div class="art-slot" id="artSlot">
+        <!-- 字墙：エレイナ 四个字各排一行，垫在黑槽里。
+             录屏里那个 WORK 也是四个字母四行 —— 顺序一样：先看见字，
+             卡片再一张张压上来，最后铺满时字还从图片的缝和四周透出来。
+             aria-hidden：它是纹样，不是内容；重复 32 遍也不该被读屏念出来。 -->
+        <div class="art-slot__wall" aria-hidden="true">
+          <span>エエエエエエエエエエエエエエエエエエエエエエエエエエエエエエエエ</span>
+          <span>レレレレレレレレレレレレレレレレレレレレレレレレレレレレレレレレ</span>
+          <span>イイイイイイイイイイイイイイイイイイイイイイイイイイイイイイイイ</span>
+          <span>ナナナナナナナナナナナナナナナナナナナナナナナナナナナナナナナナ</span>
+        </div>
         <div class="art-strip reveal" id="artStrip" role="group" aria-label="伊蕾娜同人插画">
           <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g1.webp" data-cap="魔女装 · 同人插画"><img data-src="assets/elaina/g1.webp" alt="伊蕾娜同人插画 1" width="420" height="420" loading="lazy" decoding="async"></figure>
           <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g2.webp" data-cap="骑扫帚 · 同人插画"><img data-src="assets/elaina/g2.webp" alt="伊蕾娜同人插画 2" width="420" height="420" loading="lazy" decoding="async"></figure>
@@ -1025,6 +1036,7 @@
           <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g22.webp" data-cap="窗边 · 夜色 · 同人插画"><img data-src="assets/elaina/g22.webp" alt="伊蕾娜同人插画 22" width="760" height="1081" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
           <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g23.webp" data-cap="夜巷 · 灯火 · 同人插画"><img data-src="assets/elaina/g23.webp" alt="伊蕾娜同人插画 23" width="760" height="1097" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
           <figure class="art" tabindex="0" role="button" data-full="assets/elaina/g24.webp" data-cap="扫帚上 · 出发前 · 同人插画"><img data-src="assets/elaina/g24.webp" alt="伊蕾娜同人插画 24" width="640" height="905" style="object-position:50% 26%" loading="lazy" decoding="async"></figure>
+        </div>
         </div>
       </div>
     </div>

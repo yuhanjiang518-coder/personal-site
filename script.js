@@ -2466,19 +2466,19 @@
   })();
 
   /* ==================================================================
-     21. 同人画廊：向下滚，从"一条"展开成整屏
+     21. 同人画廊：向下滚，一块黑槽长成整屏，图片依次翻开
      ------------------------------------------------------------------
      结构在 index.html：#artExpand（200vh 的轨道）> .art-expand__pin（粘住一屏）
-     > #artStrip（原来那个缩略图网格）。
+     > .art-slot（黑槽）> #artStrip（缩略图网格）。
 
      这里只做三件事：
-       ① 量两个端点的格子边长（开头能排成一条 / 结尾刚好填满一屏）；
-       ② 把滚动进度写成 --p（0→1），尺寸插值全交给 CSS；
-       ③ 换视图、转屏、字体落地时重量一遍。
+       ① 量尺寸：槽开头多大、格子最小/最大多少；
+       ② 把滚动进度写成 --p（0→1），宽高/圆角/格子全交给 CSS 插值；
+       ③ 给每张图编个号（--i），CSS 靠它算各自的入场进度。
 
-     为什么尺寸要 JS 量：--cell-min 取决于"这么多张排成一行需要多宽"，
-     --cell-max 取决于"这一屏装得下多大的格子"，两个都跟窗口宽度和图片张数
-     绑死。写死在 CSS 里，换个屏幕就错。
+     为什么尺寸要 JS 量：槽开头的宽高、格子能长到多大，都跟窗口尺寸和图片
+     张数绑死。写死在 CSS 里，换个屏幕就错。
+     （CSS 里留了默认值，所以万一量不到——比如视图一直没显示过——也不会崩。）
 
      减弱动效的用户直接不接管 —— 画廊停在原来那个 auto-fit 网格上。
      这也是没有 JS 时的样子：轨道不生效，页面不会多出一屏滚动距离。
@@ -2487,8 +2487,9 @@
     var track = $('#artExpand');
     if (!track || reduceMotion) return;
     var pin = $('.art-expand__pin', track);
+    var slot = $('#artSlot');
     var strip = $('#artStrip');
-    if (!pin || !strip) return;
+    if (!pin || !slot || !strip) return;
 
     var N = strip.children.length;
     if (N < 2) return;
@@ -2498,28 +2499,41 @@
     var raf = 0;
 
     function measure() {
-      var W = Math.round(strip.clientWidth);
-      var H = Math.round(pin.clientHeight * 0.78);   /* 留出顶栏和上下气口 */
-      if (!W || !H) return false;                    /* 视图还藏着，量不到 */
+      var vw = document.documentElement.clientWidth;
+      var vh = pin.clientHeight;          /* pin 自己就是 100svh */
+      var pw = pin.clientWidth;
+      if (!vw || !vh) return false;       /* 视图还藏着，量不到 */
 
-      /* 开头：多小的格子才能让这么多张排成一条。排不下就往 30px 兜底，
-         那时候会折成两行 —— 手机窄屏就是这样，可以接受。 */
-      var cmin = Math.floor((W - (N - 1) * GAP0) / N);
-      cmin = Math.max(30, Math.min(76, cmin));
+      var pad = Math.max(10, Math.min(22, Math.round(vw * 0.016)));
+      slot.style.setProperty('--slot-pad', pad + 'px');
 
-      /* 结尾：从大到小找第一个"整个网格塞得进这一屏"的边长。
-         p=1 时的间距是 GAP1，跟开头不是一个数，别混用。 */
-      var cmax = cmin;
-      for (var cell = Math.min(W, H); cell > cmin; cell -= 2) {
-        var per = Math.max(1, Math.floor((W + GAP1) / (cell + GAP1)));
+      /* 开头那一小截槽：内容列的一小半宽、半屏高。做成窄高的"竖槽"，
+         图片一张张往下堆，多出来的被 overflow 截住 —— 录屏里就是这个样子。 */
+      var w0 = Math.round(Math.min(340, Math.max(196, pw * 0.5)));
+      var h0 = Math.round(Math.min(460, Math.max(260, vh * 0.54)));
+      slot.style.setProperty('--slot-w0', w0 + 'px');
+      slot.style.setProperty('--slot-h0', h0 + 'px');
+      slot.style.setProperty('--slot-w1', '100vw');
+      slot.style.setProperty('--slot-h1', '100svh');
+
+      /* 开头槽里正好排两列 */
+      var cmin = Math.max(48, Math.floor((w0 - pad * 2 - GAP0) / 2));
+
+      /* 结尾：整屏里塞得下多大的格子 —— 从大到小试，第一个装得下的就是它。
+         宽高都按铺满后的槽算（100vw × 100svh 减去内边距）。 */
+      var AW = vw - pad * 2, AH = vh - pad * 2, cmax = cmin;
+      for (var cell = Math.min(AW, AH); cell > cmin; cell -= 2) {
+        var per = Math.max(1, Math.floor((AW + GAP1) / (cell + GAP1)));
         var rows = Math.ceil(N / per);
-        if (rows * cell + (rows - 1) * GAP1 <= H) { cmax = cell; break; }
+        if (rows * cell + (rows - 1) * GAP1 <= AH) { cmax = cell; break; }
       }
 
       strip.style.setProperty('--cell-min', cmin + 'px');
       strip.style.setProperty('--cell-max', cmax + 'px');
       strip.style.setProperty('--gap-min', GAP0 + 'px');
       strip.style.setProperty('--gap-max', GAP1 + 'px');
+      /* 每张的序号：CSS 里 --lp 靠它错开，"依次翻开"就是这一句换来的 */
+      for (var i = 0; i < N; i++) strip.children[i].style.setProperty('--i', i);
       return true;
     }
 
@@ -2527,7 +2541,7 @@
       raf = 0;
       var r = track.getBoundingClientRect();
       if (!r.height) return;                    /* 视图隐藏时量出来是 0 */
-      /* 离得远就别写样式：改 --p 会让这一屏里的图重新排版，
+      /* 离得远就别写样式：改 --p 会让槽和这 24 张一起重新排版，
          在页面别处滚动时白花这份钱。 */
       if (r.bottom < -300 || r.top > window.innerHeight + 300) return;
 
@@ -2541,7 +2555,7 @@
     function queue() { if (!raf) raf = requestAnimationFrame(progress); }
 
     /* 先挂 is-live：CSS 那边整块展开样式都靠它开关。
-       量不到（视图还没显示）也没关系，CSS 里的默认值本身就是安全的小格子。 */
+       量不到（视图还没显示）也没关系，CSS 里的默认值本身就是安全的小尺寸。 */
     track.classList.add('is-live');
     measure();
     progress();

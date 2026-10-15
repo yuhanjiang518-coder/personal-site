@@ -4174,19 +4174,23 @@ html.has-drift-wall .wall-open { display: inline-flex; }
 .art-strip .art:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ------------------------------------------------------------------
-   同人画廊：向下滚，从"一条"展开成整屏
+   同人画廊：向下滚，一块黑槽长成整屏，图片依次翻开
    ------------------------------------------------------------------
+   参考的是用户给的录屏（某个作品集站）：中间一块黑色圆角槽，图片一张张
+   落进去，槽一边变宽一边铺满整屏，周围页面被挤到两侧。
+
    没有 JS、或者用户开了"减弱动效"时，这几条一条都不会命中 ——
    画廊就停在上面那个 auto-fit 网格上，页面也不会多出一屏滚动距离。
    JS 接管后给 .art-expand 挂上 is-live，于是：
      · 轨道 200vh，里面那一屏 sticky 粘住；
-     · 滚动进度写进 --p（0→1），格子边长和间距都由它插出来。
-   --cell-min 的目标是"开头 24 张能排成一条"，--cell-max 的目标是
-   "结尾刚好填满粘住的那一屏" —— 两个都得量着来，写死在 CSS 里会
-   随着窗口宽度和图片张数一起错（量它们的是 script.js 的 initArtExpand）。
+     · 滚动进度写进 --p（0→1），槽的宽高、圆角、格子边长全由它插出来。
 
-   为什么用 flex-wrap 而不是 grid：格子长大到塞不下时，条目会自己换行，
-   行数从 1 涨到 4 —— 这就是"展开"本身。grid 的列数是整数，没法插值。
+   所有尺寸（--slot-w0/h0、--cell-min/max、--slot-pad）都由 JS 写在元素上，
+   CSS 只负责插值 —— 写死在 CSS 里的话，换个窗口宽度、或者图片张数一变就错。
+
+   为什么用 flex-wrap 而不是 grid：格子长大到塞不下时条目自己换行，
+   行数会跟着涨，而且每张的入场进度可以各算各的（--i 错开）。
+   grid 的列数是整数，插不了值。
    ------------------------------------------------------------------ */
 .art-expand { position: relative; }
 .art-expand.is-live {
@@ -4205,10 +4209,75 @@ html.has-drift-wall .wall-open { display: inline-flex; }
   align-items: center;
   justify-content: center;
   /* 高度必须写死。用 min-height 的话，内容一变大这一屏就被撑高，
-     而 JS 又拿它的高度去算格子该多大 —— 两边互相顶，量出来会来回跳。 */
+     而 JS 又拿它的高度去算槽和格子该多大 —— 两边互相顶，量出来会来回跳。 */
   height: 100vh;
   height: 100svh;                 /* 手机上别被地址栏伸缩算错 */
 }
+
+/* 黑槽本身 */
+.art-expand.is-live .art-slot {
+  --slot-w: calc(var(--slot-w0, 20rem) + (var(--slot-w1, 100vw) - var(--slot-w0, 20rem)) * var(--p));
+  --slot-h: calc(var(--slot-h0, 24rem) + (var(--slot-h1, 100svh) - var(--slot-h0, 24rem)) * var(--p));
+  --slot-ink: #17130f;            /* 浅色主题下的"黑槽"：偏暖的近黑，不是纯黑 */
+  position: relative;
+  width: var(--slot-w);
+  height: var(--slot-h);
+  /* 必须禁掉收缩。槽最后要长到 100vw，而它的父级只有内容列那么宽 ——
+     flex 子项默认 flex-shrink:1，会被直接挤回 1056，于是"铺满整屏"永远发生不了，
+     而且按整屏算出来的格子会多出一行、被 overflow 裁掉。 */
+  flex: 0 0 auto;
+  max-width: none;
+  padding: var(--slot-pad, 16px);
+  /* 开头圆一点（像胶囊），铺满时收成直角 */
+  border-radius: calc(2.4rem * (1 - var(--p)));
+  background: var(--slot-ink);
+  box-shadow: 0 30px 80px -34px rgb(0 0 0 / 62%);
+  overflow: hidden;               /* 槽还没长大时，下面的图就是被截住的 */
+  display: flex;
+  /* 图从**上面**开始堆，多出来的往下面溢出被裁掉 —— 录屏里就是这个方向 */
+  align-items: flex-start;
+  justify-content: center;
+}
+[data-theme="dark"] .art-expand.is-live .art-slot {
+  /* 深色主题下页面本身已经是 #16141a，槽要再深一档才读得出是"凹进去的" */
+  --slot-ink: #0a090d;
+}
+
+/* 字墙：エレイナ 四行，垫在图片底下。
+   伪 3D 的做法和录屏里一样 —— 给整面墙一个 perspective + rotateX，
+   让它往后仰，四行字就"铺成一片地"而不是平贴在屏幕上。
+   仰角、位移、缩放都挂在 --p 上，所以它是跟着滚动动的，不是循环动画。 */
+.art-expand.is-live .art-slot__wall {
+  position: absolute;
+  inset: -14% -6%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-weight: 900;
+  /* 字号跟着槽的高度走，四行刚好铺满整条槽 —— 用 vw 算的话，
+     槽还是小胶囊时字会溢出去、铺满时又只在中间占一小条。 */
+  font-size: calc(var(--slot-h) / 3.6);
+  line-height: .9;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 34%);
+  /* 录屏里的顺序是：先看见字（黑胶囊里就一个 WORK），卡片再一张张压上来。
+     所以字跟着 --p 退场 —— 但不退干净，留一点点当图片缝隙里的纹理。 */
+  opacity: calc(1 - var(--p) * 0.74);
+  user-select: none;
+  pointer-events: none;
+  transform: perspective(760px)
+             rotateX(calc(16deg + 10deg * var(--p)))
+             scale(calc(1.04 + 0.08 * var(--p)));
+  transform-origin: 50% 62%;
+}
+.art-expand.is-live .art-slot__wall span { display: block; }
+/* 四行各自错开一点：字墙动起来像一整片，不是四条死板的横带 */
+.art-expand.is-live .art-slot__wall span:nth-child(1) { margin-left: calc(var(--p) * -9%); }
+.art-expand.is-live .art-slot__wall span:nth-child(2) { margin-left: calc(var(--p) * 5%); }
+.art-expand.is-live .art-slot__wall span:nth-child(3) { margin-left: calc(var(--p) * -4%); }
+.art-expand.is-live .art-slot__wall span:nth-child(4) { margin-left: calc(var(--p) * 7%); }
+
 .art-expand.is-live .art-strip {
   --cell-min: 2.6rem;
   /* 默认给个小的：万一 JS 没量成（比如视图一直没显示过），
@@ -4218,15 +4287,26 @@ html.has-drift-wall .wall-open { display: inline-flex; }
   --gap-max: .7rem;
   --cell: calc(var(--cell-min) + (var(--cell-max) - var(--cell-min)) * var(--p));
   --gap:  calc(var(--gap-min)  + (var(--gap-max)  - var(--gap-min))  * var(--p));
+  /* 字墙是绝对定位的，而绝对定位元素默认画在普通流内容**之上**，
+     所以图片这一层必须显式抬起来，否则字会盖在图上面。 */
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-content: center;
+  align-content: flex-start;
   width: 100%;
   margin-bottom: 0;
   gap: var(--gap);
 }
+/* 每张自己算入场进度：--i 是它的序号，p 越大轮到它的时刻越早。
+   这就是"依次翻开" —— 不是一起长，是错开的。
+   起点压得很低（0.16）：p=0 时槽里应该先看见字墙，图片只是几层影子；
+   等往下滚，它们才一张张实起来、把字压下去。 */
 .art-expand.is-live .art-strip .art {
+  --lp: clamp(0, (var(--p) - 0.04 - var(--i, 0) * 0.012) / 0.36, 1);
+  opacity: calc(.16 + .84 * var(--lp));
+  transform: translateY(calc((1 - var(--lp)) * 26px)) scale(calc(.92 + .08 * var(--lp)));
   flex: 0 0 var(--cell);
   width: var(--cell);
 }

@@ -136,20 +136,22 @@
     return Math.sin((r + bend3) * 9 - t * 1.8) * (0.45 + 0.55 * Math.exp(-(r - 0.6) * 0.8));
   }
 
-  function parseColor(v, fallback) {
+  // 任意 CSS 颜色 -> [r,g,b]：画一个像素再读回来。
+  // 不用正则解析、也不读 ctx.fillStyle —— 站点的颜色是 oklch() 写法，
+  // 这两种做法在现代颜色空间下都会算错（详见 tech-text.js 里的同一段注释）。
+  // 这里目前传的是十六进制字面量所以没出问题，但别留这个坑。
+  function parseColor(value, fallback) {
     try {
-      var c = document.createElement('canvas').getContext('2d');
-      if (!c) return fallback;
-      c.fillStyle = '#000';
-      c.fillStyle = v;
-      var s = c.fillStyle;
-      if (s.charAt(0) === '#') {
-        var n = parseInt(s.slice(1), 16);
-        return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-      }
-      var m = s.match(/[\d.]+/g);
-      if (!m || m.length < 3) return fallback;
-      return [Number(m[0]) / 255, Number(m[1]) / 255, Number(m[2]) / 255];
+      var c = document.createElement('canvas');
+      c.width = 1;
+      c.height = 1;
+      var g = c.getContext('2d', { willReadFrequently: true });
+      if (!g) return fallback;
+      g.fillStyle = '#000000';
+      g.fillStyle = String(value || '');
+      g.fillRect(0, 0, 1, 1);
+      var px = g.getImageData(0, 0, 1, 1).data;
+      return [px[0] / 255, px[1] / 255, px[2] / 255];
     } catch (e) { return fallback; }
   }
 

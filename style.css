@@ -3729,6 +3729,41 @@ body.is-startup { overflow: hidden; }
   .start.is-leaving { transition: opacity .25s ease; transform: none; filter: none; }
 }
 
+/* ============================ 16.37 板块标题 TechText ============================ */
+/* reactbits.dev/text-animations/tech-text 的原生移植（见 site/tech-text.js）。
+   实心标题 + 一只扫过的镜片：镜片下的那个字淡入成虚线技术轮廓，同时弹出测量框、
+   四角柄、沿框游走的小方块和一枚「字 + 尺寸」标注。
+
+   排版上有一处关键做法：**文字仍然留在 DOM 里**（.tt-sr），只是把颜色设成透明。
+   这样标题的字体、字距、占位、无障碍树、SEO 全部照旧；canvas 只是叠在上面的视觉层。
+   效果没跑起来 / 被门控掉 / forced-colors 模式下，标题就是一个普通标题。
+   用 clip-path 那套"视觉隐藏"是不行的 —— 它会把元素移出文档流，标题宽度当场塌掉。 */
+/* HUD（测量框 / 角柄 / 标注 / 游走方块）走站点的主色，标题本体走继承色 */
+[data-tech-text] { --tt-accent: var(--primary-deep); }
+.tt-sr {
+  position: relative;
+  display: inline-block;
+  color: transparent;
+  /* 透明文字仍会被选中、被强制配色覆盖，所以关掉选中并在 forced-colors 下让位 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+.tt-canvas {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  pointer-events: none;   /* 事件由 .sec-head h2 收，canvas 不参与命中 */
+}
+/* 高对比度 / 强制配色：透明会被系统覆盖，文字与 canvas 会叠成双影 —— 让 canvas 退场 */
+@media (forced-colors: active) {
+  .tt-canvas { display: none; }
+  .tt-sr { color: inherit; }
+}
+@media print {
+  .tt-canvas { display: none; }
+  .tt-sr { color: inherit; }
+}
+
 /* ============================ 16.36 收尾波场 ============================ */
 /* reactbits.dev/backgrounds/pattern-waves 的原生移植（见 site/pattern-waves.js）。
    原版是 ogl 的三段 WebGL2，但它的本质是"一格一格的标记由一张平滑波场驱动"，

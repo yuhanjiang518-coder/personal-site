@@ -6,7 +6,9 @@
 ======================================================================
 
 适用：index.html / style.css / script.js / aw.css / aw.js / 404.html /
-      js/liquid-glass/ 以及 assets/ 下本站自绘的图形与图标。
+      js/liquid-glass/ / assets/games/（三个 C 小游戏的源码，minesweeper.c /
+      snake.c / tetris.c，可直接 gcc 编译）
+      以及 assets/ 下本站自绘的图形与图标。
 
 Copyright (c) 2026 向き (MUKI) <https://github.com/yuhanjiang518-coder>
 

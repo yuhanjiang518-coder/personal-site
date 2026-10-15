@@ -1575,6 +1575,30 @@ body[data-wall-mode="none"] .hero {
 .proj-t { font-size: .92rem; font-weight: 700; }
 .proj-d { font-size: .79rem; color: var(--text-soft); line-height: 1.65; flex: 1; }
 .proj-foot { display: flex; align-items: center; gap: .5rem; margin-top: .2rem; }
+/* 源码行：三个 C 小游戏的卡片下面挂一份可下载的 .c —— 说"做完了"就得让人能看代码 */
+.proj-src {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem;
+  margin-top: .3rem;
+  padding-top: .55rem;
+  border-top: 1px dashed var(--divider);
+  font-size: .72rem;
+  color: var(--text-faint);
+}
+.proj-src a {
+  font-weight: 700;
+  color: var(--primary-deep);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary-deep) 40%, transparent);
+}
+.proj-src a:hover { border-bottom-color: var(--primary-deep); }
+.proj-src code {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .95em;
+  color: var(--text-soft);
+}
 
 /* ============================ 11. 日常 / 兴趣 ============================ */
 .feat {

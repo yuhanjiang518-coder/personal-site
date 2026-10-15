@@ -48,7 +48,7 @@
   "sameAs": ["https://github.com/yuhanjiang518-coder"]
 }
 </script>
-<link rel="stylesheet" href="style.css?v=20261021a">
+<link rel="stylesheet" href="style.css?v=20261021b">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -765,7 +765,7 @@
 
     <!-- 项目 -->
     <section class="sec" id="projects">
-      <div class="sec-head reveal"><span class="sec-idx" data-idx aria-hidden="true"></span><h2 data-tech-text>项目与收藏</h2><span class="sec-more">正在做的项目，和一些好地方</span></div>
+      <div class="sec-head reveal"><span class="sec-idx" data-idx aria-hidden="true"></span><h2 data-tech-text>项目与收藏</h2><span class="sec-more">做完的、在做的，还有一些好地方</span></div>
 
       <div class="art-split art-split--flip">
         <figure class="art">
@@ -774,12 +774,45 @@
         </figure>
         <div>
           <h3>先做出来，再谈做得好</h3>
-          <p>这个站是第一个成品：纯静态、零依赖、手写 HTML/CSS/JS。往后每学一样，都往上面叠一层。</p>
+          <p>这个站是第一个成品：纯静态、零依赖、手写 HTML/CSS/JS。掌握 C 之后写了下面三个控制台小游戏 —— 没有框架、没有引擎，画面就是 <code>printf</code> 出来的字符，主循环就是一次 <code>Sleep()</code> 加一次按键检查。每学一样，都往上面叠一层。</p>
         </div>
       </div>
 
 
       <div class="proj-grid">
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/games/cover-minesweeper.webp" alt="扫雷在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
+            <h3 class="proj-t">扫雷</h3>
+            <p class="proj-d">16×16 摆 40 颗雷，也能切回初级的 9×9 / 10 雷。第一下点击周围 3×3 一定不放雷，所以开局永远是安全的；翻到空格会递归把连成一片的空区一起掀开。输入「行 列」翻格，「f 行 列」插旗，实时显示剩余雷数。</p>
+            <div class="proj-foot"><span class="tag">C</span><span class="tag">二维数组</span><span class="tag">递归</span></div>
+            <p class="proj-src"><a href="assets/games/minesweeper.c" download>minesweeper.c</a><span>·</span><span>249 行</span></p>
+          </div>
+        </article>
+
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/games/cover-snake.webp" alt="贪吃蛇在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
+            <h3 class="proj-t">贪吃蛇</h3>
+            <p class="proj-d">20×20 的场地，W A S D 或方向键控制。用 <code>conio.h</code> 的 <code>_kbhit()</code> 判断有没有按键、<code>_getch()</code> 读键，所以不用敲回车就能立刻转向；蛇身用两个数组记每一节的坐标，吃到食物加 10 分并长一节，撞墙或咬到自己结束。</p>
+            <div class="proj-foot"><span class="tag">C</span><span class="tag">Windows 控制台</span><span class="tag">数组当蛇身</span></div>
+            <p class="proj-src"><a href="assets/games/snake.c" download>snake.c</a><span>·</span><span>195 行</span></p>
+          </div>
+        </article>
+
+        <article class="proj reveal rv-lift">
+          <div class="proj-cover"><img src="assets/games/cover-tetris.webp" alt="俄罗斯方块在控制台里跑起来的样子" width="480" height="270" loading="lazy" decoding="async"></div>
+          <div class="proj-body">
+            <div style="display:flex;align-items:center;gap:.5rem"><span class="tag is-hot">已完成</span></div>
+            <h3 class="proj-t">俄罗斯方块</h3>
+            <p class="proj-d">10×20 的场地，I O T S Z J L 七种方块各用一个 4×4 矩阵表示，旋转就是把这个矩阵转 90°、再检查会不会撞到边界或已经落定的方块。A / D 左右移、W 旋转、S 加速落下，消一行加 10 分，堆到顶就结束。</p>
+            <div class="proj-foot"><span class="tag">C</span><span class="tag">4×4 矩阵</span><span class="tag">游戏循环</span></div>
+            <p class="proj-src"><a href="assets/games/tetris.c" download>tetris.c</a><span>·</span><span>303 行</span></p>
+          </div>
+        </article>
+
         <article class="proj reveal rv-lift">
           <div class="proj-cover"><img src="assets/cover-joy.webp" alt="猜数字小游戏" width="480" height="270" loading="lazy" decoding="async"></div>
           <div class="proj-body">

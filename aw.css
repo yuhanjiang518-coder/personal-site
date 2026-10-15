@@ -883,3 +883,114 @@ html[data-skin="aw"] .sec-idx {
     padding-bottom: .2rem;
   }
 }
+
+/* ------------------------------------------------------------------------
+   10b. 视觉签名往下压一层：进到内容件里
+   ------------------------------------------------------------------------
+   上面第 10 节把唱片铺在了"界面件"上（板块标题、加载屏、页脚）——
+   那是设计系统。这一节把它放进**内容本身**：项目卡、学习路线的节点、
+   抽签的签等牌、技能标签。同一个记号出现在"正在讲的东西"上，才叫品牌。
+
+   盘面用的是 style.css 第 19 节那两个变量（--sig-disc / --sig-ring），
+   这里只改 --sig-label（中央标签多大）和 --sig-ink（标签什么颜色）。
+   ------------------------------------------------------------------------ */
+
+/* ---- 项目卡：封面左下角一枚唱片，标签里是它在列表里的曲目号 ---- */
+/* 用 CSS 计数器，不写死数字：以后加卡片，编号自己会接上。
+   注意这里把 aw 原来那条 grayscale 滤镜从 .proj-cover 挪到了 img 上 ——
+   滤镜会连伪元素一起吃掉，唱片会被一起洗淡。观感完全一样，只是作用对象换了。 */
+html[data-skin="aw"] .proj-grid { counter-reset: sig-track; }
+html[data-skin="aw"] .proj { counter-increment: sig-track; }
+html[data-skin="aw"] .proj-cover { position: relative; filter: none; }
+html[data-skin="aw"] .proj-cover img {
+  filter: grayscale(.3) contrast(1.05);
+  transition: filter .45s var(--ease-out);
+}
+html[data-skin="aw"] .proj:hover .proj-cover img { filter: none; }
+html[data-skin="aw"] .proj-cover::after {
+  content: counter(sig-track, decimal-leading-zero);
+  --sig-label: 46%;
+  position: absolute;
+  left: .7rem;
+  bottom: .7rem;
+  z-index: 2;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  font-family: var(--aw-mono);
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .04em;
+  color: #fff2f8;
+  text-shadow: 0 1px 3px rgb(40 6 26 / 65%);
+  background: var(--sig-disc);
+  border-radius: 50%;
+  box-shadow: var(--sig-ring);
+  transition: transform .35s var(--ease-out);
+}
+html[data-skin="aw"] .proj:hover .proj-cover::after { transform: scale(1.08); }
+
+/* ---- 学习路线：时间轴的节点 ---- */
+/* aw 原来这里是一个 .45rem 的实心小方块。改成唱片之后，"路线"读起来是
+   一串曲目 —— 和标题上的编号是同一套语法。 */
+html[data-skin="aw"] .tl-item::before {
+  content: '';
+  --sig-label: 44%;
+  position: absolute;
+  top: 1.18rem;
+  left: 0;
+  width: .95rem;
+  height: .95rem;
+  background: var(--sig-disc);
+  border-radius: 50%;
+  box-shadow: var(--sig-ring);
+}
+
+/* ---- 抽签结果：签等牌就是一张唱片 ---- */
+/* 等级坐在中央标签里，"第 N 签"就是这一面的曲目号 —— 这张唱片本来就是
+   抽出来的那支签，两个东西天然是一回事。--sig-ink 由 JS 从 --grad 里抠出来。 */
+html[data-skin="aw"] .fr-rank {
+  --sig-label: 44%;
+  width: 6.6rem;
+  height: 6.6rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: .1rem;
+  padding: 0;
+  font-size: clamp(1.1rem, 4.4vw, 1.45rem);
+  border-radius: 50%;
+  background: var(--sig-disc);
+  color: #fff;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+  box-shadow: var(--sig-ring);
+}
+html[data-skin="aw"] .fr-rank small {
+  font-size: .5em;
+  font-weight: 700;
+  letter-spacing: .04em;
+  opacity: .95;
+}
+
+/* ---- 技能标签：每一枚标签前面一枚小唱片 ---- */
+/* 标签墙一次落下 24 个，尺寸只能给到 .78rem —— 但盘面是矢量的，
+   再小也还是"深盘 + 浅心"，和标题上那枚是同一个东西。 */
+html[data-skin="aw"] .tw-chip { padding-left: 1.5rem; }
+html[data-skin="aw"] .tw-chip::before {
+  content: '';
+  /* 标签只有 .78rem 高，标签中心得让小一号 —— 大了就只剩一个粉点，
+     看不出"深盘 + 浅心"，那和普通圆点子弹头没区别。 */
+  --sig-label: 28%;
+  position: absolute;
+  left: .45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: .9rem;
+  height: .9rem;
+  background: var(--sig-disc);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--card-solid) 82%, transparent);
+  pointer-events: none;
+}

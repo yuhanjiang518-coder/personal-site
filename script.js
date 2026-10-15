@@ -1149,10 +1149,16 @@
       '</div>';
     }).join('');
 
+    /* 签等牌现在是一张唱片：--grad 决定中央标签的颜色。
+       但 --grad 是一整个 linear-gradient() 图像，图像不能当径向渐变的色标用 ——
+       所以顺手从里面抠出第一个十六进制色，单独给一个 --sig-ink。
+       缺了它唱片也能看（CSS 里有回退色），只是所有签等会长得一样。 */
+    var sigInk = (String(res.grad).match(/#[0-9a-fA-F]{3,8}/) || [''])[0];
     resultEl.innerHTML =
       '<div class="fr-done">' +
         '<div class="fr-rank-row">' +
-          '<span class="fr-rank" style="--grad:' + res.grad + '">' + esc(res.rank) +
+          '<span class="fr-rank" style="--grad:' + res.grad +
+            (sigInk ? ';--sig-ink:' + sigInk : '') + '">' + esc(res.rank) +
             '<small>第 ' + res.no + ' 签</small></span>' +
           '<span class="fr-date">' + esc(res.date) + ' · ' + esc(res.label) + '</span>' +
         '</div>' +

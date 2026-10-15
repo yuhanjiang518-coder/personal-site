@@ -4389,31 +4389,41 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
      ③ 404 页的品牌行（那边单独写了一份，因为它不加载本文件）
    ===================================================================== */
 
-.sig-disc,
-.sec-idx,
-.load-mark::before,
-.foot-sign::before {
-  /* 中央标签的半径。板块编号要当"曲目号"坐进去，所以那一处在 aw.css 单独调大。 */
+/* 签名的三个变量：盘面、亮边、中央标签的半径。
+   定义在 :root 上，各处只改 --sig-label / --sig-ink 两个值 ——
+   因为自定义属性是"用到哪算到哪"：--sig-disc 里的 var(--sig-label)
+   会在**使用它的那个元素**上解析，所以子元素自己声明就能覆盖。
+   于是同一段盘面代码在 1rem 和 6.6rem 上都成立。 */
+:root {
   --sig-label: 17%;
-  background:
+  --sig-ink: var(--primary-deep);
+  --sig-disc:
     /* 最上面那层：偏心的反光，让盘面有弧度而不是一块平色 */
     radial-gradient(circle at 68% 26%, rgb(255 255 255 / 15%), transparent 36%),
-    /* 中央标签 */
+    /* 中央标签 + 一圈比标签略浅的环 */
     radial-gradient(circle at 50% 50%,
-      var(--primary-deep) 0 var(--sig-label),
-      color-mix(in oklab, var(--primary) 62%, #fff) var(--sig-label) calc(var(--sig-label) + 2.6%),
+      var(--sig-ink) 0 var(--sig-label),
+      color-mix(in oklab, var(--sig-ink) 62%, #fff) var(--sig-label) calc(var(--sig-label) + 2.6%),
       transparent calc(var(--sig-label) + 3%)),
     /* 纹路：1px 亮线 + 3px 间隔，尺寸一变密就跟真唱片一样变细 */
     repeating-radial-gradient(circle at 50% 50%,
       rgb(255 255 255 / 8%) 0 1px, transparent 1px 3px),
     /* 盘面本体 */
     radial-gradient(circle at 50% 50%, #26374d 0 34%, #0a1119 34% 100%);
-  border-radius: 50%;
   /* 一圈亮边 —— 这是开屏那张立绘的白描边换算到小尺寸上的写法 */
-  box-shadow:
+  --sig-ring:
     0 0 0 1.5px color-mix(in oklab, var(--card-solid) 90%, transparent),
     0 0 0 2.5px color-mix(in oklab, var(--primary) 26%, transparent),
     0 3px 10px -4px rgb(0 0 0 / 55%);
+}
+
+.sig-disc,
+.sec-idx,
+.load-mark::before,
+.foot-sign::before {
+  background: var(--sig-disc);
+  border-radius: 50%;
+  box-shadow: var(--sig-ring);
 }
 
 /* ---------- ① 加载屏：头像 = 唱片标签 ---------- */

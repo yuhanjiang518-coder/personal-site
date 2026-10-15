@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261020j">
+<link rel="stylesheet" href="style.css?v=20261020k">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -1059,6 +1059,18 @@
 </main>
 
 <!-- ==================== 页脚 ==================== -->
+<!-- 收尾波场：reactbits.dev/backgrounds/pattern-waves 的原生移植（见 pattern-waves.js）。
+     原版是 ogl 的三段 WebGL2，但它的本质是"一格一格的标记由一张平滑波场驱动"，
+     不是逐像素着色 —— 所以按同一套波函数重算，用 canvas 2D 画出来，不假装成 shader。
+     自带深色底：六张壁纸 + 明暗主题下，浅色波线都需要一个可预期的底，否则在浅壁上会消失。 -->
+<section class="wave-band">
+  <canvas class="wave-band__canvas" data-pattern-waves aria-hidden="true"
+          data-pattern="plus" data-wave="silk" data-spacing="22" data-mark-size="0.85"
+          data-depth="1.1" data-shine="0.7" data-contrast="1.9" data-speed="0.3"
+          data-scale="0.65" data-direction="20" data-color="#d5ecff" data-opacity="0.85"></canvas>
+  <p class="wave-band__note">写代码，也写点生活。</p>
+</section>
+
 <footer class="foot">
   <div class="foot-inner">
     <div class="foot-links">
@@ -1069,7 +1081,7 @@
     </div>
     <p>© <span id="year">2026</span> 向き · 沈阳理工大学 网络工程 · Built with care on GitHub Pages</p>
     <p style="font-size:.7rem;max-width:44rem;margin:.4rem auto 0">本站背景插画、头像与动漫区配图均取自《魔女之旅》相关同人素材，角色版权归原作者 白石定规 / あずーる / GA 文库所有，仅作个人非商业展示。</p>
-    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-18k · 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
+    <p style="font-size:.68rem;opacity:.72;margin-top:.5rem">v2026-10-20k · 页脚波场（reactbits PatternWaves 原生移植）· 液态玻璃顶栏（WebGL2 折射）· 视图转场：方向感知幕布 + 章节牌 · 联系板块圆形展开 + 波浪冲击 · 同人画廊与各区块插画 · 配色与壁纸未改</p>
   </div>
 </footer>
 
@@ -1086,6 +1098,7 @@
 
 <script src="script.js?v=20261018k"></script>
 <script src="aw.js?v=20261018j" defer></script>
+<script src="pattern-waves.js?v=20261020p" defer></script>
 <!-- 液态玻璃顶栏（组件来自 elaina1017.com 的 web-liquid-glass，已就近搬入 js/liquid-glass/） -->
 <script type="module" src="js/liquid-glass-boot.js?v=20261018k"></script>
 </body>

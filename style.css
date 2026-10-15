@@ -3729,6 +3729,58 @@ body.is-startup { overflow: hidden; }
   .start.is-leaving { transition: opacity .25s ease; transform: none; filter: none; }
 }
 
+/* ============================ 16.36 收尾波场 ============================ */
+/* reactbits.dev/backgrounds/pattern-waves 的原生移植（见 site/pattern-waves.js）。
+   原版是 ogl 的三段 WebGL2，但它的本质是"一格一格的标记由一张平滑波场驱动"，
+   不是逐像素场 —— 所以可以用 canvas 2D 重算同一套波函数，而不是拿 CSS 去仿 shader。
+
+   这里是页脚之前的一条收尾带。自带深色底是必须的：站点有六张壁纸 × 明暗两套主题，
+   浅色波线直接铺在壁纸上，在浅壁纸上会彻底消失。上下两道遮罩把它接回页面。 */
+.wave-band {
+  position: relative;
+  height: clamp(170px, 22vh, 260px);
+  margin-top: var(--s-10);
+  overflow: hidden;
+  background: linear-gradient(180deg,
+    #0d1a2b 0%,
+    #0b1626 46%,
+    #12203a 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+.wave-band__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* 低端机 / 省电模式下 canvas 不跑（模块自己让路），给一层静态底纹兜底，
+   免得那块位置变成一条纯色黑板。 */
+.wave-band:has([data-wave-skip]) {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(213 236 255 / 9%) 0 1px, transparent 1px 18px),
+    linear-gradient(180deg, #0d1a2b 0%, #0b1626 46%, #12203a 100%);
+}
+.wave-band__note {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  font-size: clamp(.78rem, 1.4vw, .95rem);
+  font-weight: 650;
+  letter-spacing: .42em;
+  text-indent: .42em;          /* 字距会在右侧多出一份，缩回来才是真居中 */
+  color: rgb(255 255 255 / 90%);
+  text-shadow: 0 2px 14px rgb(4 12 24 / 65%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (max-width: 560px) {
+  .wave-band__note { letter-spacing: .24em; text-indent: .24em; font-size: .76rem; }
+}
+
 /* ============================ 16.4 伊蕾娜插画 ============================ */
 /* 图取自同人画廊（页脚已注明版权归原作者），统一压成 webp。
    三态：.art-band 横幅 / .art-split 图文并排 / .art-strip 缩略图组。

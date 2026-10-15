@@ -3331,7 +3331,32 @@ html[data-curtain="life"] {
   justify-content: space-between;
   border-radius: var(--r-sm);
   background: linear-gradient(155deg, var(--panel-a) 0%, #e2589a 40%, var(--panel-b) 100%);
+  /* 必须自己裁：关键帧里的 clip-path 只在动画跑的时候存在，
+     "减弱动效"把 animation 关掉后就没有任何东西挡住里面的剪影了。 */
+  overflow: hidden;
   animation: start-unfurl 900ms var(--ease-out) 380ms both;
+}
+
+/* 粉板里的剪影。位置是量出来的，不是试出来的：这张图里帽檐在 13~32%、扫帚在 41~59%、
+   裙摆在 63~85%。试着给满高贴右下角，她的躯干正好压在正文小字后面，太重；
+   贴左下角又会被胶囊和按钮盖掉大半。最后放在色块右侧那一列 ——
+   正文最长只到 68%，右边这条一直空着，剪影在这里一行字都不压，
+   只和那条 1px 的分隔线相交。往右出一截被色板裁掉，读起来是"她从色板边缘经过"。 */
+.start-silhouette {
+  position: absolute;
+  left: auto;
+  right: -6%;
+  top: 6%;
+  height: 58%;
+  width: auto;
+  opacity: .2;
+  filter: brightness(0);
+  pointer-events: none;
+  animation: start-silhouette-in 1000ms var(--ease-out) 900ms both;
+}
+@keyframes start-silhouette-in {
+  from { opacity: 0; transform: translate3d(3%, 4%, 0); }
+  to   { opacity: .2; transform: none; }
 }
 @keyframes start-unfurl {
   from { clip-path: inset(0 0 100% 0); opacity: 0; }
@@ -3676,6 +3701,8 @@ body.is-startup { overflow: hidden; }
     z-index: 3;
   }
   .start-text { width: 100%; }
+  .start-silhouette { left: auto; right: -8%; top: auto; bottom: -3%; height: 52%; opacity: .12; }
+  @keyframes start-silhouette-in { from { opacity: 0; } to { opacity: .12; } }
   .start-title { font-size: clamp(1.9rem, 10.4vw, 2.7rem); }
   .start-info, .start-info--2 { font-size: .76rem; }
   .start-tags { margin-top: .6rem; }

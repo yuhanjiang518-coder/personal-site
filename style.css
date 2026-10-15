@@ -4173,6 +4173,64 @@ html.has-drift-wall .wall-open { display: inline-flex; }
 .art-strip .art:hover img { transform: scale(1.06); }
 .art-strip .art:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+/* ------------------------------------------------------------------
+   同人画廊：向下滚，从"一条"展开成整屏
+   ------------------------------------------------------------------
+   没有 JS、或者用户开了"减弱动效"时，这几条一条都不会命中 ——
+   画廊就停在上面那个 auto-fit 网格上，页面也不会多出一屏滚动距离。
+   JS 接管后给 .art-expand 挂上 is-live，于是：
+     · 轨道 200vh，里面那一屏 sticky 粘住；
+     · 滚动进度写进 --p（0→1），格子边长和间距都由它插出来。
+   --cell-min 的目标是"开头 24 张能排成一条"，--cell-max 的目标是
+   "结尾刚好填满粘住的那一屏" —— 两个都得量着来，写死在 CSS 里会
+   随着窗口宽度和图片张数一起错（量它们的是 script.js 的 initArtExpand）。
+
+   为什么用 flex-wrap 而不是 grid：格子长大到塞不下时，条目会自己换行，
+   行数从 1 涨到 4 —— 这就是"展开"本身。grid 的列数是整数，没法插值。
+   ------------------------------------------------------------------ */
+.art-expand { position: relative; }
+.art-expand.is-live {
+  /* --p 的兜底必须写在**轨道**上，不能写在 .art-strip 上：
+     自定义属性和普通属性一样，元素自己声明的值会盖掉继承来的值 ——
+     在 strip 上写一句 --p: 0，从轨道继承下来的进度就永远被它遮住了。 */
+  --p: 0;
+  height: 200vh;
+  height: 200svh;                 /* 手机上别被地址栏伸缩算错 */
+  margin-bottom: var(--s-4);
+}
+.art-expand.is-live .art-expand__pin {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 高度必须写死。用 min-height 的话，内容一变大这一屏就被撑高，
+     而 JS 又拿它的高度去算格子该多大 —— 两边互相顶，量出来会来回跳。 */
+  height: 100vh;
+  height: 100svh;                 /* 手机上别被地址栏伸缩算错 */
+}
+.art-expand.is-live .art-strip {
+  --cell-min: 2.6rem;
+  /* 默认给个小的：万一 JS 没量成（比如视图一直没显示过），
+     也不会有一屏装不下、图压在一起的情况。 */
+  --cell-max: 6rem;
+  --gap-min: .22rem;
+  --gap-max: .7rem;
+  --cell: calc(var(--cell-min) + (var(--cell-max) - var(--cell-min)) * var(--p));
+  --gap:  calc(var(--gap-min)  + (var(--gap-max)  - var(--gap-min))  * var(--p));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+  margin-bottom: 0;
+  gap: var(--gap);
+}
+.art-expand.is-live .art-strip .art {
+  flex: 0 0 var(--cell);
+  width: var(--cell);
+}
+
 @media (max-width: 720px) {
   .art-split,
   .art-split--flip { grid-template-columns: 1fr; }

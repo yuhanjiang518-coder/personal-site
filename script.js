@@ -2464,4 +2464,109 @@
       });
     });
   })();
+
+  /* ==================================================================
+     21. 同人画廊：向下滚，从"一条"展开成整屏
+     ------------------------------------------------------------------
+     结构在 index.html：#artExpand（200vh 的轨道）> .art-expand__pin（粘住一屏）
+     > #artStrip（原来那个缩略图网格）。
+
+     这里只做三件事：
+       ① 量两个端点的格子边长（开头能排成一条 / 结尾刚好填满一屏）；
+       ② 把滚动进度写成 --p（0→1），尺寸插值全交给 CSS；
+       ③ 换视图、转屏、字体落地时重量一遍。
+
+     为什么尺寸要 JS 量：--cell-min 取决于"这么多张排成一行需要多宽"，
+     --cell-max 取决于"这一屏装得下多大的格子"，两个都跟窗口宽度和图片张数
+     绑死。写死在 CSS 里，换个屏幕就错。
+
+     减弱动效的用户直接不接管 —— 画廊停在原来那个 auto-fit 网格上。
+     这也是没有 JS 时的样子：轨道不生效，页面不会多出一屏滚动距离。
+     ================================================================== */
+  (function initArtExpand() {
+    var track = $('#artExpand');
+    if (!track || reduceMotion) return;
+    var pin = $('.art-expand__pin', track);
+    var strip = $('#artStrip');
+    if (!pin || !strip) return;
+
+    var N = strip.children.length;
+    if (N < 2) return;
+
+    var GAP0 = 4;      /* p=0 时的间距（px） */
+    var GAP1 = 11;     /* p=1 时的间距 —— 这两个数在这里定死，CSS 只负责用 */
+    var raf = 0;
+
+    function measure() {
+      var W = Math.round(strip.clientWidth);
+      var H = Math.round(pin.clientHeight * 0.78);   /* 留出顶栏和上下气口 */
+      if (!W || !H) return false;                    /* 视图还藏着，量不到 */
+
+      /* 开头：多小的格子才能让这么多张排成一条。排不下就往 30px 兜底，
+         那时候会折成两行 —— 手机窄屏就是这样，可以接受。 */
+      var cmin = Math.floor((W - (N - 1) * GAP0) / N);
+      cmin = Math.max(30, Math.min(76, cmin));
+
+      /* 结尾：从大到小找第一个"整个网格塞得进这一屏"的边长。
+         p=1 时的间距是 GAP1，跟开头不是一个数，别混用。 */
+      var cmax = cmin;
+      for (var cell = Math.min(W, H); cell > cmin; cell -= 2) {
+        var per = Math.max(1, Math.floor((W + GAP1) / (cell + GAP1)));
+        var rows = Math.ceil(N / per);
+        if (rows * cell + (rows - 1) * GAP1 <= H) { cmax = cell; break; }
+      }
+
+      strip.style.setProperty('--cell-min', cmin + 'px');
+      strip.style.setProperty('--cell-max', cmax + 'px');
+      strip.style.setProperty('--gap-min', GAP0 + 'px');
+      strip.style.setProperty('--gap-max', GAP1 + 'px');
+      return true;
+    }
+
+    function progress() {
+      raf = 0;
+      var r = track.getBoundingClientRect();
+      if (!r.height) return;                    /* 视图隐藏时量出来是 0 */
+      /* 离得远就别写样式：改 --p 会让这一屏里的图重新排版，
+         在页面别处滚动时白花这份钱。 */
+      if (r.bottom < -300 || r.top > window.innerHeight + 300) return;
+
+      var span = r.height - pin.clientHeight;
+      if (span <= 0) return;
+      var p = Math.max(0, Math.min(1, -r.top / span));
+      p = p * p * (3 - 2 * p);                  /* 两端各缓一下：别一滚就炸开，也别硬停 */
+      track.style.setProperty('--p', p.toFixed(4));
+    }
+
+    function queue() { if (!raf) raf = requestAnimationFrame(progress); }
+
+    /* 先挂 is-live：CSS 那边整块展开样式都靠它开关。
+       量不到（视图还没显示）也没关系，CSS 里的默认值本身就是安全的小格子。 */
+    track.classList.add('is-live');
+    measure();
+    progress();
+
+    /* 视图是切出来的，宽度要等视图可见才量得到 —— 复用站点自己的换视图钩子，
+       但把原来的实现包在里面，不要把它顶掉。 */
+    var prevAfterView = window.__afterView;
+    window.__afterView = function (name) {
+      if (typeof prevAfterView === 'function') prevAfterView(name);
+      if (name !== 'life') return;
+      measure();
+      queue();
+    };
+
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', function () {
+      measure();
+      queue();
+    });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { measure(); queue(); }, 260);
+    });
+    /* 字体落地会改变布局宽度，落地之后再量一次更稳 */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { measure(); queue(); });
+    }
+  })();
 })();

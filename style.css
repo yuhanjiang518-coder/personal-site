@@ -4589,6 +4589,51 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
 .gdm__note { padding-top: .15rem; }
 .gdm__plat { padding-bottom: .6rem; color: rgb(190 208 226 / 48%); }
 
+/* 帧 ↔ 源码：回放到第 N 帧时，把"打出这一帧的那几行"摊在下面。
+   为什么是竖着一条而不是并排第二栏 —— 这个窗口本来就窄，横着切一刀
+   两边都读不了；竖着放，像调试器停在断点上，反而更像那么回事。
+   命中行靠底色区分（不用颜色区分行本身，行里的语法色已经占掉了颜色）。 */
+.gdm__src {
+  flex: 0 0 auto;
+  max-height: 11rem;
+  overflow: auto;
+  padding: .5rem 1.15rem .6rem;
+  background: #0d1726;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: .72rem;
+  line-height: 1.45;
+  color: rgb(190 208 226 / 52%);
+  -webkit-overflow-scrolling: touch;
+}
+.gdm__src[hidden] { display: none; }
+.gdm__src-hd {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .3rem .55rem;
+  margin: 0 0 .3rem;
+}
+.gdm__src-hd b { font-weight: 600; color: rgb(190 208 226 / 88%); }
+.gdm__src-hd span { color: #e8c86a; }
+.gdm__src-code { margin: 0; white-space: pre; }
+.gdm__src-l {
+  display: block;
+  padding-left: 3.4rem;
+  text-indent: -3.4rem;
+  border-radius: .2rem;
+}
+.gdm__src-l > i {
+  display: inline-block;
+  width: 2.7rem;
+  margin-right: .7rem;
+  text-align: right;
+  font-style: normal;
+  color: rgb(190 208 226 / 28%);
+}
+.gdm__src-l.is-hit { background: rgb(255 255 255 / 9%); color: #e7eff9; }
+.gdm__src-l.is-hit > i { color: #e8c86a; }
+
 .gdm__foot {
   display: flex;
   align-items: center;

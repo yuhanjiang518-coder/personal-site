@@ -18,6 +18,55 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ==================================================================
+     0.5 「今日版本」—— 这个站有日期
+     ------------------------------------------------------------------
+     种子 = 站名 + 日期，没有第三个输入。刻意不用 IP、设备指纹、任何
+     访客标识 —— 那不只是隐私问题：按设备固定种子会让同一台设备永远
+     看到同一版，反而把"今天"这个维度弄丢了。
+     于是：同一天刷新多少次都是同一版，隔一天是另一版，把链接发给
+     别人，对方看到的就是你看到的这一版。
+     目前它决定三件事：没手动选过时用哪张壁纸、技能墙今天怎么堆、
+     以及每天的第一件事——抽签。
+     ================================================================== */
+  function dateKey(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+  var DAY = dateKey(new Date());
+  var DAY_SEED = 'muki.elle|' + DAY;
+
+  /* FNV-1a 打散 + xorshift32 出数。不引库，全部就这十几行；
+     「今日版本」和抽签共用同一个发生器，所以只有一套种子规则。 */
+  function seededRandom(seed) {
+    var h = 2166136261;
+    for (var i = 0; i < seed.length; i++) {
+      h ^= seed.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 15), h | 1);
+      h ^= h + Math.imul(h ^ (h >>> 7), h | 61);
+      return ((h ^ (h >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function pickIdx(n, rnd) { return Math.floor(rnd() * n) % n; }
+
+  /* 今天该取第几个 —— 同一个用途标签永远给同一个答案 */
+  function dayPick(n, salt) { return pickIdx(n, seededRandom(DAY_SEED + '|' + salt)); }
+
+  /* Fisher-Yates：同一个种子 → 同一种顺序 */
+  function shuffleIdx(n, rnd) {
+    var a = [], i, j, t;
+    for (i = 0; i < n; i++) a.push(i);
+    for (i = n - 1; i > 0; i--) {
+      j = Math.floor(rnd() * (i + 1));
+      t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  /* ==================================================================
      0. 开始界面（标题画面）
      ------------------------------------------------------------------
      它只是盖在最上层的一层，不去干预站点自己的加载与开屏：站点该预热的照旧预热。
@@ -96,7 +145,8 @@
      2. 状态
      ================================================================== */
   var state = {
-    wall:  LS.get('jyh-wall', 'bed'),
+    /* 手动选过就以他的选择为准；没选过的人看到的是"今天这一版" */
+    wall:  LS.get('jyh-wall', WALLS[dayPick(WALLS.length, 'wall')].id),
     mode:  LS.get('jyh-wall-mode', 'full'),
     veil:  parseInt(LS.get('jyh-veil', '62'), 10),
     hue:   LS.get('jyh-hue', '340'),
@@ -1069,26 +1119,8 @@
   var omikujiEl = $('#omikuji');
   var hintEl = $('#omikujiHint');
 
-  function todayKey() {
-    var d = new Date();
-    return d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
-      String(d.getDate()).padStart(2, '0');
-  }
-
-  /* 同一天 + 同一签种 → 同一结果（稳定伪随机） */
-  function seededRandom(seed) {
-    var h = 2166136261;
-    for (var i = 0; i < seed.length; i++) {
-      h ^= seed.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return function () {
-      h = Math.imul(h ^ (h >>> 15), h | 1);
-      h ^= h + Math.imul(h ^ (h >>> 7), h | 61);
-      return ((h ^ (h >>> 14)) >>> 0) / 4294967296;
-    };
-  }
+  /* 日期是「今日版本」的一部分，所以这里只问 dateKey 要当前日期 */
+  function todayKey() { return dateKey(new Date()); }
 
   function pickWeighted(list, rnd) {
     var total = 0, i;
@@ -1102,9 +1134,10 @@
   }
   function pick(arr, rnd) { return arr[Math.floor(rnd() * arr.length) % arr.length]; }
 
-  function makeFortune(kind, dateKey) {
+  function makeFortune(kind, dayKey) {
     var F = FORTUNES[kind];
-    var rnd = seededRandom(kind + '|' + dateKey);
+    /* 同一天 + 同一签种 → 同一结果。种子就是全站那一个：站名 + 日期 + 用途 */
+    var rnd = seededRandom(DAY_SEED + '|fortune|' + kind);
     var rank = pickWeighted(F.ranks, rnd);
     var rankIdx = F.ranks.indexOf(rank);
     var quality = 1 - rankIdx / (F.ranks.length - 1);
@@ -1114,7 +1147,7 @@
       return { k: d.k, v: Math.max(2, Math.min(99, Math.round(base + jitter))) };
     });
     return {
-      kind: kind, label: F.label, date: dateKey,
+      kind: kind, label: F.label, date: dayKey,
       rank: rank.k, grad: rank.grad,
       poem: pick(F.poems, rnd),
       desc: pick(F.descs, rnd),
@@ -1299,6 +1332,30 @@
     var filters  = $('#tagFilters');
     var reduce   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    /* 今日序号：每枚标签今天的位次。它由日期决定，不随时间变 ——
+       所以刷新、点「重排」、点「倒下来」，同一天看到的都是这一堆，
+       第二天再来才是另一堆。初始的行怎么断、谁先落，全都是它。 */
+    var todayOrder = shuffleIdx(chips.length, seededRandom(DAY_SEED + '|tags'));
+    var jitRnd = seededRandom(DAY_SEED + '|tags-jitter');
+    var jitter = chips.map(function () { return Math.round((jitRnd() - 0.5) * 7); });
+
+    /* 物理里的"随机"必须写成**步数的纯函数**。
+       用 Math.random() 的话，掉一帧、换个屏幕刷新率都会改变它被消耗的次数，
+       于是同一天刷新两次会堆出两个样子 —— "今日版"就漏气了。
+       换成下面这个整数哈希之后，只要步数相同，结果就完全相同：
+       于是整堆标签落定的位置是可复现的，不只是"开始落地时"一样。 */
+    var PH = 2166136261;
+    (function () {
+      var s = DAY_SEED + '|tags-physics';
+      for (var i = 0; i < s.length; i++) PH = Math.imul(PH ^ s.charCodeAt(i), 16777619);
+    })();
+    function noise(step, i, k) {
+      var h = PH ^ Math.imul(step + 1, 374761393) ^
+              Math.imul(i + 1, 668265263) ^ Math.imul(k + 1, 2246822519);
+      h = Math.imul(h ^ (h >>> 13), 1274126177);
+      return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+    }
+
     /* 时间用"帧单位"（1 = 1/60 秒），照参考站的做法夹在 [0.4, 2.1]，
        这样切后台再回来、或者 120Hz 屏，都不会把模拟炸掉。 */
     var GRAVITY      = 0.62;    /* px/帧²（≈2230 px/s²）*/
@@ -1309,7 +1366,7 @@
     var REST_VY      = 1.1;     /* |vy| 低于此值直接归零 */
     var REST_VX      = 0.9;
     var CALM_SPEED   = 1.5;     /* 判定"安静"的合速度 */
-    var SLEEP_FRAMES = 12;      /* 连续安静多少帧就算落定 */
+    var SLEEP_FRAMES = 12;      /* 连续安静多少个物理子步就算落定（不是 rAF 帧数） */
     var MAX_STEPS    = 1500;
     var DRIP_MS      = 55;      /* 每枚标签依次落下的间隔 */
     var FLOOR_PAD    = 14;
@@ -1331,9 +1388,15 @@
         var w = Math.round(el.offsetWidth);
         var h = Math.round(el.offsetHeight);
         return { el: el, w: w || 90, h: h || 32, x: 0, y: 0, vx: 0, vy: 0,
-                 asleep: false, rest: 0, supported: false, idx: i,
+                 asleep: false, rest: 0, supported: false, idx: i, o: i,
                  active: !el.hidden, slide: false };
       });
+
+      /* 按今日序号重排：一次洗牌同时决定了排布和落下的先后 */
+      var rank = [];
+      todayOrder.forEach(function (o, i) { rank[o] = i; });
+      bodies.sort(function (a, b) { return rank[a.o] - rank[b.o]; });
+      bodies.forEach(function (b, i) { if (b.active) b.idx = i; });
 
       /* 目标高度：按"当前可见"标签的总面积估，堆得下又不空旷 */
       var area = bodies.reduce(function (a, b) {
@@ -1346,13 +1409,16 @@
       layoutRows(availW, pad);
     }
 
-    /* 初始：顶部排成几行（视觉上是"一堆待落的标签"） */
+    /* 初始：顶部排成几行（视觉上是"一堆待落的标签"）。
+       行从哪儿断、每枚高低差多少，都来自今天的种子 —— 宽度不同的
+       标签换个顺序排，断行的位置会整片跟着变。 */
     function layoutRows(availW, pad) {
       var cx = pad, cy = 6, rowH = 0;
       bodies.forEach(function (b) {
         if (!b.active) return;
         if (cx + b.w > pad + availW) { cx = pad; cy += rowH + 8; rowH = 0; }
-        b.x = cx; b.y = Math.max(4, cy);
+        b.x = cx;
+        b.y = Math.max(4, cy + (jitter[b.o] || 0));
         b.homeX = b.x; b.homeY = b.y;
         b.vx = 0; b.vy = 0; b.asleep = false; b.rest = 0; b.slide = false;
         cx += b.w + 8;
@@ -1391,7 +1457,7 @@
       if (b.y + b.h > H) b.y = H - b.h;
     }
 
-    function separate(a, b) {
+    function separate(a, b, i, k) {
       var ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
       if (ox <= 0) return false;
       var oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
@@ -1410,8 +1476,8 @@
         /* 只在真的在下落时抖一下，静止阶段抖动会让人永远睡不着 */
         if (ay > 4) {
           var j = (Math.abs(a.vx) + Math.abs(b.vx) + 1) * 0.05;
-          a.vx += (Math.random() - 0.5) * j;
-          b.vx += (Math.random() - 0.5) * j;
+          a.vx += (noise(simSteps, i, k) - 0.5) * j;
+          b.vx += (noise(simSteps, k, i) - 0.5) * j;
         }
       }
       return true;
@@ -1427,7 +1493,7 @@
             var b = bodies[k];
             if (!b.active) continue;
             if (a.asleep && b.asleep) continue;
-            if (separate(a, b)) { clamp(a); clamp(b); }
+            if (separate(a, b, i, k)) { clamp(a); clamp(b); }
           }
         }
       }
@@ -1484,6 +1550,11 @@
     var STEP = 1 / 60;          /* 秒 */
     var acc = 0;
     var simSteps = 0;           /* 物理子步累计数 —— 节拍用它，不用 rAF 帧数 */
+    /* 上一次静止判定的结果。它必须跨帧留着：一帧可能一步都不推进
+       （屏幕比 60Hz 快时就会），那时**不能**再跑一次判定 —— 判定里的
+       rest 计数是按物理步走的，多跑一次就会让标签早一步睡着，
+       于是同一版在两个机器上差 0.01px。 */
+    var st = { asleep: 0, total: 0, done: false };
 
     function frame(now) {
       if (!running) return;
@@ -1493,21 +1564,11 @@
       elapsedMs = Math.min(elapsedMs, 60);
       acc += elapsedMs / 1000;
 
-      /* 依次落下：还没轮到的钉在起点，轮到的给一个初速（参考站是预置 vy>0） */
-      for (var i = 0; i < bodies.length; i++) {
-        var b = bodies[i];
-        if (!b.active || b.slide) continue;
-        if (simSteps * (1000 / 60) < b.idx * DRIP_MS) {
-          b.vx = 0; b.vy = 0;
-          b.x = b.homeX; b.y = b.homeY;
-        } else {
-          b.slide = true;
-          b.vy = 1.2;                       /* 不是从静止开始掉 */
-          b.vx = (Math.random() - 0.5) * 1.4;
-        }
-      }
-
-      /* 按固定步长推进，可能一帧跑 0~3 个子步 */
+      /* 依次落下：轮到的给一个初速。这个判定必须在**子步循环里面**做 ——
+         放到帧的顶层的话，"这一帧跑了几个子步"会改变每枚标签起跳的物理
+         步号，于是同一天刷新两次会堆出两个样子。没轮到的原地不动
+         （layoutRows 已经把 x/y 放在起点了，integrate 会跳过它们）。
+         初速只由 (落下的次序, 标签本身) 决定，与何时被唤醒无关。 */
       var sub = 0;
       while (acc >= STEP && sub < 3) {
         integrate(STEP * 60);   /* integrate 用"帧单位"，×60 换算 */
@@ -1515,11 +1576,30 @@
         acc -= STEP;
         sub++;
         simSteps++;
+
+        for (var i = 0; i < bodies.length; i++) {
+          var b = bodies[i];
+          if (!b.active || b.slide) continue;
+          if (simSteps * (1000 / 60) >= b.idx * DRIP_MS) {
+            b.slide = true;
+            b.vy = 1.2;                     /* 不是从静止开始掉 */
+            b.vx = (noise(b.idx, b.o, 7) - 0.5) * 1.4;
+          } else {
+            /* 还没轮到：钉在起点。互推（resolve）对它是照推不误的，
+               所以每个子步都得按回来，否则顶上那几行会被推得歪掉。 */
+            b.vx = 0; b.vy = 0;
+            b.x = b.homeX; b.y = b.homeY;
+          }
+        }
+
+        /* 静止判定也按物理步数走，不按 rAF 帧数 —— 否则掉一帧就会让
+           某枚标签早/晚睡着，落定的位置跟着帧率变。 */
+        st = settleCheck();
+        if (st.done) break;
       }
       if (sub === 3) acc = 0;   /* 追不上就丢弃积压，避免雪崩 */
       paintAll();
 
-      var st = settleCheck();
       if (st.done || simSteps > MAX_STEPS) {
         running = false;
         stage.classList.remove('is-dropping');   /* 落定后背景插画收回低调 */
@@ -1560,12 +1640,15 @@
       }
     }
 
-    function say(msg) { if (statEl) statEl.textContent = msg; }
+    /* 状态行末尾缀上日期 —— 让"今天是哪一版"这件事看得见，
+       否则访客只会觉得这堆标签莫名其妙每次不一样。 */
+    function say(msg) { if (statEl) statEl.textContent = msg + ' · 今日 ' + DAY; }
 
     function start() {
       if (running) return;
       measure();
       running = true;
+      st = { asleep: 0, total: 0, done: false };   /* 上一次的判定结果不能带过来 */
       stage.classList.add('is-dropping');   /* 背景插画此时稍微显影 */
       steps = 0; simSteps = 0; acc = 0; lastT = 0;
       chips.forEach(function (el) { el.classList.add('is-falling'); });

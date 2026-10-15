@@ -13,6 +13,27 @@
 #include <stdlib.h>
 #include <time.h>
 
+/*
+ * 执行轨迹（给站点上的"终端回放"用，不影响游戏本身）
+ *
+ * 只有加 -DTRACE 编译时 TR() 才会往 stdout 吐一个"当前行号"标记：
+ *     gcc -DTRACE -o minesweeper.trace minesweeper.c
+ * 不加的时候（也就是上面那行编译命令）TR() 展开成空语句，二进制里
+ * 一点痕迹都没有，游戏行为完全一致。
+ *
+ * 为什么标记要挤在真正干活的那一行末尾：站点把每一帧 stdout 和这些
+ * 标记对上，回放到那一帧时就高亮那一行的源码。标记写在哪一行，
+ * 观众看到的就是哪一行 —— 所以它必须和那句代码同行，才有得读。
+ *
+ * 为什么每次都要 fflush：stdout 重定向到文件时是块缓冲的，
+ * 不冲一下，标记会和它后面那些行挤在一起晚到，帧和行号就对不上了。
+ */
+#ifdef TRACE
+#define TR() do { printf("\x01%ld\n", (long)__LINE__); fflush(stdout); } while (0)
+#else
+#define TR() ((void)0)
+#endif
+
 #define MAX 16        /* 棋盘最大 16 x 16 */
 
 #define HIDDEN 0      /* 没翻开 */
@@ -120,6 +141,10 @@ void show(void)
 {
     int r, c;
 
+    /* 一帧的起点。站点按"这一行"把 stdout 切开，所以它必须是 show() 里
+       第一条真正执行的语句 —— 切出来的每一段就正好是一块棋盘。 */
+    TR();
+
     printf("\n     ");
     for (c = 0; c < cols; c++)
         printf("%2d", c + 1);          /* 列号 */
@@ -178,12 +203,12 @@ int main(void)
 
         if (cmd[0] == 'f') {                /* 插旗 */
             if (sscanf(line, "%*s %d %d", &r, &c) != 2) {
-                printf("格式不对，插旗请输入：f 行 列\n");
+                printf("格式不对，插旗请输入：f 行 列\n");  TR();
                 continue;
             }
         } else {                            /* 翻开 */
             if (sscanf(line, "%d %d", &r, &c) != 2) {
-                printf("格式不对，翻开请输入：行 列\n");
+                printf("格式不对，翻开请输入：行 列\n");  TR();
                 continue;
             }
         }
@@ -191,43 +216,46 @@ int main(void)
         r--;                                /* 玩家输入从 1 开始，数组从 0 开始 */
         c--;
         if (r < 0 || r >= rows || c < 0 || c >= cols) {
-            printf("坐标超出范围，行是 1-%d，列是 1-%d\n", rows, cols);
+            printf("坐标超出范围，行是 1-%d，列是 1-%d\n", rows, cols);  TR();
             continue;
         }
 
         if (cmd[0] == 'f') {
             if (view[r][c] == SHOWN) {
-                printf("这个格子已经翻开了，不能插旗\n");
+                printf("这个格子已经翻开了，不能插旗\n");  TR();
                 continue;
             }
             if (view[r][c] == FLAG) {
                 view[r][c] = HIDDEN;        /* 再按一次取消旗子 */
-                flags--;
+                flags--;  TR();
             } else {
                 view[r][c] = FLAG;
-                flags++;
+                flags++;  TR();
             }
         } else {
             if (view[r][c] == FLAG) {
-                printf("这个格子插着旗，先取消旗子再翻开\n");
+                printf("这个格子插着旗，先取消旗子再翻开\n");  TR();
                 continue;
             }
             if (view[r][c] == SHOWN) {
-                printf("这个格子已经翻开了\n");
+                printf("这个格子已经翻开了\n");  TR();
                 continue;
             }
 
             if (first == 1) {               /* 第一次点击才布雷，保证不会一上来就踩雷 */
-                put_mines(r, c);
+                put_mines(r, c);  TR();
                 first = 0;
             }
 
             if (mine[r][c] == 1) {
-                over = 2;                   /* 踩雷 */
+                over = 2;  TR();            /* 踩雷 */
             } else {
-                open_cell(r, c);
-                if (opened == rows * cols - mine_num)
-                    over = 1;               /* 不是雷的格子全翻开了，赢 */
+                open_cell(r, c);  TR();
+                /* 这里必须补花括号：TR() 是语句，不补的话它会**无条件**执行，
+                   回放里就会显示"赢了"这条根本没走到的分支。 */
+                if (opened == rows * cols - mine_num) {
+                    over = 1;  TR();        /* 不是雷的格子全翻开了，赢 */
+                }
             }
         }
 
@@ -235,13 +263,13 @@ int main(void)
     }
 
     if (over == 1) {
-        printf("\n恭喜，你把所有的雷都找出来了！\n");
+        printf("\n恭喜，你把所有的雷都找出来了！\n");  TR();
     } else if (over == 2) {
         for (r = 0; r < rows; r++)          /* 输了就把雷都显示出来 */
             for (c = 0; c < cols; c++)
                 if (mine[r][c] == 1)
                     view[r][c] = SHOWN;
-        printf("\n   ...踩到雷了，游戏结束：\n");
+        printf("\n   ...踩到雷了，游戏结束：\n");  TR();
         show();
     }
 

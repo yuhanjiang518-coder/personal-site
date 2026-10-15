@@ -15,6 +15,27 @@
 #include <windows.h>    /* 用 Sleep() 控制下落速度 */
 #include <time.h>
 
+/*
+ * 执行轨迹（给站点上的"终端回放"用，不影响游戏本身）
+ *
+ * 只有加 -DTRACE 编译时 TR() 才会往 stdout 吐一个"当前行号"标记：
+ *     gcc -DTRACE -o tetris.trace tetris.c
+ * 不加的时候（也就是上面那行编译命令）TR() 展开成空语句，二进制里
+ * 一点痕迹都没有，游戏行为完全一致。
+ *
+ * 为什么标记要挤在真正干活的那一行末尾：站点把每一帧 stdout 和这些
+ * 标记对上，回放到那一帧时就高亮那一行的源码。标记写在哪一行，
+ * 观众看到的就是哪一行 —— 所以它必须和那句代码同行，才有得读。
+ *
+ * 为什么每次都要 fflush：stdout 重定向到文件时是块缓冲的，
+ * 不冲一下，标记会和它后面那些行挤在一起晚到，帧和行号就对不上了。
+ */
+#ifdef TRACE
+#define TR() do { printf("\x01%ld\n", (long)__LINE__); fflush(stdout); } while (0)
+#else
+#define TR() ((void)0)
+#endif
+
 #define ROWS 20         /* 场地 20 行 */
 #define COLS 10         /* 场地 10 列 */
 
@@ -109,8 +130,9 @@ void new_piece(void)
     px = COLS / 2 - 2;
     py = 0;
 
-    if (can_put(py, px) == 0)        /* 一出来就放不下，游戏结束 */
-        over = 1;
+    if (can_put(py, px) == 0) {      /* 一出来就放不下，游戏结束 */
+        over = 1;  TR();
+    }
 }
 
 
@@ -127,11 +149,13 @@ void rotate_piece(void)
     for (i = 0; i < 4; i++)
         for (j = 0; j < 4; j++)
             cur[i][j] = tmp[3 - j][i];
+    TR();                            /* 转成了 */
 
     if (can_put(py, px) == 0) {      /* 转完放不下，就转回去 */
         for (i = 0; i < 4; i++)
             for (j = 0; j < 4; j++)
                 cur[i][j] = tmp[i][j];
+        TR();                        /* 撞墙，转回来了 */
     }
 }
 
@@ -161,7 +185,7 @@ int clear_lines(void)
         if (full == 0)
             continue;
 
-        n++;
+        n++;  TR();
         for (k = i; k > 0; k--)              /* 上面的行整体往下挪 */
             for (j = 0; j < COLS; j++)
                 board[k][j] = board[k - 1][j];
@@ -190,6 +214,10 @@ int in_cur(int r, int c)
 void draw(void)
 {
     int i, j;
+
+    /* 一帧的起点。站点按"这一行"把 stdout 切开，所以它必须是 draw() 里
+       第一条真正执行的语句 —— 切出来的每一段就正好是一幅场地。 */
+    TR();
 
     system("cls");
     printf("得分: %d    消行: %d    操作: A D 移动，W 旋转，S 加速，Q 退出\n", score, lines);
@@ -222,13 +250,13 @@ void lock_and_next(void)
 {
     int n;
 
-    lock_piece();
+    lock_piece();  TR();
     n = clear_lines();
     if (n > 0) {
         score += n * 10;
-        lines += n;
+        lines += n;  TR();
     }
-    new_piece();
+    new_piece();  TR();
 }
 
 
@@ -285,9 +313,10 @@ int main(void)
         if (tick >= speed) {         /* 时间到，自动下落一格 */
             tick = 0;
             if (can_put(py + 1, px)) {
-                py++;
+                py++;  TR();         /* 时间到，自动往下掉一格 */
             } else {
                 lock_and_next();     /* 下不去了就落定 */
+                TR();
             }
             if (over != 0)
                 break;

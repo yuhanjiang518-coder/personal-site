@@ -15,6 +15,27 @@
 #include <windows.h>    /* 用 Sleep() 控制蛇的速度 */
 #include <time.h>
 
+/*
+ * 执行轨迹（给站点上的"终端回放"用，不影响游戏本身）
+ *
+ * 只有加 -DTRACE 编译时 TR() 才会往 stdout 吐一个"当前行号"标记：
+ *     gcc -DTRACE -o snake.trace snake.c
+ * 不加的时候（也就是上面那行编译命令）TR() 展开成空语句，二进制里
+ * 一点痕迹都没有，游戏行为完全一致。
+ *
+ * 为什么标记要挤在真正干活的那一行末尾：站点把每一帧 stdout 和这些
+ * 标记对上，回放到那一帧时就高亮那一行的源码。标记写在哪一行，
+ * 观众看到的就是哪一行 —— 所以它必须和那句代码同行，才有得读。
+ *
+ * 为什么每次都要 fflush：stdout 重定向到文件时是块缓冲的，
+ * 不冲一下，标记会和它后面那些行挤在一起晚到，帧和行号就对不上了。
+ */
+#ifdef TRACE
+#define TR() do { printf("\x01%ld\n", (long)__LINE__); fflush(stdout); } while (0)
+#else
+#define TR() ((void)0)
+#endif
+
 #define W 20            /* 场地宽 20 格 */
 #define H 20            /* 场地高 20 格 */
 #define MAXLEN (W * H)  /* 蛇最长占满整个场地 */
@@ -86,7 +107,7 @@ void step(void)
     else nx--;
 
     if (nx < 0 || nx >= W || ny < 0 || ny >= H) {   /* 撞墙 */
-        over = 1;
+        over = 1;  TR();
         return;
     }
 
@@ -94,24 +115,25 @@ void step(void)
 
     /* 没吃到东西时尾巴会往前让一格，所以最后一节不算撞到自己 */
     if (hit_body(nx, ny, eat ? len : len - 1)) {
-        over = 1;
+        over = 1;  TR();
         return;
     }
 
-    if (eat == 1)
-        len++;                       /* 吃到食物，长度加一 */
+    if (eat == 1) {
+        len++;  TR();                /* 吃到食物，长度加一 */
+    }
 
     for (i = len - 1; i > 0; i--) {  /* 身体每一节都往前挪一格 */
         body_x[i] = body_x[i - 1];
         body_y[i] = body_y[i - 1];
     }
-    body_x[0] = nx;                  /* 蛇头放到新位置 */
+    body_x[0] = nx;  TR();           /* 蛇头放到新位置 */
     body_y[0] = ny;
 
     if (eat == 1) {
         score += 10;
         if (len == MAXLEN) {         /* 整块场地都是蛇，通关 */
-            over = 2;
+            over = 2;  TR();
             return;
         }
         put_food();
@@ -123,6 +145,10 @@ void step(void)
 void draw(void)
 {
     int x, y;
+
+    /* 一帧的起点。站点按"这一行"把 stdout 切开，所以它必须是 draw() 里
+       第一条真正执行的语句 —— 切出来的每一段就正好是一幅场地。 */
+    TR();
 
     system("cls");                   /* 清屏，重新画一整幅 */
     printf("得分: %d    长度: %d    操作: W A S D / 方向键，Q 退出\n", score, len);
@@ -177,17 +203,20 @@ int main(void)
             change_dir(&dir, key);           /* 把 dir 的地址传进去 */
         }
 
-        step();
+        step();  TR();
         draw();
         if (over != 0)
             break;
         Sleep(150);                  /* 停 150 毫秒，也就是每秒爬 6 格多 */
     }
 
-    if (over == 1)
-        printf("\n游戏结束！得分：%d\n", score);
-    else if (over == 2)
-        printf("\n太厉害了，整块场地都被你占满了！得分：%d\n", score);
+    /* 这里必须补花括号：TR() 哪怕展开成空语句也是一个**语句**，
+       `if (over == 1) printf(...); TR(); else ...` 会让 else 找不到 if。 */
+    if (over == 1) {
+        printf("\n游戏结束！得分：%d\n", score);  TR();
+    } else if (over == 2) {
+        printf("\n太厉害了，整块场地都被你占满了！得分：%d\n", score);  TR();
+    }
 
     printf("按任意键退出...\n");
     _getch();

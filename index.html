@@ -9,7 +9,7 @@
 <title>向き · 写代码，也写点生活</title>
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="apple-touch-icon" href="assets/avatar-round.webp">
-<link rel="stylesheet" href="style.css?v=20261019e">
+<link rel="stylesheet" href="style.css?v=20261020f">
 <link rel="stylesheet" href="aw.css?v=20261018j">
 <!-- 无 JS / JS 慢时内容保持可见：隐藏初始态只在本行执行后生效 -->
 <script>document.documentElement.classList.add('js')</script>
@@ -37,14 +37,19 @@
        立体感来自"错位 + 每块色调不同 + 边界是硬的"，不是靠加阴影（参考站的色块本来就是平的）。
        放在照片块之前，所以照片块会盖在它们上面。 -->
   <div class="start-slab start-slab--back" aria-hidden="true"></div>
-  <div class="start-slab start-slab--violet" aria-hidden="true"></div>
+  <div class="start-slab start-slab--violet" aria-hidden="true">
+    <!-- 放大暗影住在色块里：参考站的剪影也是被色板裁住的，不是飘在外面的灰雾 -->
+    <img class="start-tachie--ghost" src="assets/elaina/tachie-a.webp" alt="" width="989" height="1400">
+  </div>
   <div class="start-slab start-slab--hot" aria-hidden="true"></div>
 
-  <!-- 0b. 细长的白色色块：参考站里那些白横规 / 白竖条是同一种语言 ——
-       它们是版面的分隔线，不是装饰花边，所以只有 3px 粗。 -->
+  <!-- 0b. 细长的白色色块：参考站里那是同一件东西的三种形态 ——
+       一段粗白条、一行宽字距小字、一条继续往右的细线，共处同一条轴。
+       它从粉板左边框外面起笔，所以会跨过色块边界。 -->
   <div class="start-edge" aria-hidden="true"></div>
-  <div class="start-rulebar" aria-hidden="true"></div>
+  <div class="start-ruling" aria-hidden="true"><i></i><span>MUKI · 旅人手记</span><b></b></div>
   <p class="start-chip" aria-hidden="true">ひとり旅 · SOLO JOURNEY</p>
+  <p class="start-chip start-chip--b" aria-hidden="true">灰の魔女 · ELAINA</p>
 
   <!-- 1. 两块照片块（海边插画的两个取景，斜着切进版面） -->
   <figure class="start-panel start-panel--a" aria-hidden="true">
@@ -72,7 +77,9 @@
   <!-- 3. 色块：文字与按钮都压在这块平色上（参考站那块粉板的位置） -->
   <div class="start-block start-block--big">
     <div class="start-text">
-      <p class="start-kicker"><span>MUKI</span><i></i><span>旅人手记</span></p>
+      <!-- 窄屏专用：桌面那条规制线是绝对定位、跨色块边界的，手机上没地方跨，
+           所以另给一份在文档流里的，宽度跟着卡片走。 -->
+      <div class="start-ruling start-ruling--inline" aria-hidden="true"><i></i><span>MUKI · 旅人手记</span><b></b></div>
       <h1 class="start-title"><span>ELAINA</span><span>向き</span></h1>
       <p class="start-info">灰之魔女 · 一个人旅行，边走边把见闻记下来。</p>
       <p class="start-info start-info--2">这个站就是那份手记 —— 写代码，也写点生活。</p>
@@ -96,12 +103,16 @@
     <span class="start-dash start-dash--3"></span>
     <span class="start-dash start-dash--4"></span>
     <span class="start-dash start-dash--5"></span>
+    <span class="start-dash start-dash--steep"></span>
+    <span class="start-sq start-sq--big"></span>
+    <span class="start-blinds start-blinds--3"></span>
     <span class="start-sq start-sq--dot"></span>
     <span class="start-sq start-sq--grow"></span>
     <span class="start-sq start-sq--b3"></span>
     <span class="start-sq start-sq--d1"></span>
     <span class="start-sq start-sq--d2"></span>
     <span class="start-sq start-sq--d3"></span>
+    <span class="start-sq start-sq--d4"></span>
     <span class="start-blinds start-blinds--1"></span>
     <span class="start-blinds start-blinds--2"></span>
   </div>

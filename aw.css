@@ -79,8 +79,6 @@ html[data-skin="aw"] .field-label,
 html[data-skin="aw"] .marquee-item,
 html[data-skin="aw"] .tw-chip,
 html[data-skin="aw"] .anime-score,
-html[data-skin="aw"] .omikuji-label,
-html[data-skin="aw"] .omikuji-hint,
 html[data-skin="aw"] .foot,
 html[data-skin="aw"] .load-sub,
 html[data-skin="aw"] .load-name {
@@ -731,8 +729,7 @@ html[data-skin="aw"] .tl-item::before {
 }
 
 html[data-skin="aw"] .tw-stage,
-html[data-skin="aw"] .tw-field,
-html[data-skin="aw"] .omikuji-tube { border-radius: 0; box-shadow: none; }
+html[data-skin="aw"] .tw-field { border-radius: 0; box-shadow: none; }
 html[data-skin="aw"] .tw-chip { border-radius: 0; box-shadow: none; }
 html[data-skin="aw"] .tw-stat,
 html[data-skin="aw"] .tw-legend { font-family: var(--aw-mono); }

@@ -1116,8 +1116,6 @@
   if (!FORTUNES[activeKind]) activeKind = 'witch';
 
   var resultEl = $('#fortuneResult');
-  var omikujiEl = $('#omikuji');
-  var hintEl = $('#omikujiHint');
 
   /* 日期是「今日版本」的一部分，所以这里只问 dateKey 要当前日期 */
   function todayKey() { return dateKey(new Date()); }
@@ -1202,7 +1200,6 @@
         '<p>今天还没抽。点左边的签筒摇一摇，' + tail + '。</p>' +
         '<div><span class="fr-no">共 ' + F.ranks.length + ' 种签 · 每天一签</span></div>' +
       '</div>';
-    if (hintEl) hintEl.textContent = '点我抽签';
   }
 
   function renderResult(res) {
@@ -1243,7 +1240,6 @@
         '</div>' +
       '</div>';
 
-    if (hintEl) hintEl.textContent = '已成签 · 明日再来';
 
     requestAnimationFrame(function () {
       $$('.fr-luck-bar > i', resultEl).forEach(function (b, i) {
@@ -1256,7 +1252,6 @@
     if (!resultEl) return;
     var res = getResult(kind);
     if (res) renderResult(res); else renderEmpty(kind);
-    if (omikujiEl) omikujiEl.classList.toggle('is-done', !!res);
   }
 
   /* ------------------------------------------------------------------

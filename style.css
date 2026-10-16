@@ -1798,100 +1798,10 @@ body[data-wall-mode="none"] .hero {
   align-items: center;
 }
 
-/* --- 签筒 --- */
-.omikuji {
-  position: relative;
-  width: clamp(7.5rem, 22vw, 10rem);
-  aspect-ratio: 3 / 4.4;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  border-radius: var(--r-xl);
-  transition: transform var(--d-ui) var(--ease-out);
-}
-.omikuji:active { transform: scale(.96); }
-.omikuji-tube {
-  position: relative;
-  width: 62%;
-  height: 72%;
-  border-radius: .5rem .5rem .8rem .8rem;
-  background: linear-gradient(150deg,
-      color-mix(in oklab, var(--primary) 78%, #fff),
-      color-mix(in oklab, var(--primary) 92%, #000 12%));
-  box-shadow:
-    inset -6px 0 12px rgb(0 0 0 / 16%),
-    inset 6px 0 12px rgb(255 255 255 / 22%),
-    var(--shadow-lg);
-  overflow: hidden;
-  transition: transform var(--d-ui) var(--ease-out);
-}
-.omikuji:hover .omikuji-tube { transform: translateY(-4px); }
-.omikuji-tube::before,
-.omikuji-tube::after {
-  content: "";
-  position: absolute;
-  left: 18%;
-  width: 64%;
-  height: 14%;
-  border-radius: 3px 3px 0 0;
-  background: linear-gradient(to bottom, #fdf8ee, #efe4cf);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
-}
-.omikuji-tube::before { top: 0; transform: rotate(-4deg); }
-.omikuji-tube::after  { top: 4%; transform: rotate(5deg) translateX(6%); }
-.omikuji-label {
-  position: absolute;
-  left: 50%; top: 56%;
-  transform: translate(-50%, -50%);
-  writing-mode: vertical-rl;
-  font-size: clamp(.72rem, 2.4vw, .88rem);
-  font-weight: 800;
-  letter-spacing: .24em;
-  color: rgb(255 255 255 / 92%);
-  text-shadow: 0 1px 3px rgb(0 0 0 / 30%);
-  pointer-events: none;
-}
-.omikuji.is-shaking .omikuji-tube { animation: shake .42s var(--ease-in-out) infinite; }
-.omikuji.is-shaking .omikuji-tube::before { animation: shake-tip .42s var(--ease-in-out) infinite; }
-.omikuji.is-shaking .omikuji-tube::after  { animation: shake-tip .42s var(--ease-in-out) infinite reverse; }
-@keyframes shake {
-  0%, 100% { transform: rotate(0) translateY(0); }
-  25% { transform: rotate(-7deg) translateY(-5px); }
-  75% { transform: rotate(7deg) translateY(-5px); }
-}
-@keyframes shake-tip {
-  0%, 100% { transform: translateY(0) rotate(-4deg); }
-  50% { transform: translateY(-6px) rotate(-9deg); }
-}
 
-.omikuji-hint {
-  position: absolute;
-  inset: auto 0 -.3rem;
-  text-align: center;
-  font-size: .72rem;
-  font-weight: 650;
-  color: var(--text-faint);
-}
-
-/* --- 结果 --- */
+/* 下面这两条在删死代码时被误伤过（我按行号切块，把块尾的在用规则一起切了）。
+   靠备份快照 diff 才发现 —— 记在这儿，提醒下次别用行号切块。 */
 .fortune-body { min-width: 0; }
-.fortune-tabs { display: flex; gap: .3rem; margin-bottom: var(--s-4); flex-wrap: wrap; }
-.fortune-tab {
-  padding: .34rem .78rem;
-  border: 0;
-  border-radius: var(--r-full);
-  background: var(--btn-bg);
-  color: var(--text-soft);
-  font-size: .76rem;
-  font-weight: 650;
-  transition: background-color var(--d-fast) ease, color var(--d-fast) ease;
-}
-.fortune-tab:hover { background: var(--btn-bg-hover); color: var(--text); }
-.fortune-tab[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
-
 .fortune-result { min-height: 8.4rem; }
 
 .fr-empty { display: flex; flex-direction: column; gap: var(--s-3); }
@@ -4483,7 +4393,6 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
 
   .fortune-inner { grid-template-columns: 1fr; justify-items: center; }
   .fortune-body { width: 100%; }
-  .fortune-tabs { justify-content: center; }
   .fr-luck-k { flex-basis: 3.8rem; }
   .fr-luck-v { flex-basis: 2.2rem; }
 

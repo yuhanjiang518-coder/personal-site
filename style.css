@@ -4864,8 +4864,29 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
 }
 /* 信息表：行与行之间给点空气，键用小号宽字距，值和键拉开层次 */
 .fact { padding: .42rem 0; }
-.fact dt { letter-spacing: .1em; }
-.fact dd { line-height: 1.6; }
+.fact dt { flex: 0 0 auto; min-width: 4.4rem; letter-spacing: .1em; }
+.fact dd { flex: 0 1 auto; line-height: 1.6; }
+/* 点线引导：键和值之间那条虚线。要一条能伸缩的线，就必须有自己的元素 ——
+   空的 dt::after 伸缩不了（dt 不是 flex 容器），所以由 HTML 里那个
+   span.fact-lead 来当，它是 .fact 的 flex 子项，flex:1 吃满中间的空档。
+   往上抬一点是为了让虚线落在文字基线上，不然它会贴着行的下沿。 */
+.fact-lead {
+  flex: 1 1 auto;
+  min-width: 1.2rem;
+  margin: 0 .55rem;
+  align-self: baseline;
+  transform: translateY(-.32em);
+  border-bottom: 1px dotted color-mix(in oklab, var(--text-faint) 62%, transparent);
+}
+
+/* 区块引言（.sec-lead）：原来这些段落用的是行内 style，改不动、也改不统一。
+   现在收成一个类 —— 排版属性集中在这里，位置类的 margin/max-width 仍留在
+   行内（那两处本来就各不相同）。 */
+.sec-lead {
+  color: var(--text-soft);
+  line-height: 1.9;
+  text-wrap: pretty;          /* 别让最后一行只剩一两个字 */
+}
 
 /* =========================================================== 22. 区块头部（P3R 风格）
    aw 皮肤那一版在 aw.css 末尾（带 !important，必须后加载才压得住）；

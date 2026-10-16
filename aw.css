@@ -1016,7 +1016,9 @@ html[data-skin="aw"] .sec-head {
   border: 0;                   /* 原来那条 1px 底线让位给切角底板 */
   border-radius: 0;
   color: #f2f7ff;
-  background: none !important;
+  /* 去 !important 靠具体度就够：html[data-skin="aw"] .sec-head (0,2,1) 打
+     style.css 的 .sec-head (0,1,0)。这是本轮重构最后一个漏网的。 */
+  background: none;
 }
 html[data-skin="aw"] .sec-head::before {
   content: "";

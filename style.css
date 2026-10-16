@@ -4888,6 +4888,126 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
   text-wrap: pretty;          /* 别让最后一行只剩一两个字 */
 }
 
+/* =========================================================== 24. 塔罗牌阵（旅人之签）
+   参考的是一段塔罗抽牌的界面：深蓝牌桌 + 背面朝上的牌 + 点一张翻面，
+   翻开后牌名和解读一起出来。
+
+   牌面全部是 CSS 画的（渐变 + 内描边 + 字形），**没有新增任何图片** ——
+   22 张大阿卡纳要么去找素材、要么自己画，两样都不该为了一个每日抽签去做。
+   .tarot-flip 才是翻转的那一层：外层 button 留着给 :focus-visible 和
+   抬起动画用，两个 transform 放同一个元素上会互相覆盖。 */
+.tarot-table {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .95rem;
+  padding: 1.15rem clamp(.8rem, 2.4vw, 1.4rem) 1.3rem;
+  border-radius: var(--r-lg);
+  background: radial-gradient(125% 95% at 50% 12%, #2c5391 0%, #163663 46%, #0a1b38 100%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%), 0 20px 44px -24px rgb(0 0 0 / 62%);
+}
+.tarot-deck { display: flex; gap: clamp(.45rem, 1.8vw, .95rem); }
+.tarot {
+  width: clamp(5.1rem, 14vw, 7.2rem);
+  aspect-ratio: 5 / 8;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: .55rem;
+  transition: transform var(--d-ui) var(--ease-out);
+}
+.tarot:hover { transform: translateY(-6px); }
+.tarot:focus-visible { outline: 2px solid #cfe4ff; outline-offset: 3px; }
+.tarot-flip {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .78s var(--ease-out);
+}
+.tarot.is-drawn .tarot-flip { transform: rotateY(180deg); }
+.tarot-back,
+.tarot-face {
+  position: absolute;
+  inset: 0;
+  border-radius: .5rem;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+/* 牌背：斜纹 + 内描边 + 中间一个菱形徽记 */
+.tarot-back {
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 8%) 0 3px, transparent 3px 7px),
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / 8%) 0 3px, transparent 3px 7px),
+    linear-gradient(160deg, #1e3f78, #0d2044);
+  box-shadow:
+    inset 0 0 0 1px rgb(228 240 255 / 30%),
+    inset 0 0 0 .3rem rgb(9 22 46 / 88%),
+    inset 0 0 0 .37rem rgb(228 240 255 / 20%),
+    0 12px 24px -14px rgb(0 0 0 / 72%);
+}
+.tarot-back i {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 40%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid rgb(198 224 255 / 48%);
+  box-shadow: inset 0 0 0 3px rgb(198 224 255 / 12%);
+}
+/* 牌面：翻过来才看到 */
+.tarot-face {
+  transform: rotateY(180deg);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: .22rem;
+  padding: .5rem .3rem;
+  background: linear-gradient(165deg, #f9fcff, #dde8f8);
+  box-shadow:
+    inset 0 0 0 1px rgb(20 45 90 / 32%),
+    inset 0 0 0 .3rem #fff,
+    inset 0 0 0 .37rem rgb(20 45 90 / 20%);
+  color: #14315e;
+  text-align: center;
+}
+.tarot-no { font-family: var(--aw-mono, ui-monospace, monospace); font-size: .72rem; letter-spacing: .12em; opacity: .68; }
+.tarot-glyph { font-size: clamp(1.05rem, 3vw, 1.55rem); line-height: 1; }
+.tarot-name { font-style: normal; font-size: .6rem; letter-spacing: .04em; opacity: .82; }
+/* 牌面上下各两道细线 —— 只有字的话太像一张白纸，这两道给它"牌"的框 */
+.tarot-face::before,
+.tarot-face::after {
+  content: "";
+  position: absolute;
+  left: 15%; right: 15%;
+  height: 1px;
+  background: rgb(20 45 90 / 28%);
+}
+.tarot-face::before { top: 15%; box-shadow: 0 3px 0 rgb(20 45 90 / 13%); }
+.tarot-face::after { bottom: 15%; box-shadow: 0 -3px 0 rgb(20 45 90 / 13%); }
+.tarot.is-active { box-shadow: 0 0 0 2px var(--primary), 0 0 0 6px color-mix(in oklab, var(--primary) 22%, transparent); }
+.tarot.is-flipping { animation: tarot-lift .8s var(--ease-out); }
+@keyframes tarot-lift {
+  0%   { transform: translateY(0); }
+  45%  { transform: translateY(-10px) scale(1.035); }
+  100% { transform: translateY(0); }
+}
+.tarot-hint {
+  margin: 0;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  color: rgb(212 229 255 / 74%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tarot-flip { transition: none; }
+  .tarot.is-flipping { animation: none; }
+  .tarot:hover { transform: none; }
+}
+
 /* =========================================================== 22. 区块头部（P3R 风格）
    aw 皮肤那一版在 aw.css 末尾（带 !important，必须后加载才压得住）；
    这里是 classic 皮肤（?skin=classic）的同一套语言。

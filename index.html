@@ -1063,14 +1063,14 @@
 
       <div class="fortune reveal">
         <div class="fortune-inner">
-          <button class="omikuji" id="omikuji" type="button" aria-label="摇一摇抽签">
-            <span class="omikuji-tube" aria-hidden="true"></span>
-            <span class="omikuji-label" aria-hidden="true">御 籤</span>
-            <span class="omikuji-hint" id="omikujiHint">点我抽签</span>
-          </button>
+          <!-- 塔罗牌阵：三个签种 = 三张背面朝上的牌，点一张翻开。
+               牌面由 script.js 生成（签种和名称都在 FORTUNES 里，写两遍迟早不一致）。 -->
+          <div class="tarot-table">
+            <div class="tarot-deck" id="tarotDeck" role="group" aria-label="抽一张牌"></div>
+            <p class="tarot-hint" id="tarotHint">挑一张翻开 · 每天一次</p>
+          </div>
 
           <div class="fortune-body">
-            <div class="fortune-tabs" id="fortuneTabs" role="group" aria-label="选择签种"></div>
             <div class="fortune-result" id="fortuneResult" aria-live="polite"></div>
           </div>
         </div>

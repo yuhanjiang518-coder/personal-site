@@ -1247,48 +1247,83 @@
     if (omikujiEl) omikujiEl.classList.toggle('is-done', !!res);
   }
 
-  var tabsEl = $('#fortuneTabs');
-  if (tabsEl) {
-    Object.keys(FORTUNES).forEach(function (k) {
+  /* ------------------------------------------------------------------
+     塔罗牌阵：三个签种 = 三张牌
+     ------------------------------------------------------------------
+     牌面在这里生成、不写进 HTML —— 签种和名称本来就在 FORTUNES 里，
+     同样的字写两遍迟早就对不上（这条踩过）。
+     牌序刻意不洗：这三张代表的是三个"签种"，不是三张可以互换的牌；
+     洗牌反而会让人以为抽到哪张是随机的。
+     ------------------------------------------------------------------ */
+  var deckEl = $('#tarotDeck');
+  var tarotHintEl = $('#tarotHint');
+  var ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+  var GLYPH = { witch: '✦', code: '{ }', anime: '▶' };
+
+  function buildDeck() {
+    if (!deckEl) return;
+    Object.keys(FORTUNES).forEach(function (k, i) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'fortune-tab';
+      b.className = 'tarot';
       b.dataset.kind = k;
-      b.setAttribute('aria-pressed', String(k === activeKind));
-      b.textContent = FORTUNES[k].label;
-      b.addEventListener('click', function () {
-        activeKind = k;
-        LS.set('jyh-fortune-kind', k);
-        $$('.fortune-tab', tabsEl).forEach(function (x) {
-          x.setAttribute('aria-pressed', String(x.dataset.kind === k));
-        });
-        renderFortune(k);
-      });
-      tabsEl.appendChild(b);
+      b.innerHTML =
+        '<span class="tarot-flip">' +
+          '<span class="tarot-back" aria-hidden="true"><i></i></span>' +
+          '<span class="tarot-face" aria-hidden="true">' +
+            '<b class="tarot-no">' + (ROMAN[i] || String(i + 1)) + '</b>' +
+            '<span class="tarot-glyph">' + (GLYPH[k] || '✦') + '</span>' +
+            '<em class="tarot-name">' + esc(FORTUNES[k].label) + '</em>' +
+          '</span>' +
+        '</span>';
+      b.addEventListener('click', function () { pickCard(k, b); });
+      deckEl.appendChild(b);
     });
   }
-  renderFortune(activeKind);
+
+  function paintDeck() {
+    if (!deckEl) return;
+    $$('.tarot', deckEl).forEach(function (b) {
+      var k = b.dataset.kind;
+      var done = !!getResult(k);
+      b.classList.toggle('is-drawn', done);
+      b.classList.toggle('is-active', k === activeKind);
+      b.setAttribute('aria-pressed', String(k === activeKind));
+      b.setAttribute('aria-label', (done ? '已翻开：' : '翻开：') + FORTUNES[k].label);
+    });
+    if (tarotHintEl) {
+      tarotHintEl.textContent = getResult(activeKind) ? '明天再翻下一张' : '挑一张翻开 · 每天一次';
+    }
+  }
 
   var drawing = false;
-  function draw() {
-    if (!omikujiEl || drawing) return;
-    if (getResult(activeKind)) { toast('今天已经抽过了，明天再来'); return; }
+  function pickCard(kind, btn) {
+    if (drawing) return;
+    activeKind = kind;
+    LS.set('jyh-fortune-kind', kind);
+    if (getResult(kind)) {
+      paintDeck();
+      renderFortune(kind);
+      toast('「' + FORTUNES[kind].label + '」今天已经翻过了');
+      return;
+    }
     drawing = true;
-    omikujiEl.classList.add('is-shaking');
-    if (hintEl) hintEl.textContent = '摇一摇…';
+    if (btn) btn.classList.add('is-flipping');
 
     setTimeout(function () {
-      omikujiEl.classList.remove('is-shaking');
-      var res = makeFortune(activeKind, todayKey());
+      if (btn) btn.classList.remove('is-flipping');
+      var res = makeFortune(kind, todayKey());
       putResult(res);
+      paintDeck();
       renderResult(res);
-      omikujiEl.classList.add('is-done');
-      if (hintEl) hintEl.textContent = '已成签 · 明日再来';
       drawing = false;
-      toast('抽到了「' + res.rank + '」');
-    }, reduceMotion ? 60 : 1150);
+      toast('翻到了「' + res.rank + '」');
+    }, reduceMotion ? 60 : 820);
   }
-  if (omikujiEl) omikujiEl.addEventListener('click', draw);
+
+  buildDeck();
+  paintDeck();
+  renderFortune(activeKind);
 
   /* ==================================================================
      11. 复制邮箱

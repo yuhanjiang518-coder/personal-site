@@ -2775,7 +2775,6 @@
     }
 
     function progress() {
-
       var r = track.getBoundingClientRect();
       if (!r.height) return;                    /* 视图隐藏时量出来是 0 */
       /* 离得远就别写样式：改 --p 会让槽和这 24 张一起重新排版，
@@ -2789,7 +2788,15 @@
       track.style.setProperty('--p', p.toFixed(4));
     }
 
-    function queue() { if (!raf) raf = requestAnimationFrame(progress); }
+    /* raf 这个闩必须**和排队写在同一条语句里**自解，不能靠 progress() 开头
+       那句 `raf = 0` 来解 —— 那句一旦被误删（真的发生过一次：整个画廊的
+       滚动展开就永久停在切视图时的那一帧，滚动再无反应，而且不报错、
+       控制台干净，只能靠量 --p 才发现），`if (!raf)` 就永远为假，
+       这个监听器一辈子只跑一帧。写成一条语句，就不存在"删掉半句"的中间态。 */
+    function queue() {
+      if (raf) return;
+      raf = requestAnimationFrame(function () { raf = 0; progress(); });
+    }
 
     /* 先挂 is-live：CSS 那边整块展开样式都靠它开关。
        量不到（视图还没显示）也没关系，CSS 里的默认值本身就是安全的小尺寸。 */

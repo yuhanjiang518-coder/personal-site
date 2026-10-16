@@ -4888,6 +4888,32 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
   text-wrap: pretty;          /* 别让最后一行只剩一两个字 */
 }
 
+/* 牌意块：读签的时候先看到"今天翻到哪张、正的还是逆的"，再往下才是签等和签文 */
+.fr-tarot {
+  margin: 0 0 var(--s-4);
+  padding: .8rem .95rem .85rem;
+  border-left: .2rem solid var(--primary);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+.fr-tarot-hd { display: flex; align-items: baseline; gap: .55rem; }
+.fr-tarot-hd b {
+  font-family: var(--aw-mono, ui-monospace, monospace);
+  font-size: .74rem;
+  letter-spacing: .12em;
+  color: var(--primary-deep);
+}
+.fr-tarot-hd i {
+  font-style: normal;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  padding: .1rem .42rem .12rem;
+  border-radius: var(--r-full);
+  color: var(--on-primary);
+  background: var(--primary);
+}
+.fr-tarot p { margin: .38rem 0 0; font-size: .84rem; line-height: 1.85; color: var(--text-soft); }
+
 /* =========================================================== 24. 塔罗牌阵（旅人之签）
    参考的是一段塔罗抽牌的界面：深蓝牌桌 + 背面朝上的牌 + 点一张翻面，
    翻开后牌名和解读一起出来。

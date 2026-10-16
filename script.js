@@ -1257,23 +1257,39 @@
      ------------------------------------------------------------------ */
   var deckEl = $('#tarotDeck');
   var tarotHintEl = $('#tarotHint');
-  var ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-  var GLYPH = { witch: '✦', code: '{ }', anime: '▶' };
+  /* 22 张大阿卡纳，顺序就是切图时的顺序（arcana-00 = THE FOOL … 21 = THE WORLD）。
+     名字只在这里写一遍，牌面图片直接由序号拼路径。 */
+  var ARCANAS = ['THE FOOL', 'THE MAGICIAN', 'THE HIGH PRIESTESS', 'THE EMPRESS',
+    'THE EMPEROR', 'THE HIEROPHANT', 'THE LOVERS', 'THE CHARIOT', 'STRENGTH',
+    'THE HERMIT', 'WHEEL OF FORTUNE', 'JUSTICE', 'THE HANGED MAN', 'DEATH',
+    'TEMPERANCE', 'THE DEVIL', 'THE TOWER', 'THE STAR', 'THE MOON', 'THE SUN',
+    'JUDGEMENT', 'THE WORLD'];
+
+  /* 每个签种今天翻到哪张牌：种子还是全站那一个（站名 + 日期 + 用途）。
+     所以同一天刷新多少次都是同一张，隔一天换一张 —— 和「今日版本」一套规则。 */
+  function arcanaOf(kind) {
+    var r = seededRandom(DAY_SEED + '|tarot|' + kind);
+    return Math.floor(r() * ARCANAS.length) % ARCANAS.length;
+  }
+  function arcanaSrc(i) {
+    return 'assets/tarot/arcana-' + (i < 10 ? '0' + i : String(i)) + '.webp';
+  }
 
   function buildDeck() {
     if (!deckEl) return;
     Object.keys(FORTUNES).forEach(function (k, i) {
+      var a = arcanaOf(k);
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'tarot';
       b.dataset.kind = k;
+      b.style.setProperty('--i', i);          /* 发牌的错开延迟靠它 */
       b.innerHTML =
         '<span class="tarot-flip">' +
-          '<span class="tarot-back" aria-hidden="true"><i></i></span>' +
+          '<span class="tarot-back" aria-hidden="true"></span>' +
           '<span class="tarot-face" aria-hidden="true">' +
-            '<b class="tarot-no">' + (ROMAN[i] || String(i + 1)) + '</b>' +
-            '<span class="tarot-glyph">' + (GLYPH[k] || '✦') + '</span>' +
-            '<em class="tarot-name">' + esc(FORTUNES[k].label) + '</em>' +
+            '<img src="' + arcanaSrc(a) + '" alt="" width="260" height="416" ' +
+              'loading="lazy" decoding="async">' +
           '</span>' +
         '</span>';
       b.addEventListener('click', function () { pickCard(k, b); });
@@ -1286,10 +1302,13 @@
     $$('.tarot', deckEl).forEach(function (b) {
       var k = b.dataset.kind;
       var done = !!getResult(k);
+      var name = ARCANAS[arcanaOf(k)];
       b.classList.toggle('is-drawn', done);
       b.classList.toggle('is-active', k === activeKind);
       b.setAttribute('aria-pressed', String(k === activeKind));
-      b.setAttribute('aria-label', (done ? '已翻开：' : '翻开：') + FORTUNES[k].label);
+      b.setAttribute('aria-label',
+        (done ? '已翻开：' : '翻开：') + FORTUNES[k].label + '，今天这张是 ' + name);
+      b.setAttribute('title', name);
     });
     if (tarotHintEl) {
       tarotHintEl.textContent = getResult(activeKind) ? '明天再翻下一张' : '挑一张翻开 · 每天一次';

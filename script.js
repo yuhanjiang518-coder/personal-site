@@ -2598,6 +2598,111 @@
   })();
 
   /* ==================================================================
+     20.6 模态：inert + 焦点陷阱
+     ------------------------------------------------------------------
+     README 里写着「对话框焦点管理」，但 `aria-modal="true"` 只是一个**声明**：
+     浏览器不会因此挡住 Tab，焦点照样跑到后面的页面上，读屏照样读背景内容。
+     真正让它成立的是 `inert`。
+
+     没有去改每个对话框自己的开关逻辑（散在四处：开始界面 / 壁纸面板 /
+     手记墙 / 灯箱，还有 game-demo.js 动态建的那个），而是盯着 `[aria-modal]`
+     元素的可见性：谁可见，就把 **body 下其余的直接子元素**设成 inert。
+     「其余」是算出来的（不是它自己、也不是它的祖先），所以以后把对话框
+     挪到别处也不会失效。
+
+     可见性判断用 `getClientRects()`：祖先 display:none 时它返回空，
+     而且对 position:fixed 也对 —— `offsetParent` 对 fixed 元素恒为 null，不能用。
+
+     观察范围刻意收窄：只盯 body 的 childList + 那四五个对话自身的属性。
+     如果对 body 做 `subtree: true` 的属性观察，滚动时技能墙每帧写的
+     transform / --p 都会触发一次，而每次 sync 都要 getClientRects 强制布局。
+     ================================================================== */
+  (function initModalTrap() {
+    var OPEN = '[aria-modal="true"]';
+    var FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),' +
+                    'select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    var seen = [];
+    var active = null, lastFocus = null;
+
+    function isVisible(el) {
+      if (!el || el.hasAttribute('hidden')) return false;
+      if (el.getAttribute('aria-hidden') === 'true') return false;
+      if (!el.getClientRects().length) return false;
+      var cs = getComputedStyle(el);
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) > 0.05;
+    }
+
+    function backgrounds(modal) {
+      return $$('body > *').filter(function (c) {
+        if (c === modal || c.contains(modal)) return false;
+        var t = c.tagName;
+        /* toast 是 aria-live，冻住就不播报了 */
+        return t !== 'SCRIPT' && t !== 'STYLE' && c.id !== 'toast';
+      });
+    }
+
+    function onKey(e) {
+      if (e.key !== 'Tab' || !active) return;
+      var items = $$(FOCUSABLE, active).filter(isVisible);
+      if (!items.length) { e.preventDefault(); return; }
+      var first = items[0], last = items[items.length - 1], el = document.activeElement;
+      if (e.shiftKey && (el === first || !active.contains(el))) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && (el === last || !active.contains(el))) {
+        e.preventDefault(); first.focus();
+      }
+    }
+
+    function sync() {
+
+      var list = $$(OPEN).filter(isVisible);
+      var m = list.length ? list[list.length - 1] : null;   /* 最后一个是压在最上面的 */
+
+      if (m === active) return;
+
+      if (active) {
+        backgrounds(active).forEach(function (c) { c.removeAttribute('inert'); });
+        active = null;
+      }
+      if (!m) {
+        if (lastFocus && lastFocus.focus && document.contains(lastFocus)) {
+          lastFocus.focus({ preventScroll: true });
+        }
+        lastFocus = null;
+        return;
+      }
+      active = m;
+      if (!lastFocus) lastFocus = document.activeElement;
+      backgrounds(m).forEach(function (c) { c.setAttribute('inert', ''); });
+      if (!m.contains(document.activeElement)) {
+        var f = m.querySelector('[data-autofocus]') || $$(FOCUSABLE, m).filter(isVisible)[0];
+        if (f && f.focus) f.focus({ preventScroll: true });
+      }
+    }
+
+    /* 直接调 sync，不用 rAF 排队。
+       原因有二：① 观察量本来就小（body 的 childList + 四五个元素自己的属性），
+       合并调用省不下什么；② rAF 会被节流 —— 标签页在后台、或者无头环境里
+       用虚拟时间时根本不触发，那样 inert 就永远挂不上，而这个功能的全部意义
+       就是"对话框开着的时候背景是冻住的"，静默失效等于没做。
+       改 sync 不会改到被观察的那几个元素，所以不存在观察者自激的循环。 */
+    function watch(el) {
+      if (seen.indexOf(el) >= 0) return;
+      seen.push(el);
+      mo.observe(el, { attributes: true, attributeFilter: ['class', 'hidden', 'aria-hidden', 'style'] });
+    }
+
+    var mo = new MutationObserver(function () {
+      $$(OPEN).forEach(watch);   /* 动态建出来的对话也要挂上 */
+      sync();
+    });
+    mo.observe(document.body, { childList: true });
+    $$(OPEN).forEach(watch);
+    document.addEventListener('keydown', onKey, true);
+    sync();
+  })();
+
+  /* ==================================================================
      21. 同人画廊：向下滚，一块黑槽长成整屏，图片依次翻开
      ------------------------------------------------------------------
      结构在 index.html：#artExpand（200vh 的轨道）> .art-expand__pin（粘住一屏）
@@ -2670,7 +2775,7 @@
     }
 
     function progress() {
-      raf = 0;
+
       var r = track.getBoundingClientRect();
       if (!r.height) return;                    /* 视图隐藏时量出来是 0 */
       /* 离得远就别写样式：改 --p 会让槽和这 24 张一起重新排版，

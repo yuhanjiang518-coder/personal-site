@@ -2466,6 +2466,28 @@
   })();
 
   /* ==================================================================
+     20.5 区块标题的「幽灵描边字」
+     ------------------------------------------------------------------
+     每个区块标题后面垫一层放大的描边字（P3R 那种"字后面还有字"）。
+     做成真元素而不是 h2::after：tech-text.js 会把标题文字包进一个
+     绝对定位的 .tt-sr，那之后 h2 的盒子已经不是标题所在的位置，
+     伪元素会飘到旁边去。挂在 .sec-head 上就不受这个影响。
+     ================================================================== */
+  (function initSecGhost() {
+    $$('.sec-head h2').forEach(function (h) {
+      var head = h.parentNode;
+      if (!head || head.querySelector('.sec-ghost')) return;
+      var t = (h.textContent || '').trim();
+      if (!t) return;
+      var g = document.createElement('span');
+      g.className = 'sec-ghost';
+      g.setAttribute('aria-hidden', 'true');
+      g.textContent = t;
+      head.insertBefore(g, head.firstChild);
+    });
+  })();
+
+  /* ==================================================================
      21. 同人画廊：向下滚，一块黑槽长成整屏，图片依次翻开
      ------------------------------------------------------------------
      结构在 index.html：#artExpand（200vh 的轨道）> .art-expand__pin（粘住一屏）

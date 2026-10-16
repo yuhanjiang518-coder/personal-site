@@ -994,3 +994,111 @@ html[data-skin="aw"] .tw-chip::before {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--card-solid) 82%, transparent);
   pointer-events: none;
 }
+
+/* =========================================================== 11. 区块头部（P3R 风格）
+   原来这里是一整条半透明横条 + 一行标题 —— 只有一层，太平。
+   改成《女神异闻录 3 Reload》那套语言叠起来：
+     ① 深藏青底板，左上和右下切角（clip-path）
+     ② 底板里再叠一层斜切的亮面 + 底部一条点线
+     ③ 左侧一根斜的亮色竖条（唱片右边）
+     ④ 标题：纯白 + 硬投影（不是模糊阴影），后面跟一层放大的幽灵描边字
+     ⑤ 副标题变成一个小切角标签块
+
+   为什么写在 aw.css 末尾而不是 style.css：
+     上面第 8 节给 .sec-head 的 padding/margin 带了 !important，而 aw.css 在
+     style.css 之后加载 —— 同权重下后加载的赢。要改这块只能写在它后面。
+     （这个坑第 10 节的注释里已经踩过一次。）
+
+   配色没有照搬 P3R 的青蓝：用的是站点自己的 --primary，这样面板里那个
+   色相滑块一拖，整套区块头部跟着变。                                        */
+html[data-skin="aw"] .sec-head {
+  --sec-ink: #0c1a33;          /* 深藏青 */
+  --sec-ink-2: #16295a;        /* 斜切那一半亮一档 */
+  --sec-cyan: var(--primary);
+  --sec-cut: 1.1rem;
+  position: relative;
+  isolation: isolate;          /* 让 -1/-2 的伪元素只压在这个区块里 */
+  display: block;
+  padding: 1.05rem 1.2rem 1rem 3.9rem !important;
+  margin: 0 0 1.5rem !important;
+  margin-left: -.85rem !important;
+  margin-right: -.85rem !important;
+  border: 0 !important;        /* 原来那条 1px 底线让位给切角底板 */
+  border-radius: 0 !important;
+  color: #f2f7ff;
+  background: none !important;
+}
+html[data-skin="aw"] .sec-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 22%) 0 5px, transparent 5px 11px) left bottom / 100% 1px no-repeat,
+    linear-gradient(101deg, var(--sec-ink) 0 60%, var(--sec-ink-2) 60% 100%);
+  clip-path: polygon(
+    0 var(--sec-cut), var(--sec-cut) 0,
+    100% 0, 100% calc(100% - var(--sec-cut)),
+    calc(100% - var(--sec-cut)) 100%, 0 100%);
+}
+html[data-skin="aw"] .sec-head::after {
+  content: "";
+  position: absolute;
+  left: 3.42rem; top: .35rem; bottom: .35rem;
+  width: .22rem;
+  z-index: -1;
+  background: linear-gradient(to bottom, var(--sec-cyan), color-mix(in oklab, var(--sec-cyan) 12%, transparent));
+  transform: skewX(-9deg);
+}
+/* 不是每个区块头都带编号唱片（比如「学习 / 工作」那一块）。
+   没有唱片的时候左边要收回来，否则会空出 3.9rem 一块光板。 */
+html[data-skin="aw"] .sec-head:not(:has(.sec-idx)) {
+  padding-left: 1.35rem !important;
+}
+html[data-skin="aw"] .sec-head:not(:has(.sec-idx))::after { display: none; }
+html[data-skin="aw"] .sec-head h2 {
+  position: relative;
+  z-index: 1;
+  color: #f7fbff;
+  --tt-accent: var(--sec-cyan);   /* 标题镜片特效的强调色，tech-text.js 会读它 */
+  text-shadow: .055em .07em 0 rgb(0 0 0 / 52%);
+}
+/* 幽灵描边字：同一句话放大一层垫在后面。
+   注意这里挂的是 .sec-ghost（由 script.js 插进来的真元素，锚在 .sec-head 上），
+   不是 h2::after —— tech-text.js 会把标题文字包进一个绝对定位的 .tt-sr，
+   那时 h2 的盒子已经不是"标题所在的位置"了，伪元素会飘到别处去。 */
+html[data-skin="aw"] .sec-ghost {
+  position: absolute;
+  left: 3.6rem;
+  top: .1rem;
+  z-index: 0;
+  font-family: var(--aw-sans);
+  font-weight: 900;
+  font-size: clamp(2.4rem, 9vw, 5rem);
+  line-height: .9;
+  letter-spacing: -.06em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(140 190 255 / 16%);
+  pointer-events: none;
+  user-select: none;
+}
+html[data-skin="aw"] .sec-head:not(:has(.sec-idx)) .sec-ghost { left: 1.1rem; }
+/* 唱片落在深底上会糊掉，补一圈细边和一点外阴影把它托起来 */
+html[data-skin="aw"] .sec-head .sec-idx {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 26%), 0 10px 24px -12px rgb(0 0 0 / 85%);
+}
+html[data-skin="aw"] .sec-more {
+  display: inline-block;
+  margin: .55rem 0 0;
+  padding: .24rem .78rem .26rem;
+  font-family: var(--aw-mono);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  color: #f2f7ff;
+  background: color-mix(in oklab, var(--sec-cyan) 84%, #00122e 16%);
+  clip-path: polygon(.5rem 0, 100% 0, 100% calc(100% - .5rem), calc(100% - .5rem) 100%, 0 100%, 0 .5rem);
+  opacity: 1;
+}
+html[data-skin="aw"] .sec-more:hover { color: #fff; }
+

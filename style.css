@@ -4825,6 +4825,48 @@ html.lg-on .topbar .icon-btn[aria-expanded="true"] {
   .gdm__prog > b { transition-duration: .01ms; }
 }
 
+/* =========================================================== 23. 大段正文：让它能"扫"
+   两个问题，一个是观感、一个是可读性：
+     ① 一墙段落，同样粗细、同样颜色、同样间距 —— 眼睛没有落脚点；
+     ② 卡片底色只有 72% 白，底下是清晰壁纸，压在暗部那层灰字对比度掉得厉害。
+   第一版 .sec-head 的注释里记过同一件事（标题落在图像暗部上读不了），
+   这里是它的正文版。                                                          */
+.about-grid .card {
+  /* 正文卡不像图标卡 —— 它扛的是长段落，底子得厚一档才托得住字 */
+  background: color-mix(in oklab, var(--card-solid) 93%, transparent);
+}
+.about-grid p {
+  position: relative;
+  margin: 0 0 .95em;
+  padding-left: 1.05rem;      /* 悬挂区：给左边那根小斜条让位 */
+  line-height: 1.95;          /* 中文长段落，行距给足才不串行 */
+}
+.about-grid p:last-child { margin-bottom: 0; }
+/* 段落标记：一根斜的小色条。六段同样的字，靠它才有"一条一条"的节奏。 */
+.about-grid p::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: .66em;
+  width: .2rem;
+  height: .8em;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, var(--primary), color-mix(in oklab, var(--primary) 20%, transparent));
+  transform: skewX(-10deg);
+}
+/* 关键词：原来只是"深一点的灰"，和正文几乎分不开。
+   换成荧光笔式的下沿高亮 —— 扫的时候一眼能找到。 */
+.about-grid p strong {
+  color: var(--text);
+  font-weight: 700;
+  background: linear-gradient(transparent 62%, color-mix(in oklab, var(--primary) 32%, transparent) 62%);
+  padding: 0 .12em;
+}
+/* 信息表：行与行之间给点空气，键用小号宽字距，值和键拉开层次 */
+.fact { padding: .42rem 0; }
+.fact dt { letter-spacing: .1em; }
+.fact dd { line-height: 1.6; }
+
 /* =========================================================== 22. 区块头部（P3R 风格）
    aw 皮肤那一版在 aw.css 末尾（带 !important，必须后加载才压得住）；
    这里是 classic 皮肤（?skin=classic）的同一套语言。

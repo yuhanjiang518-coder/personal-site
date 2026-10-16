@@ -1197,7 +1197,7 @@
     resultEl.innerHTML =
       '<div class="fr-empty">' +
         '<h3>' + esc(F.label) + '</h3>' +
-        '<p>今天还没抽。点左边的签筒摇一摇，' + tail + '。</p>' +
+        '<p>今天还没抽。左边挑一张牌翻开，' + tail + '。</p>' +
         '<div><span class="fr-no">共 ' + F.ranks.length + ' 种签 · 每天一签</span></div>' +
       '</div>';
   }

@@ -554,13 +554,12 @@ aw-sep[data-style="solid"] .aw-sep__tri--r { border-right-color: var(--page-bg);
 html[data-skin="aw"] .sec { margin: 0; padding: 2.6rem 0 3.2rem; border: 0; }
 
 html[data-skin="aw"] .sec-head {
+  /* 只留布局方式。padding / margin / border 全交给文件末尾第 11 节。
+     重构前这一块带四个 !important，末尾那块为了压过它也只能跟着写 !important，
+     同一个属性散在四处、谁都说不清谁赢 —— 实测就出过一次：窄屏的
+     padding-left 被末尾那块默默盖掉。现在 !important 全去掉，
+     同一具体度下靠**源码顺序**决定，读得出来也测得到。 */
   display: block;
-  margin: 0 0 1.5rem !important;
-  padding: .6rem .85rem .55rem !important;
-  margin-left: -.85rem !important;
-  margin-right: -.85rem !important;
-  border-bottom: var(--aw-line);
-  border-radius: 0 !important;
 }
 
 html[data-skin="aw"] .sec-head h2::before { display: none; }
@@ -847,11 +846,6 @@ html[data-skin="aw"] .reveal { transition-duration: .7s; transition-timing-funct
        于是在屏幕、打印两种情形下都说了算。
    直接改 style.css 的话，padding 会被上面的 !important 顶掉 —— 已经踩过一次。 */
 
-html[data-skin="aw"] .sec-head {
-  position: relative;
-  padding-left: 3.7rem !important;
-}
-
 html[data-skin="aw"] .sec-idx {
   --sig-label: 30%;
   position: absolute;
@@ -872,7 +866,6 @@ html[data-skin="aw"] .sec-idx {
 }
 
 @media (max-width: 700px) {
-  html[data-skin="aw"] .sec-head { padding-left: 2.7rem !important; }
   html[data-skin="aw"] .sec-idx {
     width: 2.15rem;
     height: 2.15rem;
@@ -1016,12 +1009,12 @@ html[data-skin="aw"] .sec-head {
   position: relative;
   isolation: isolate;          /* 让 -1/-2 的伪元素只压在这个区块里 */
   display: block;
-  padding: 1.05rem 1.2rem 1rem 3.9rem !important;
-  margin: 0 0 1.5rem !important;
-  margin-left: -.85rem !important;
-  margin-right: -.85rem !important;
-  border: 0 !important;        /* 原来那条 1px 底线让位给切角底板 */
-  border-radius: 0 !important;
+  padding: 1.05rem 1.2rem 1rem 3.9rem;
+  margin: 0 0 1.5rem;
+  margin-left: -.85rem;
+  margin-right: -.85rem;
+  border: 0;                   /* 原来那条 1px 底线让位给切角底板 */
+  border-radius: 0;
   color: #f2f7ff;
   background: none !important;
 }
@@ -1098,4 +1091,12 @@ html[data-skin="aw"] .sec-more {
   opacity: 1;
 }
 html[data-skin="aw"] .sec-more:hover { color: #fff; }
+
+/* 窄屏：标题紧跟在唱片右边，左边距要收回 2.7rem。
+   这条**必须写在文件最后**：去掉 !important 之后，同具体度靠源码顺序裁决，
+   写在前面会被末尾第 11 节那块盖掉 —— 重构前就是这么错的，
+   实测 640px 下的 padding-left 是 62.4px（3.9rem）而不是 43.2px（2.7rem）。 */
+@media (max-width: 700px) {
+  html[data-skin="aw"] .sec-head { padding-left: 2.7rem; }
+}
 
